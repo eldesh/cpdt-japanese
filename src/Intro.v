@@ -231,7 +231,7 @@ Coq meets the de Bruijn criterion, while %\index{ACL2}%ACL2 does not, as it empl
 *)
 
 %\index{de Bruijn criterion}%自動化された決定手続きが判定してくれるというのは実践的な定理証明では有用です．
-しかし，一つずつの手続きが正しく実装されているということを信頼しないと行けないのは残念です．
+しかし，一つずつの手続きが正しく実装されているということを信頼しないといけないのは残念です．
 複雑で拡張可能な手順を使って証明を探し出すのが先かどうかに関わらず，証明支援機が核となる小さな言語で表現された_証明項_を生成するとき，
 その証明支援機はde Bruijn criterionを満たすと言います．
 数学の形式的な基礎の提案の中で見られるのと同様の複雑さをこのようなコア言語も持っています．
@@ -266,7 +266,7 @@ Of the remaining tools, all can support user extension with new decision procedu
 それは，直接ツールの実装（Coqの場合はOCamlです）をハックする形になります．
 ACL2とPVSはde Bruijn条件を満たさないため，全体の正しさは新しい手順を作った人に左右されてしまいます．
 
-ISabelle/HOLとCoqはどちらもあらあな証明操作をMLでコードすることをサポートします．
+Isabelle/HOLとCoqはどちらもあらたな証明操作をMLでコードすることをサポートします．
 それによって不正な証明が受け入れられることはありません．
 加えて，Coqはドメイン特化言語をもっていて決定手続きを通常のCoqソースコードの中でコーディングすることができます．
 MLに抜け出す必要はありません．
@@ -382,7 +382,7 @@ A traditional printed version of the book is slated to appear from MIT Press in 
 本書のソースファイルも無料で利用できます：
 %\begin{center}\url{http://adam.chlipala.net/cpdt/cpdt.tgz}\end{center}%#<blockquote><tt><a href="http://adam.chlipala.net/cpdt/cpdt.tgz">http://adam.chlipala.net/cpdt/cpdt.tgz</a></tt></blockquote>#
 
-ソースファイルでは本書に載っているすべてのコードがあり、コメントの中に本書と同じ順番で説明がつけられています。後述するCoqのグラフィカルインターフェースを使えばコードを1ステップずつ対話的に読み進めめられます。The code also has special comments indicating which parts of the chapters make suitable starting points for interactive class sessions, where the class works together to construct the programs and proofs.  The included Makefile has a target <<templates>> for building a fresh set of class template files automatically from the book source.
+ソースファイルでは本書に載っているすべてのコードがあり、コメントの中に本書と同じ順番で説明がつけられています。後述するCoqのグラフィカルインターフェースを使えばコードを1ステップずつ対話的に読み進められます。The code also has special comments indicating which parts of the chapters make suitable starting points for interactive class sessions, where the class works together to construct the programs and proofs.  The included Makefile has a target <<templates>> for building a fresh set of class template files automatically from the book source.
 
 (* A traditional printed version of the book is slated to appear from MIT Press in the future.  The online versions will remain available at no cost even after the printed book is released, and I intend to keep the source code up-to-date with bug fixes and compatibility changes to track new Coq releases. *)
 
@@ -410,7 +410,7 @@ Previous versions of the book included some suggested exercises at the ends of c
 
 Coqの経験がない読者は前述の議論を無視して構いません！　読者がなぜ他がマニュアル的に証明のステップの列を入力するのに多くの時間を費すのか疑問を持つくらいに、著者の早くからの証明の自動化への強い信頼が最も自然な方法と思えることを望みます。
 
-Coqはとえも複雑なシステムで、美しい原理を追求することより実用的な懸念から導出されたコマンドがたくさんあります。何か構造物(* construct *)を始めて使うときは、それが何を成し遂げるかの一文での直感的説明を与えますが、詳細はCoqのリファレンスマニュアル%~\cite{CoqManual}%に譲ります。完璧な理解を求める読者はリファレンスマニュアルを頻繁に参照することでしょう。この意味では、本書は完全にはスタンドアローンになるようには書かれていません。しばしばコードの中で構造物を先に説明することなしに使うことがありますが、説明はいつもそのコードの直後の段落に置かれるでしょう。
+Coqはとても複雑なシステムで、美しい原理を追求することより実用的な懸念から導出されたコマンドがたくさんあります。何か構造物(* construct *)を始めて使うときは、それが何を成し遂げるかの一文での直感的説明を与えますが、詳細はCoqのリファレンスマニュアル%~\cite{CoqManual}%に譲ります。完璧な理解を求める読者はリファレンスマニュアルを頻繁に参照することでしょう。この意味では、本書は完全にはスタンドアローンになるようには書かれていません。しばしばコードの中で構造物を先に説明することなしに使うことがありますが、説明はいつもそのコードの直後の段落に置かれるでしょう。
 
 本書の前のバージョンでは章の終わりに演習問題が含まれていました。それから、演習問題をなくして解説に焦点を当てることに決めました。本書のさまざまな読者に向けた演習問題のデータベースは#<a href="http://adam.chlipala.net/cpdt/ex/">#Webで利用できます#</a>#%\footnote{\url{http://adam.chlipala.net/cpdt/ex/}}%。しかし、Coqを学ぶための最良の方法は、人工的な演習問題を解くことよりもCoqを実際のプロジェクトに応用し始めることだと著者は提案します。
 *)
