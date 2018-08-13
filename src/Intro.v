@@ -172,7 +172,7 @@ Coqにはとても魅力的な性質が多く備わっていますので，こ�
 %\index{ACL2}%ACL2 is notable in this field for having only a _first-order_ language at its foundation.  That is, you cannot work with functions over functions and all those other treats of functional programming.  By giving up this facility, ACL2 can make broader assumptions about how well its proof automation will work, but we can generally recover the same advantages in other proof assistants when we happen to be programming in first-order fragments.
 *)
 認証を伴うプログラムを書くとき，関数型プログラミング言語のよく知られた便利さをあきらめる理由はありません．ここで挙げるツールは関数型プログラミング言語を基礎としているため，証明に関係する機能を使わなくても普通のプログラムを書いたり実行したりできます．
-＿1階の＿言語のみを基礎とするという点点でACL2は重要です．
+＿1階の＿言語のみを基礎とするという点でACL2は重要です．
 つまり，(1階の言語のツールでは)関数上の関数などの関数型プログラミングの便利な機能が使えないのです．
 この便利さの代わりに，自動証明がいかにうまく動くかについてより多様な仮定がACL2ではできるのですが，他の証明支援系でも1階のプログラムを書くときは同様の利点を回復できます．
 *)
