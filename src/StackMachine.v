@@ -947,7 +947,7 @@ Qed.
 (** In this section, we will build on the initial example by adding additional expression forms that depend on static typing of terms for safety. *)
 *)
 (**
-この節では、安全のため項の静的片付けを持つような式の構造を追加した最初の例を作ります。 *)
+この節では、最初の例の上に、加算のための式を追加します。これは安全のための項の静的型付けに依存しています。 *)
 
 (** ** ソース言語 *)
 
