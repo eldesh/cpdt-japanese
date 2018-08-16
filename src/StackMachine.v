@@ -1238,7 +1238,7 @@ The term "(n, s)" has type "(nat * vstack ts)%type"
 (** We finish the semantics with a straightforward definition of program denotation. *)
 *)
 (**
-プログラムの表示の直接的な定義によってセマンティクスを終えます。
+プログラムの表示の直接的な定義によるセマンティクスを終えます。
 *)
 
 Fixpoint tprogDenote ts ts' (p : tprog ts ts') : vstack ts -> vstack ts' :=
