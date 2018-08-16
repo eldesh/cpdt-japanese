@@ -1133,7 +1133,8 @@ Inductive tinstr : tstack -> tstack -> Set :=
 
 (** (** Stack machine programs must be a similar inductive family, since, if we again used the [list] type family, we would not be able to guarantee that intermediate stack types match within a program. *)*)
 (**
-もしここでも[list]型族を使ったら、中間的なスタック型がプログラムに合うことが保証されないので、スタックマシーンプログラムは必ず同様な帰納的なデータでなればいません。
+スタックマシーンプログラムは必ず同様な帰納的なデータでなればいけません。
+もしここでも[list]型族を使ったら、中間的なスタックの型がプログラムに合うことが保証出来ないでしょう。
 *)
 
 Inductive tprog : tstack -> tstack -> Set :=
