@@ -1006,7 +1006,7 @@ Haskellは%\index{Haskell}multi-parameter type classesに基いた型添字の�
 (** We can define a similar type family for typed expressions, where a term of type [texp t] can be assigned object language type [t].  (It is conventional in the world of interactive theorem proving to call the language of the proof assistant the%\index{meta language}% _meta language_ and a language being formalized the%\index{object language}% _object language_.) *)
 *)
 (**
-同様にして、片付き式に対して型族を定義できます。型 [texp t] を持つ項は対象言語の型 [t] を割り当てられます。(対話的定理証明の世界では慣習的に、証明支援器の言語を%\index{メタ言語}%[メタ言語]と呼び、形式化されている言語を%\index{対象言語}%[対象言語]と呼びます。)*)
+同様にして、型付き式に対して型族を定義できます。型 [texp t] を持つ項は対象言語の型 [t] を割り当てられます。(対話的定理証明の世界では慣習的に、証明支援器の言語を%\index{メタ言語}%[メタ言語]と呼び、形式化されている言語を%\index{対象言語}%[対象言語]と呼びます。)*)
 
 Inductive texp : type -> Set :=
 | TNConst : nat -> texp Nat
