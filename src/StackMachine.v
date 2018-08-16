@@ -174,7 +174,7 @@ To return to our test evaluations, we run the [Eval] command using the [simpl] e
 これらの定義の性質の証明をする前に、テストができれば好都合です。コマンド %\index{Vernacular commands!Eval}%[Eval] を使っていくつかの例を評価し、私たちのセマンティクスがもっともらしいことを確かめてみましょう。このコマンドは%\index{簡約戦略}%「簡約戦略」(reduction strategy)、別の言葉で「評価順序」(order of evaluation)を表す引数を取ります。ML の先行評価や、Haskell の遅延評価とは違い、Coq ではこれらや他の様々な評価順序を選べます。これが可能なのはすべての Coq プログラムが停止するからです。実は、Coq は内部で上の [Fixpoint] で定義した関数の%\index{termination checking}%停止性をチェックしています。Coq は再帰呼び出しごとに引数のサイズが単調減少していることを見て、停止性を判断しています。さらに言うと、再帰呼び出しは [match] 式によって分割された元々の引数によって作られていないといけません。
 (この制限を単順に削除するのはCoqを役に立たない定理証明ツールに変えてしまいます。この理由は次の章で学びます。第7章では、[Fixpoint]の制限に対処するためのいくつかの方法を見ます。)
 
-評価のテストをするために、評価戦略 [simpl] を使って [Eval] コマンドを実行しましょう。[simpl] の定義は Coq の基礎をもっと学むまで後回しにしますが、[simpl] は通常テストを終わらせてくれます。 *)
+評価のテストをするために、評価戦略 [simpl] を使って [Eval] コマンドを実行しましょう。[simpl] の定義は Coq の基礎をもっと学ぶまで後回しにしますが、[simpl] は通常テストを終わらせてくれます。 *)
 
 Eval simpl in expDenote (Const 42).
 (** [= 42 : nat] *)
