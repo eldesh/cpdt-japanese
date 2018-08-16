@@ -1374,7 +1374,7 @@ Lemma tcompile_correct' : forall t (e : texp t) ts (s : vstack ts),
 
    Let us try to prove this theorem in the same way that we settled on in the last section. *)*)
 (**
-補題[compile_correct']は私たちが考えている式の「継続」%~\cite{continuations}%であるようなプログラム上に量化されていますが、ここではwe avoid drawing in any extra syntactic elements.
+補題[compile_correct']は私たちが考えている式の「継続」%~\cite{continuations}%であるようなプログラム上に量化されていますが、ここでは余計な構文上の要素を描くことは避けます。
 ソース言語の式とその方に加えて、初めのスタック型とそれに適合するスタックを量化します。
 そのスタックから始まるプログラムのコンパイルをすると、その上にプログラムの表示的意味がプッシュされたスタックを得ます。
 
