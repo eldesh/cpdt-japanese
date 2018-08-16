@@ -213,7 +213,7 @@ Definition stack := list nat.
 We can give instructions meanings as functions from stacks to optional stacks, where running an instruction results in [None] in case of a stack underflow and results in [Some s'] when the result of execution is the new stack [s'].  %\index{Gallina operators!::}%The infix operator [::] is "list cons" from the Coq standard library.%\index{Gallina terms!option}% *)
 *)
 (**
-命令 [instr] はスタックの先頭に定数をプッシュする [iConst] か、引数二つをポップし二項演算子に適用した後スタックに結果をプッシュする [iBinon] から成ります。ここでのプログラム [prog] は命令 [instr] のリストで、スタック [stack] は自然数のリストです。
+命令 [instr] はスタックの先頭に定数をプッシュする [iConst] か、引数二つをポップし二項演算子に適用した後スタックに結果をプッシュする [iBinop] から成ります。ここでのプログラム [prog] は命令 [instr] のリストで、スタック [stack] は自然数のリストです。
 
 命令の意味をスタックからスタックのオプション型への関数として与えましょう。命令を実行してスタックアンダーフローに陥った場合は [None]、結果として新たなスタック [s'] を得た場合は [Some s'] を返します。%\index{Gallina operators!::}%中置演算子 [::] はリストの cons で、Coq の標準ライブラリで定義されています。%\index{Gallina terms!option}% *)
 
