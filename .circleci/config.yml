@@ -68,7 +68,6 @@ jobs:
             git config --user.name ${GN_NAME}
             git config --user.email ${GN_EMAIL}
             if git rev-parse --verify 
-
       - deploy:
           name: install texlive
           command: |
