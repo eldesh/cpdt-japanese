@@ -1,0 +1,1581 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<link href="coqdoc.css" rel="stylesheet" type="text/css" />
+<title>Predicates</title>
+</head>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+</div>
+
+<div id="main">
+
+<h1 class="libtitle">Library Predicates</h1>
+
+<div class="code">
+
+<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+  
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+いわゆる「Curry-Howard同型対応」というものがあり，それは，関数型プログラムと数学的証明の形式的な対応のことです．
+前の章では，このテーマの最初の導入を行いました．
+標準ライブラリの<span class="inlinecode"><span class="id" title="inductive">unit</span></span>と<span class="inlinecode"><span class="id" title="inductive">True</span></span>について非常に類似していることを見てみましょう．
+
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Print</span> <span class="id" title="var">unit</span>.<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="keyword">Inductive</span> <span class="id" title="inductive">unit</span> : <span class="id" title="keyword">Set</span> :=  <span class="id" title="constructor">tt</span> : <span class="id" title="inductive">unit</span>
+<div class="paragraph"> </div>
+
+</span>
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Print</span> <span class="id" title="var">True</span>.<br/>
+</div>
+
+<div class="doc">
+
+<div class="paragraph"> </div>
+
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="keyword">Inductive</span> <span class="id" title="inductive">True</span> : <span class="id" title="keyword">Prop</span> :=  <span class="id" title="constructor">I</span> : <span class="id" title="inductive">True</span>
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+<span class="inlinecode"><span class="id" title="inductive">unit</span></span>はただ1つの値をとる型で，<span class="inlinecode"><span class="id" title="inductive">True</span></span>は常に成り立つ命題であったことを思い出してください．
+この2つの概念には表面的な違いがありますが，両者ともにInductiveを使った定義になっている点は同じです．
+<span class="inlinecode"><span class="id" title="inductive">unit</span></span>と<span class="inlinecode"><span class="id" title="inductive">True</span></span>の類似点はまだあります．
+<span class="inlinecode"><span class="id" title="inductive">unit</span></span>を<span class="inlinecode"><span class="id" title="inductive">True</span></span>に，<span class="inlinecode"><span class="id" title="constructor">tt</span></span>を<span class="inlinecode"><span class="id" title="constructor">I</span></span>に，<span class="inlinecode"><span class="id" title="keyword">Set</span></span>を<span class="inlinecode"><span class="id" title="keyword">Prop</span></span>に置き換えると<span class="inlinecode"><span class="id" title="inductive">True</span></span>の定義になるということがわかります．
+最初の2つの違いは名前の変更なので重要ではありませんが，3つ目の違いは重要なもので，プログラムと証明をわけるものです．
+<span class="inlinecode"><span class="id" title="keyword">Set</span></span>型の<span class="inlinecode"><span class="id" title="variable">T</span></span>という項があればそれはプログラムの集合を表す型で，<span class="inlinecode"><span class="id" title="variable">T</span></span>型を持つ項はプログラムです．
+<span class="inlinecode"><span class="id" title="keyword">Prop</span></span>型の<span class="inlinecode"><span class="id" title="variable">T</span></span>という項があればそれは論理的な命題で，その証明は<span class="inlinecode"><span class="id" title="variable">T</span></span>型を持ちます．
+12章ではもっと詳細に<span class="inlinecode"><span class="id" title="keyword">Prop</span></span>と<span class="inlinecode"><span class="id" title="keyword">Set</span></span>の理論的な違いを説明します．
+今の所は，証明が何かということについて，一般的な感覚に基づいておくことにします．
+
+<div class="paragraph"> </div>
+
+<span class="inlinecode"><span class="id" title="inductive">unit</span></span>という型は<span class="inlinecode"><span class="id" title="constructor">tt</span></span>という1つの値を取ります．
+<span class="inlinecode"><span class="id" title="inductive">True</span></span>という型には<span class="inlinecode"><span class="id" title="constructor">I</span></span>という1つの証明があります．
+なぜこれらの型を区別するのでしょうか？
+抽象的な文脈でカリーハワードのことを読んだことがあっても証明工学で使ったことのない人は，実はこれら2つの型は区別する＿べきではない＿と答えるでしょう．
+確かにこの見方には美しさを訴えかけてくるものがあります．しかし，実用的な証明においてカリーハワードはとてもゆるく扱われるべきだということを私は言いたいのです．
+このような区別をした方が良いCoq特有の理由があります．
+コンパイルを効率的に行うことと古典主義の数学（論理学）に存在するパラドクスを避けるためというのもありますが，私はむしろ，証明とプログラミングを一緒にしなくなるようなより一般的な法則を主張します．
+
+<div class="paragraph"> </div>
+
+議論の重要なところはだいたいこのようなものです：<span class="inlinecode"><span class="id" title="variable">A</span></span> <span class="inlinecode">-&gt;</span> <span class="inlinecode"><span class="id" title="variable">B</span></span>の全ての関数が同じではありませんが，<span class="inlinecode"><span class="id" title="variable">P</span></span> <span class="inlinecode">-&gt;</span> <span class="inlinecode"><span class="id" title="variable">Q</span></span>という命題の全ての証明は等しいのです．
+この考えは＿proof irrelevance＿として知られています．そしてそれを論理学において形式化すると同じ命題の異なる証明を区別するのが難しくなります．
+Proof irrelevanceはGallinaでは互換性はあるけど推論はできません（？）．
+このような理論的な懸念とは別に，私はCoqで開発をするのがもっとも効果的だと考えています．プログラムと証明に別々のテクニックを使えるからです．
+この本のほとんどの部分はこの区別のもとに書かれています．
+プログラムの際は依存型の存在を前提とした標準的な関数型プログタミングのテクニックを使います．
+そして証明の際はカスタムのLtac決定手続きを書きます．
+
+<div class="paragraph"> </div>
+
+上記の見方に注意すると，この章は前章の鏡像のようなものです．帰納的な定義を使って命題を定義する方法を紹介します．
+所々で類似性を指摘するでしょうが，効果的なCoqユーザーの知恵袋は命題とデータ型で交わりません．
+依存型をもつ証明項を構築するタクティク使っていく一方で，この章はまた依存型のひそかな紹介でもあります．依存型は興味深い帰納的命題を作る土台になっています．
+さらに先の章ではより手動による依存型の応用も扱って行きます．
+
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+<a name="lab85"></a><h1 class="section">命題論理</h1>
+
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+命題論理に出てくる結合記号の定義を簡単に見ていくことから始めましょう．
+これからしばらくの間は，命題変数の集合を定めたCoqセクションに入っておくことにします．
+Coq用語では，命題とは単に<span class="inlinecode"><span class="id" title="keyword">Prop</span></span>型の変数です．
+
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Section</span> <span class="id" title="var">Propositional</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Variables</span> <span class="id" title="var">P</span> <span class="id" title="var">Q</span> <span class="id" title="var">R</span> : <span class="id" title="keyword">Prop</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+  
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+Coqでは，命題の結合記号のうち最も基本的なのは含意であり，<span class="inlinecode">-&gt;</span>で表します．これは今までのほぼ全ての証明でも使ってきました．
+含意は，帰納的に（Inductiveを使って）定義されているわけではなく，むしろCoqに関数型のコンストラクタとして組み込まれています．
+既に<span class="inlinecode"><span class="id" title="inductive">True</span></span>の定義は紹介してあります．
+次の自明な定理を通して，帰納的な述語の証明における低レベル部分の様子を説明していきます．
+
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Theorem</span> <span class="id" title="var">obvious</span> : <span class="id" title="var">True</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="var">I</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+  
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+構成しようとしている帰納的な述語のコンストラクタをつかって証明を進めるために<span class="inlinecode"><span class="id" title="tactic">apply</span></span>タクティクを使うことができます．
+時には，適用しうるコンストラクタがただ1つしかないことがあります．そのような場合は以下のようにショートカットが使えます．
+
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Theorem</span> <span class="id" title="var">obvious'</span> : <span class="id" title="var">True</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">constructor</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+  
+<div class="paragraph"> </div>
+
+また，<span class="inlinecode"><span class="id" title="inductive">False</span></span>という述語もあります．これは<span class="inlinecode"><span class="id" title="inductive">Empty_set</span></span>のカリーハワード鏡像です．
+
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Print</span> <span class="id" title="var">False</span>.<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="keyword">Inductive</span> <span class="id" title="inductive">False</span> : <span class="id" title="keyword">Prop</span> :=
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+例えば自然数に対してと同じケース分析を<span class="inlinecode"><span class="id" title="inductive">False</span></span>に対しても行うことで，<span class="inlinecode"><span class="id" title="inductive">False</span></span>からはあらゆる結論を導くことができます．
+考えるべきケースがないため，そのようなケース分析は即時に成功しゴールを証明してしまいます．
+
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Theorem</span> <span class="id" title="var">False_imp</span> : <span class="id" title="var">False</span> -&gt; 2 + 2 = 5.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> 1.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+  
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+無矛盾のコンテキストからは<span class="inlinecode"><span class="id" title="inductive">False</span></span>の証明は作れません．
+証明の過程の途中に出てくる矛盾したコンテキストでは，明確な<span class="inlinecode"><span class="id" title="inductive">False</span></span>の証明により矛盾を証明して進むのが通常は最も簡単です．
+
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Theorem</span> <span class="id" title="var">arith_neq</span> : 2 + 2 = 5 -&gt; 9 + 9 = 835.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">intro</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+    
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+この時点で，矛盾した仮定<span class="inlinecode">2</span> <span class="inlinecode">+</span> <span class="inlinecode">2</span> <span class="inlinecode">=</span> <span class="inlinecode">5</span>があるので，特定の結論には意味がないのです．
+このような時は<span class="inlinecode"><span class="id" title="tactic">elimtype</span></span>タクティクを使います．
+それの完全な説明はCoqドキュメントをあたってください．
+ここで目的のためには，その変種の<span class="inlinecode"><span class="id" title="tactic">elimtype</span></span> <span class="inlinecode"><span class="id" title="inductive">False</span></span>のみを使って結論を<span class="inlinecode"><span class="id" title="inductive">False</span></span>にします．なぜなら，矛盾したコンテキストからは任意の事実が従うからです．
+
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">elimtype</span> <span class="id" title="var">False</span>.<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="variable">H</span> : 2 + 2 = 5<br/>
+&nbsp;&nbsp;============================<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="inductive">False</span><br/>
+&nbsp;
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+      ここで，算術の残っていますが，<span class="inlinecode"><span class="id" title="var">crush</span></span>を使います．
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">crush</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+    論理否定は<span class="inlinecode"><span class="id" title="inductive">False</span></span>に関係のある概念です．
+
+</div>
+<div class="code">
+
+<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Print</span> <span class="id" title="var">not</span>.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="definition">not</span> = <span class="id" title="keyword">fun</span> <span class="id" title="variable">A</span> : <span class="id" title="keyword">Prop</span> =&gt; <span class="id" title="variable">A</span> -&gt; <span class="id" title="inductive">False</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="keyword">Prop</span> -&gt; <span class="id" title="keyword">Prop</span>
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+上記で<span class="inlinecode"><span class="id" title="definition">not</span></span>は<span class="inlinecode"><span class="id" title="inductive">False</span></span>への含意のことだとわかります．
+この事実を照明中に明示的に使用することもできます．
+<span class="inlinecode">~</span> <span class="inlinecode"><span class="id" title="variable">P</span></span>という文法（ASCII文字のチルダを使う）で<span class="inlinecode"><span class="id" title="definition">not</span></span> <span class="inlinecode"><span class="id" title="variable">P</span></span>と展開されます．
+ 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Theorem</span> <span class="id" title="var">arith_neq'</span> : ~ (2 + 2 = 5).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">unfold</span> <span class="id" title="var">not</span>.<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;============================<br/>
+&nbsp;&nbsp;&nbsp;2 + 2 = 5 -&gt; <span class="id" title="inductive">False</span>
+<div class="paragraph"> </div>
+
+</span>   
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">crush</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+  
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+先の章で導入した連言（「かつ」のこと）もまたあります．
+
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Print</span> <span class="id" title="var">and</span>.<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">Inductive</span> <span class="id" title="inductive">and</span> (<span class="id" title="variable">A</span> : <span class="id" title="keyword">Prop</span>) (<span class="id" title="variable">B</span> : <span class="id" title="keyword">Prop</span>) : <span class="id" title="keyword">Prop</span> :=  <span class="id" title="constructor">conj</span> : <span class="id" title="variable">A</span> -&gt; <span class="id" title="variable">B</span> -&gt; <span class="id" title="variable">A</span> /\ <span class="id" title="variable">B</span>
+<div class="paragraph"> </div>
+
+</span>  興味を持った読者は <span class="inlinecode"><span class="id" title="inductive">and</span></span> は <span class="inlinecode"><span class="id" title="inductive">prod</span></span> （ペアの型）というカリーハワード同値を持つことを確かめられるでしょう．
+しかし，連言を証明するにはタクティクを使ってするのが最も便利です．
+<span class="inlinecode"><span class="id" title="inductive">and</span></span> の可換性を明示的に証明することでそれが確認できます．
+<span class="inlinecode">/\</span>演算子は<span class="inlinecode"><span class="id" title="inductive">and</span></span>の中置略記です．
+
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Theorem</span> <span class="id" title="var">and_comm</span> : <span class="id" title="var">P</span> /\ <span class="id" title="var">Q</span> -&gt; <span class="id" title="var">Q</span> /\ <span class="id" title="var">P</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+    <span class="inlinecode"><span class="id" title="variable">P</span></span> <span class="inlinecode">/\</span> <span class="inlinecode"><span class="id" title="variable">Q</span></span> のケース分析からはじめます．
+
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> 1.<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="variable">H</span> : <span class="id" title="variable">P</span><br/>
+&nbsp;&nbsp;<span class="id" title="var">H0</span> : <span class="id" title="variable">Q</span><br/>
+&nbsp;&nbsp;============================<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="variable">Q</span> /\ <span class="id" title="variable">P</span><br/>
+&nbsp;&nbsp;&nbsp;
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+連言の証明はそれぞれの連言肢の証明を含んでいます（ので仮定がPとQになりました）．
+それを反映したサブゴールができました．
+このサブゴール <span class="inlinecode"><span class="id" title="variable">Q</span></span> <span class="inlinecode">/\</span> <span class="inlinecode"><span class="id" title="variable">P</span></span> のそれぞれの連言肢のケースに分割することで証明を進めることができます．
+
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">split</span>.<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode">2 <span class="id" title="keyword">subgoals</span><br/>
+&nbsp;&nbsp;<br/>
+&nbsp;&nbsp;<span class="id" title="variable">H</span> : <span class="id" title="variable">P</span><br/>
+&nbsp;&nbsp;<span class="id" title="var">H0</span> : <span class="id" title="variable">Q</span><br/>
+&nbsp;&nbsp;============================<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="variable">Q</span><br/>
+<br/>
+<span class="id" title="keyword">subgoal</span> 2 <span class="id" title="var">is</span><br/>
+<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="variable">P</span><br/>
+&nbsp;
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+それぞのケースで，結論は過程と同じですので，<span class="inlinecode"><span class="id" title="tactic">assumption</span></span>タクティクで証明を完了します．
+
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assumption</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assumption</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+  Coqの選言は<span class="inlinecode"><span class="id" title="inductive">or</span></span>という名前で，中置演算子<span class="inlinecode">\/</span>で使えます．
+
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Print</span> <span class="id" title="var">or</span>.<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="keyword">Inductive</span> <span class="id" title="inductive">or</span> (<span class="id" title="variable">A</span> : <span class="id" title="keyword">Prop</span>) (<span class="id" title="variable">B</span> : <span class="id" title="keyword">Prop</span>) : <span class="id" title="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="constructor">or_introl</span> : <span class="id" title="variable">A</span> -&gt; <span class="id" title="variable">A</span> \/ <span class="id" title="variable">B</span> | <span class="id" title="constructor">or_intror</span> : <span class="id" title="variable">B</span> -&gt; <span class="id" title="variable">A</span> \/ <span class="id" title="variable">B</span>
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+選言を証明する方法が2つあることがわかりました：1つめの連言肢を証明するか，2つめの連言肢を証明するかです．
+カリーハワード対応による類似物はCoqの<span class="inlinecode"><span class="id" title="inductive">sum</span></span>型です．
+可換性をもう一度証明することで，主要なタクティクを実演しましょう．
+
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Theorem</span> <span class="id" title="var">or_comm</span> : <span class="id" title="var">P</span> \/ <span class="id" title="var">Q</span> -&gt; <span class="id" title="var">Q</span> \/ <span class="id" title="var">P</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+    
+<div class="paragraph"> </div>
+
+<span class="inlinecode"><span class="id" title="inductive">and</span></span>の証明のときと同様にケース分析から始めますが，今回はケースが2つあります．
+
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> 1.<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode">2 <span class="id" title="keyword">subgoals</span><br/>
+&nbsp;&nbsp;<br/>
+&nbsp;&nbsp;<span class="id" title="variable">H</span> : <span class="id" title="variable">P</span><br/>
+&nbsp;&nbsp;============================<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="variable">Q</span> \/ <span class="id" title="variable">P</span><br/>
+<br/>
+<span class="id" title="keyword">subgoal</span> 2 <span class="id" title="var">is</span><br/>
+<br/>
+&nbsp;<span class="id" title="variable">Q</span> \/ <span class="id" title="variable">P</span><br/>
+&nbsp;
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+ 
+<div class="paragraph"> </div>
+
+ 最初のサブゴールにおいては，2つめの選言肢を証明することで（ゴールの）選言を証明したいのだとわかります．
+ <span class="inlinecode"><span class="id" title="tactic">right</span></span>タクティクによってその意図を伝えることができます．
+ 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">right</span>; <span class="id" title="tactic">assumption</span>.<br/>
+</div>
+
+<div class="doc">
+           <br/>
+<span class="inlinecode">1 <span class="id" title="keyword">subgoal</span><br/>
+&nbsp;&nbsp;<br/>
+&nbsp;&nbsp;<span class="id" title="variable">H</span> : <span class="id" title="variable">Q</span><br/>
+&nbsp;&nbsp;============================<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="variable">Q</span> \/ <span class="id" title="variable">P</span>
+<div class="paragraph"> </div>
+
+</span>   
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">left</span>; <span class="id" title="tactic">assumption</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+  
+<div class="paragraph"> </div>
+
+命題論理の全ての証明を手動でこつこつ進めないといけないというのは残念なことです．
+幸運なことに，その必要はありません．
+最も基本的なCoqの自動化タクティクの1つである<span class="inlinecode"><span class="id" title="tactic">tauto</span></span>は，構成的な命題論理の完全な決定手続きです（「構成的」の意味については次の節でより詳しく説明します）．
+ここまで証明してきた純粋な命題論理の定理は<span class="inlinecode"><span class="id" title="tactic">tauto</span></span>を使うことで片付けることができます．
+
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Theorem</span> <span class="id" title="var">or_comm'</span> : <span class="id" title="var">P</span> \/ <span class="id" title="var">Q</span> -&gt; <span class="id" title="var">Q</span> \/ <span class="id" title="var">P</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">tauto</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+  
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+命題論理的な理由づけは定理の証明の重要な部品になることもたまにはありますが，他の知恵が必要になることもあります．例えば算術です．
+<span class="inlinecode"><span class="id" title="tactic">intuition</span></span>タクティクは<span class="inlinecode"><span class="id" title="tactic">tauto</span></span>の一般化で，命題論理的な推論で証明できる全てを証明できます．
+証明を完了させるのにさらに他の事実が必要な場合でも，<span class="inlinecode"><span class="id" title="tactic">intuition</span></span>は命題の法則を使ってなるべく簡単にしてくれます．
+次の例を考えて下さい．ここでは標準ライブラリのリスト連結演算<tt>++</tt>を使っています．
+
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Theorem</span> <span class="id" title="var">arith_comm</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">ls1</span> <span class="id" title="var">ls2</span> : <span class="id" title="var">list</span> <span class="id" title="var">nat</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">length</span> <span class="id" title="var">ls1</span> = <span class="id" title="var">length</span> <span class="id" title="var">ls2</span> \/ <span class="id" title="var">length</span> <span class="id" title="var">ls1</span> + <span class="id" title="var">length</span> <span class="id" title="var">ls2</span> = 6<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;-&gt; <span class="id" title="var">length</span> (<span class="id" title="var">ls1</span> ++ <span class="id" title="var">ls2</span>) = 6 \/ <span class="id" title="var">length</span> <span class="id" title="var">ls1</span> = <span class="id" title="var">length</span> <span class="id" title="var">ls2</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">intuition</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+    
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+多くの証明構造が<span class="inlinecode"><span class="id" title="tactic">intuition</span></span>によって生成されますが，最終的な証明はリストに関する事実のみによっています．
+残りのサブゴールは人間が他にどんな知恵を入れなければならないかを示しています．
+
+<div class="paragraph"> </div>
+
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="variable">ls1</span> : <span class="id" title="inductive">list</span> <span class="id" title="inductive">nat</span><br/>
+&nbsp;&nbsp;<span class="id" title="variable">ls2</span> : <span class="id" title="inductive">list</span> <span class="id" title="inductive">nat</span><br/>
+&nbsp;&nbsp;<span class="id" title="var">H0</span> : <span class="id" title="definition">length</span> <span class="id" title="variable">ls1</span> + <span class="id" title="definition">length</span> <span class="id" title="variable">ls2</span> = 6<br/>
+&nbsp;&nbsp;============================<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="definition">length</span> (<span class="id" title="variable">ls1</span> ++ <span class="id" title="variable">ls2</span>) = 6 \/ <span class="id" title="definition">length</span> <span class="id" title="variable">ls1</span> = <span class="id" title="definition">length</span> <span class="id" title="variable">ls2</span><br/>
+&nbsp;
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+連結されたリストの長さについての定理が必要だとわかります．その定理については前の章でも証明したし，標準ライブラリにも含まれています．
+
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> <span class="id" title="var">app_length</span>.<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="variable">ls1</span> : <span class="id" title="inductive">list</span> <span class="id" title="inductive">nat</span><br/>
+&nbsp;&nbsp;<span class="id" title="variable">ls2</span> : <span class="id" title="inductive">list</span> <span class="id" title="inductive">nat</span><br/>
+&nbsp;&nbsp;<span class="id" title="var">H0</span> : <span class="id" title="definition">length</span> <span class="id" title="variable">ls1</span> + <span class="id" title="definition">length</span> <span class="id" title="variable">ls2</span> = 6<br/>
+&nbsp;&nbsp;============================<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="definition">length</span> <span class="id" title="variable">ls1</span> + <span class="id" title="definition">length</span> <span class="id" title="variable">ls2</span> = 6 \/ <span class="id" title="definition">length</span> <span class="id" title="variable">ls1</span> = <span class="id" title="definition">length</span> <span class="id" title="variable">ls2</span><br/>
+&nbsp;
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+ここまで来たら，純粋な命題論理の推論でサブゴールは証明できます．
+すなわち，<span class="inlinecode"><span class="id" title="definition">length</span></span> <span class="inlinecode"><span class="id" title="variable">ls1</span></span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" title="definition">length</span></span> <span class="inlinecode"><span class="id" title="variable">ls2</span></span> <span class="inlinecode">=</span> <span class="inlinecode">6</span>を<span class="inlinecode"><span class="id" title="variable">P</span></span>と考え，<span class="inlinecode"><span class="id" title="definition">length</span></span> <span class="inlinecode"><span class="id" title="variable">ls1</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="definition">length</span></span> <span class="inlinecode"><span class="id" title="variable">ls2</span></span>を<span class="inlinecode"><span class="id" title="variable">Q</span></span>と考えて命題論理のトートロジに到達します．
+
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">tauto</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+  
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+<span class="inlinecode"><span class="id" title="tactic">intuition</span></span>タクティクは<span class="inlinecode"><span class="id" title="var">crush</span></span>の実装の主要なつなぎの1つです．
+そのため，少し助けることで定理に対する短くて自動化された証明を得ることができます．
+
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Theorem</span> <span class="id" title="var">arith_comm'</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">ls1</span> <span class="id" title="var">ls2</span> : <span class="id" title="var">list</span> <span class="id" title="var">nat</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">length</span> <span class="id" title="var">ls1</span> = <span class="id" title="var">length</span> <span class="id" title="var">ls2</span> \/ <span class="id" title="var">length</span> <span class="id" title="var">ls1</span> + <span class="id" title="var">length</span> <span class="id" title="var">ls2</span> = 6<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;-&gt; <span class="id" title="var">length</span> (<span class="id" title="var">ls1</span> ++ <span class="id" title="var">ls2</span>) = 6 \/ <span class="id" title="var">length</span> <span class="id" title="var">ls1</span> = <span class="id" title="var">length</span> <span class="id" title="var">ls2</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">Hint Rewrite</span> <span class="id" title="var">app_length</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">crush</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">End</span> <span class="id" title="var">Propositional</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+セクションの終わりの意味はいつもと同じです．
+ここで定義した命題の定理は普遍的に量化されます．
+
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+<a name="lab86"></a><h1 class="section">構成的とはどういうことか?</h1>
+
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+ここまで提示してきたことのなかで混乱しそうなことは，<span class="inlinecode"><span class="id" title="inductive">bool</span></span>と<span class="inlinecode"><span class="id" title="keyword">Prop</span></span>の区別です．
+<span class="inlinecode"><span class="id" title="inductive">bool</span></span>というデータ型は<span class="inlinecode"><span class="id" title="constructor">true</span></span>と<span class="inlinecode"><span class="id" title="constructor">false</span></span>という2つの値から構成されていますが，<span class="inlinecode"><span class="id" title="keyword">Prop</span></span>はより原始的な型で，<span class="inlinecode"><span class="id" title="inductive">True</span></span>や<span class="inlinecode"><span class="id" title="inductive">False</span></span>といった要素は<span class="inlinecode"><span class="id" title="keyword">Prop</span></span>に含まれます．
+これら2つ（boolとProp）の概念を1つにまとめてしまってはどうでしょうか？
+また，<span class="inlinecode"><span class="id" title="inductive">True</span></span>と<span class="inlinecode"><span class="id" title="inductive">False</span></span>という2つの真偽状態以外が存在するとはどのようなことでしょうか？
+
+<div class="paragraph"> </div>
+
+Coqは＿構成的＿あるいは＿直観主義的＿な論理学に基づいている，というとこから答えが出てきます．
+古典論理だったら，もっと馴染みがあったでしょうが．
+構成的な論理では，古典的な恒真命題すなわち<span class="inlinecode">~</span> <span class="inlinecode">~</span> <span class="inlinecode"><span class="id" title="variable">P</span></span> <span class="inlinecode">-&gt;</span> <span class="inlinecode"><span class="id" title="variable">P</span></span>や<span class="inlinecode"><span class="id" title="variable">P</span></span> <span class="inlinecode">\/</span> <span class="inlinecode">~</span> <span class="inlinecode"><span class="id" title="variable">P</span></span>は常には成り立ちません．
+一般的には，これらの恒真命題を証明できるのは<span class="inlinecode"><span class="id" title="variable">P</span></span>が計算可能性の理論でいう＿決定可能＿の場合のみです．
+Coqが使っている<span class="inlinecode"><span class="id" title="inductive">or</span></span>のカリーハワード埋め込みによると，<span class="inlinecode"><span class="id" title="variable">P</span></span> <span class="inlinecode">\/</span> <span class="inlinecode">~</span> <span class="inlinecode"><span class="id" title="variable">P</span></span>の証明から<span class="inlinecode"><span class="id" title="variable">P</span></span>の証明または<span class="inlinecode">~</span> <span class="inlinecode"><span class="id" title="variable">P</span></span>の証明が抽出できるということになります．
+我々の証明は実行可能なただの関数型プログラムなので，一般的な排中律を許してしまうと停止問題への決定手続きを与えることになってしまうのです．停止問題として例えば「このチューリングマシンは停止する」というようなものも選べます．
+
+<div class="paragraph"> </div>
+
+同様の矛盾がある状況は全ての命題は<span class="inlinecode"><span class="id" title="inductive">True</span></span>または<span class="inlinecode"><span class="id" title="inductive">False</span></span>に評価されるとした倍にも発生します．
+Coqにおける評価は決定可能ですので，命題も決定可能なものに限ることにしています．
+
+<div class="paragraph"> </div>
+
+ということで<span class="inlinecode"><span class="id" title="inductive">bool</span></span>と<span class="inlinecode"><span class="id" title="keyword">Prop</span></span>の区別があるのです．<span class="inlinecode"><span class="id" title="inductive">bool</span></span>型のプログラムは作った時から計算的です・・・結果を決めるために実行することは常に可能です．
+多くの<span class="inlinecode"><span class="id" title="keyword">Prop</span></span>は決定不能なので，<span class="inlinecode"><span class="id" title="inductive">bool</span></span>に比べて<span class="inlinecode"><span class="id" title="keyword">Prop</span></span>を使えばより表現力豊かに式を書くことができます．
+しかし，避けられない結末として，「真偽を確かめるために<span class="inlinecode"><span class="id" title="keyword">Prop</span></span>を実行する」ことはできなくなってしまいます．
+
+<div class="paragraph"> </div>
+
+構成的な論理によって全ての論理結合記号を審美的な魅力のある方法で定義できるようになります．
+直交した帰納的な定義です．
+すなわち，それぞれの結合記号は単純な共通の仕組みを使って独立に定義されます．
+構成的であることで，プログラム抽出ということもできるようになります．
+そこでは，プログラムを定理として記述して証明します．
+我々の証明はただの関数型プログラムなので，実行できるプログラムを最終的な証明から抽出できます．これは，古典的な証明からは自然に行うことはできませんでした．
+
+<div class="paragraph"> </div>
+
+後の章でCoqのプログラム抽出機能についてもっと見ていきます．
+しかしここでひとつ注意をしておきましょう．先に注意したカリーハワード対応を文面通りに受け取りすぎることです．
+プログラムをCoqの定理証明を使って書くことはできますが，そんなことをする人はほぼいません．
+証明とプログラムの区別を常にしておくことは最も有用です．
+もしも定理を証明することでプログラムを書いてしまったら，おそらく，証明を簡単にするためにアルゴリズムが非効率的になってしまうでしょう．
+微妙な定理を証明してる時にそのような状況を心配しないといけないというのは恥ずかしいことです．ですが，おそらくそのような必要はありません．
+というのは，証明からプログラムを抽出するという理想は理論的な研究に限定されているからです．
+
+<div class="paragraph"> </div>
+
+<a name="lab87"></a><h1 class="section">First-Order Logic</h1>
+
+<div class="paragraph"> </div>
+
+ The <span class="inlinecode"><span class="id" title="keyword">forall</span></span> connective of first-order logic, which we have seen in many examples so far, is built into Coq.  Getting ahead of ourselves a bit, we can see it as the dependent function type constructor.  In fact, implication and universal quantification are just different syntactic shorthands for the same Coq mechanism.  A formula <span class="inlinecode"><span class="id" title="variable">P</span></span> <span class="inlinecode">-&gt;</span> <span class="inlinecode"><span class="id" title="variable">Q</span></span> is equivalent to <span class="inlinecode"><span class="id" title="keyword">forall</span></span> <span class="inlinecode"><span class="id" title="variable">x</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" title="variable">P</span>,</span> <span class="inlinecode"><span class="id" title="variable">Q</span></span>, where <span class="inlinecode"><span class="id" title="variable">x</span></span> does not appear in <span class="inlinecode"><span class="id" title="variable">Q</span></span>.  That is, the "real" type of the implication says "for every proof of <span class="inlinecode"><span class="id" title="variable">P</span></span>, there exists a proof of <span class="inlinecode"><span class="id" title="variable">Q</span></span>."
+
+<div class="paragraph"> </div>
+
+Existential quantification is defined in the standard library. 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Print</span> <span class="id" title="var">ex</span>.<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="keyword">Inductive</span> <span class="id" title="inductive">ex</span> (<span class="id" title="variable">A</span> : <span class="id" title="keyword">Type</span>) (<span class="id" title="variable">P</span> : <span class="id" title="variable">A</span> -&gt; <span class="id" title="keyword">Prop</span>) : <span class="id" title="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="constructor">ex_intro</span> : <span class="id" title="keyword">forall</span> <span class="id" title="variable">x</span> : <span class="id" title="variable">A</span>, <span class="id" title="variable">P</span> <span class="id" title="variable">x</span> -&gt; <span class="id" title="inductive">ex</span> <span class="id" title="variable">P</span>
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+  (Note that here, as always, each <span class="inlinecode"><span class="id" title="keyword">forall</span></span> quantifier has the largest possible scope, so that the type of <span class="inlinecode"><span class="id" title="constructor">ex_intro</span></span> could also be written <span class="inlinecode"><span class="id" title="keyword">forall</span></span> <span class="inlinecode"><span class="id" title="variable">x</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" title="variable">A</span>,</span> <span class="inlinecode">(<span class="id" title="variable">P</span></span> <span class="inlinecode"><span class="id" title="variable">x</span></span> <span class="inlinecode">-&gt;</span> <span class="inlinecode"><span class="id" title="inductive">ex</span></span> <span class="inlinecode"><span class="id" title="variable">P</span>)</span>.)
+
+<div class="paragraph"> </div>
+
+  The family <span class="inlinecode"><span class="id" title="inductive">ex</span></span> is parameterized by the type <span class="inlinecode"><span class="id" title="variable">A</span></span> that we quantify over, and by a predicate <span class="inlinecode"><span class="id" title="variable">P</span></span> over <span class="inlinecode"><span class="id" title="variable">A</span></span>s.  We prove an existential by exhibiting some <span class="inlinecode"><span class="id" title="variable">x</span></span> of type <span class="inlinecode"><span class="id" title="variable">A</span></span>, along with a proof of <span class="inlinecode"><span class="id" title="variable">P</span></span> <span class="inlinecode"><span class="id" title="variable">x</span></span>.  As usual, there are tactics that save us from worrying about the low-level details most of the time.
+
+<div class="paragraph"> </div>
+
+  Here is an example of a theorem statement with existential quantification.  We use the equality operator <span class="inlinecode">=</span>, which, depending on the settings in which they learned logic, different people will say either is or is not part of first-order logic.  For our purposes, it is. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">exist1</span> : <span class="id" title="tactic">exists</span> <span class="id" title="var">x</span> : <span class="id" title="var">nat</span>, <span class="id" title="var">x</span> + 1 = 2.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+We can start this proof with a tactic <span class="inlinecode"><span class="id" title="tactic">exists</span></span>, which should not be confused with the formula constructor shorthand of the same name.   
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">exists</span> 1.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+The conclusion is replaced with a version using the existential witness that we announced.
+
+<div class="paragraph"> </div>
+
+     <br/>
+<span class="inlinecode">&nbsp;&nbsp;============================<br/>
+&nbsp;&nbsp;&nbsp;1 + 1 = 2
+<div class="paragraph"> </div>
+
+</span>   
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">reflexivity</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+We can also use tactics to reason about existential hypotheses. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">exist2</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">n</span> <span class="id" title="var">m</span> : <span class="id" title="var">nat</span>, (<span class="id" title="tactic">exists</span> <span class="id" title="var">x</span> : <span class="id" title="var">nat</span>, <span class="id" title="var">n</span> + <span class="id" title="var">x</span> = <span class="id" title="var">m</span>) -&gt; <span class="id" title="var">n</span> &lt;= <span class="id" title="var">m</span>.<br/>
+</div>
+
+<div class="doc">
+We start by case analysis on the proof of the existential fact. 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> 1.<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="variable">n</span> : <span class="id" title="inductive">nat</span><br/>
+&nbsp;&nbsp;<span class="id" title="variable">m</span> : <span class="id" title="inductive">nat</span><br/>
+&nbsp;&nbsp;<span class="id" title="variable">x</span> : <span class="id" title="inductive">nat</span><br/>
+&nbsp;&nbsp;<span class="id" title="variable">H</span> : <span class="id" title="variable">n</span> + <span class="id" title="variable">x</span> = <span class="id" title="variable">m</span><br/>
+&nbsp;&nbsp;============================<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="variable">n</span> &lt;= <span class="id" title="variable">m</span><br/>
+&nbsp;
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+   The goal has been replaced by a form where there is a new free variable <span class="inlinecode"><span class="id" title="variable">x</span></span>, and where we have a new hypothesis that the body of the existential holds with <span class="inlinecode"><span class="id" title="variable">x</span></span> substituted for the old bound variable.  From here, the proof is just about arithmetic and is easy to automate. 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="var">crush</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+The tactic <span class="inlinecode"><span class="id" title="tactic">intuition</span></span> has a first-order cousin called <span class="inlinecode"><span class="id" title="tactic">firstorder</span></span>, which proves many formulas when only first-order reasoning is needed, and it tries to perform first-order simplifications in any case.  First-order reasoning is much harder than propositional reasoning, so <span class="inlinecode"><span class="id" title="tactic">firstorder</span></span> is much more likely than <span class="inlinecode"><span class="id" title="tactic">intuition</span></span> to get stuck in a way that makes it run for long enough to be useless. 
+<div class="paragraph"> </div>
+
+<a name="lab88"></a><h1 class="section">Predicates with Implicit Equality</h1>
+
+<div class="paragraph"> </div>
+
+ We start our exploration of a more complicated class of predicates with a simple example: an alternative way of characterizing when a natural number is zero. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Inductive</span> <span class="id" title="var">isZero</span> : <span class="id" title="var">nat</span> -&gt; <span class="id" title="keyword">Prop</span> :=<br/>
+| <span class="id" title="var">IsZero</span> : <span class="id" title="var">isZero</span> 0.<br/>
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">isZero_zero</span> : <span class="id" title="var">isZero</span> 0.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">constructor</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+We can call <span class="inlinecode"><span class="id" title="inductive">isZero</span></span> a <i>judgment</i>, in the sense often used in the semantics of programming languages.  Judgments are typically defined in the style of <i>natural deduction</i>, where we write a number of <i>inference rules</i> with premises appearing above a solid line and a conclusion appearing below the line.  In this example, the sole constructor <span class="inlinecode"><span class="id" title="constructor">IsZero</span></span> of <span class="inlinecode"><span class="id" title="inductive">isZero</span></span> can be thought of as the single inference rule for deducing <span class="inlinecode"><span class="id" title="inductive">isZero</span></span>, with nothing above the line and <span class="inlinecode"><span class="id" title="inductive">isZero</span></span> <span class="inlinecode">0</span> below it.  The proof of <span class="inlinecode"><span class="id" title="lemma">isZero_zero</span></span> demonstrates how we can apply an inference rule.  (Readers not familiar with formal semantics should not worry about not following this paragraph!)
+
+<div class="paragraph"> </div>
+
+The definition of <span class="inlinecode"><span class="id" title="inductive">isZero</span></span> differs in an important way from all of the other inductive definitions that we have seen in this and the previous chapter.  Instead of writing just <span class="inlinecode"><span class="id" title="keyword">Set</span></span> or <span class="inlinecode"><span class="id" title="keyword">Prop</span></span> after the colon, here we write <span class="inlinecode"><span class="id" title="inductive">nat</span></span> <span class="inlinecode">-&gt;</span> <span class="inlinecode"><span class="id" title="keyword">Prop</span></span>.  We saw examples of parameterized types like <span class="inlinecode"><span class="id" title="inductive">list</span></span>, but there the parameters appeared with names <i>before</i> the colon.  Every constructor of a parameterized inductive type must have a range type that uses the same parameter, whereas the form we use here enables us to choose different arguments to the type for different constructors.
+
+<div class="paragraph"> </div>
+
+For instance, our definition <span class="inlinecode"><span class="id" title="inductive">isZero</span></span> makes the predicate provable only when the argument is <span class="inlinecode">0</span>.  We can see that the concept of equality is somehow implicit in the inductive definition mechanism.  The way this is accomplished is similar to the way that logic variables are used in Prolog (but worry not if not familiar with Prolog), and it is a very powerful mechanism that forms a foundation for formalizing all of mathematics.  In fact, though it is natural to think of inductive types as folding in the functionality of equality, in Coq, the true situation is reversed, with equality defined as just another inductive type! 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Print</span> <span class="id" title="var">eq</span>.<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="keyword">Inductive</span> <span class="id" title="inductive">eq</span> (<span class="id" title="variable">A</span> : <span class="id" title="keyword">Type</span>) (<span class="id" title="variable">x</span> : <span class="id" title="variable">A</span>) : <span class="id" title="variable">A</span> -&gt; <span class="id" title="keyword">Prop</span> :=  <span class="id" title="constructor">eq_refl</span> : <span class="id" title="variable">x</span> = <span class="id" title="variable">x</span>
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+  Behind the scenes, uses of infix <span class="inlinecode">=</span> are expanded to instances of <span class="inlinecode"><span class="id" title="inductive">eq</span></span>.  We see that <span class="inlinecode"><span class="id" title="inductive">eq</span></span> has both a parameter <span class="inlinecode"><span class="id" title="variable">x</span></span> that is fixed and an extra unnamed argument of the same type.  The type of <span class="inlinecode"><span class="id" title="inductive">eq</span></span> allows us to state any equalities, even those that are provably false.  However, examining the type of equality's sole constructor <span class="inlinecode"><span class="id" title="constructor">eq_refl</span></span>, we see that we can only <i>prove</i> equality when its two arguments are syntactically equal.  This definition turns out to capture all of the basic properties of equality, and the equality-manipulating tactics that we have seen so far, like <span class="inlinecode"><span class="id" title="tactic">reflexivity</span></span> and <span class="inlinecode"><span class="id" title="tactic">rewrite</span></span>, are implemented treating <span class="inlinecode"><span class="id" title="inductive">eq</span></span> as just another inductive type with a well-chosen definition.  Another way of stating that definition is: equality is defined as the least reflexive relation.
+
+<div class="paragraph"> </div>
+
+Returning to the example of <span class="inlinecode"><span class="id" title="inductive">isZero</span></span>, we can see how to work with hypotheses that use this predicate. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">isZero_plus</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">n</span> <span class="id" title="var">m</span> : <span class="id" title="var">nat</span>, <span class="id" title="var">isZero</span> <span class="id" title="var">m</span> -&gt; <span class="id" title="var">n</span> + <span class="id" title="var">m</span> = <span class="id" title="var">n</span>.<br/>
+</div>
+
+<div class="doc">
+We want to proceed by cases on the proof of the assumption about <span class="inlinecode"><span class="id" title="inductive">isZero</span></span>. 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> 1.<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="variable">n</span> : <span class="id" title="inductive">nat</span><br/>
+&nbsp;&nbsp;============================<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="variable">n</span> + 0 = <span class="id" title="variable">n</span><br/>
+&nbsp;
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+   Since <span class="inlinecode"><span class="id" title="inductive">isZero</span></span> has only one constructor, we are presented with only one subgoal.  The argument <span class="inlinecode"><span class="id" title="variable">m</span></span> to <span class="inlinecode"><span class="id" title="inductive">isZero</span></span> is replaced with that type's argument from the single constructor <span class="inlinecode"><span class="id" title="constructor">IsZero</span></span>.  From this point, the proof is trivial. 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="var">crush</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Another example seems at first like it should admit an analogous proof, but in fact provides a demonstration of one of the most basic gotchas of Coq proving. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">isZero_contra</span> : <span class="id" title="var">isZero</span> 1 -&gt; <span class="id" title="var">False</span>.<br/>
+</div>
+
+<div class="doc">
+Let us try a proof by cases on the assumption, as in the last proof. 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> 1.<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;============================<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="inductive">False</span><br/>
+&nbsp;
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+   It seems that case analysis has not helped us much at all!  Our sole hypothesis disappears, leaving us, if anything, worse off than we were before.  What went wrong?  We have met an important restriction in tactics like <span class="inlinecode"><span class="id" title="tactic">destruct</span></span> and <span class="inlinecode"><span class="id" title="tactic">induction</span></span> when applied to types with arguments.  If the arguments are not already free variables, they will be replaced by new free variables internally before doing the case analysis or induction.  Since the argument <span class="inlinecode">1</span> to <span class="inlinecode"><span class="id" title="inductive">isZero</span></span> is replaced by a fresh variable, we lose the crucial fact that it is not equal to <span class="inlinecode">0</span>.
+
+<div class="paragraph"> </div>
+
+     Why does Coq use this restriction?  We will discuss the issue in detail in a future chapter, when we see the dependently typed programming techniques that would allow us to write this proof term manually.  For now, we just say that the algorithmic problem of "logically complete case analysis" is undecidable when phrased in Coq's logic.  A few tactics and design patterns that we will present in this chapter suffice in almost all cases.  For the current example, what we want is a tactic called <span class="inlinecode"><span class="id" title="tactic">inversion</span></span>, which corresponds to the concept of inversion that is frequently used with natural deduction proof systems.  (Again, worry not if the semantics-oriented terminology from this last sentence is unfamiliar.) 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Undo</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">inversion</span> 1.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+What does <span class="inlinecode"><span class="id" title="tactic">inversion</span></span> do?  Think of it as a version of <span class="inlinecode"><span class="id" title="tactic">destruct</span></span> that does its best to take advantage of the structure of arguments to inductive types.  In this case, <span class="inlinecode"><span class="id" title="tactic">inversion</span></span> completed the proof immediately, because it was able to detect that we were using <span class="inlinecode"><span class="id" title="inductive">isZero</span></span> with an impossible argument.
+
+<div class="paragraph"> </div>
+
+Sometimes using <span class="inlinecode"><span class="id" title="tactic">destruct</span></span> when you should have used <span class="inlinecode"><span class="id" title="tactic">inversion</span></span> can lead to confusing results.  To illustrate, consider an alternate proof attempt for the last theorem. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">isZero_contra'</span> : <span class="id" title="var">isZero</span> 1 -&gt; 2 + 2 = 5.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> 1.<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;============================<br/>
+&nbsp;&nbsp;&nbsp;1 + 1 = 4<br/>
+&nbsp;
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+   What on earth happened here?  Internally, <span class="inlinecode"><span class="id" title="tactic">destruct</span></span> replaced <span class="inlinecode">1</span> with a fresh variable, and, trying to be helpful, it also replaced the occurrence of <span class="inlinecode">1</span> within the unary representation of each number in the goal.  Then, within the <span class="inlinecode"><span class="id" title="constructor">O</span></span> case of the proof, we replace the fresh variable with <span class="inlinecode"><span class="id" title="constructor">O</span></span>.  This has the net effect of decrementing each of these numbers. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Abort</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+To see more clearly what is happening, we can consider the type of <span class="inlinecode"><span class="id" title="inductive">isZero</span></span>'s induction principle. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Check</span> <span class="id" title="var">isZero_ind</span>.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode"><span class="id" title="definition">isZero_ind</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="keyword">forall</span> <span class="id" title="variable">P</span> : <span class="id" title="inductive">nat</span> -&gt; <span class="id" title="keyword">Prop</span>, <span class="id" title="variable">P</span> 0 -&gt; <span class="id" title="keyword">forall</span> <span class="id" title="variable">n</span> : <span class="id" title="inductive">nat</span>, <span class="id" title="inductive">isZero</span> <span class="id" title="variable">n</span> -&gt; <span class="id" title="variable">P</span> <span class="id" title="variable">n</span>
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+   In our last proof script, <span class="inlinecode"><span class="id" title="tactic">destruct</span></span> chose to instantiate <span class="inlinecode"><span class="id" title="variable">P</span></span> as <span class="inlinecode"><span class="id" title="keyword">fun</span></span> <span class="inlinecode"><span class="id" title="variable">n</span></span> <span class="inlinecode">=&gt;</span> <span class="inlinecode"><span class="id" title="variable">S</span></span> <span class="inlinecode"><span class="id" title="variable">n</span></span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" title="variable">S</span></span> <span class="inlinecode"><span class="id" title="variable">n</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="variable">S</span></span> <span class="inlinecode">(<span class="id" title="variable">S</span></span> <span class="inlinecode">(<span class="id" title="variable">S</span></span> <span class="inlinecode">(<span class="id" title="variable">S</span></span> <span class="inlinecode"><span class="id" title="variable">n</span>)))</span>.  You can verify for yourself that this specialization of the principle applies to the goal and that the hypothesis <span class="inlinecode"><span class="id" title="variable">P</span></span> <span class="inlinecode">0</span> then matches the subgoal we saw generated.  If you are doing a proof and encounter a strange transmutation like this, there is a good chance that you should go back and replace a use of <span class="inlinecode"><span class="id" title="tactic">destruct</span></span> with <span class="inlinecode"><span class="id" title="tactic">inversion</span></span>. 
+</div>
+<div class="code">
+
+<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+<a name="lab89"></a><h1 class="section">Recursive Predicates</h1>
+
+<div class="paragraph"> </div>
+
+ We have already seen all of the ingredients we need to build interesting recursive predicates, like this predicate capturing even-ness. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Inductive</span> <span class="id" title="var">even</span> : <span class="id" title="var">nat</span> -&gt; <span class="id" title="keyword">Prop</span> :=<br/>
+| <span class="id" title="var">EvenO</span> : <span class="id" title="var">even</span> <span class="id" title="var">O</span><br/>
+| <span class="id" title="var">EvenSS</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">n</span>, <span class="id" title="var">even</span> <span class="id" title="var">n</span> -&gt; <span class="id" title="var">even</span> (<span class="id" title="var">S</span> (<span class="id" title="var">S</span> <span class="id" title="var">n</span>)).<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Think of <span class="inlinecode"><span class="id" title="inductive">even</span></span> as another judgment defined by natural deduction rules.  The rule <span class="inlinecode"><span class="id" title="constructor">EvenO</span></span> has nothing above the line and <span class="inlinecode"><span class="id" title="inductive">even</span></span> <span class="inlinecode"><span class="id" title="constructor">O</span></span> below the line, and <span class="inlinecode"><span class="id" title="constructor">EvenSS</span></span> is a rule with <span class="inlinecode"><span class="id" title="inductive">even</span></span> <span class="inlinecode"><span class="id" title="variable">n</span></span> above the line and <span class="inlinecode"><span class="id" title="inductive">even</span></span> <span class="inlinecode">(<span class="id" title="variable">S</span></span> <span class="inlinecode">(<span class="id" title="variable">S</span></span> <span class="inlinecode"><span class="id" title="variable">n</span>))</span> below.
+
+<div class="paragraph"> </div>
+
+The proof techniques of the last section are easily adapted. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">even_0</span> : <span class="id" title="var">even</span> 0.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">constructor</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">even_4</span> : <span class="id" title="var">even</span> 4.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">constructor</span>; <span class="id" title="tactic">constructor</span>; <span class="id" title="tactic">constructor</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+It is not hard to see that sequences of constructor applications like the above can get tedious.  We can avoid them using Coq's hint facility, with a new <span class="inlinecode"><span class="id" title="keyword">Hint</span></span> variant that asks to consider all constructors of an inductive type during proof search.  The tactic <span class="inlinecode"><span class="id" title="tactic">auto</span></span> performs exhaustive proof search up to a fixed depth, considering only the proof steps we have registered as hints. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Hint Constructors</span> <span class="id" title="var">even</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">even_4'</span> : <span class="id" title="var">even</span> 4.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">auto</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+We may also use <span class="inlinecode"><span class="id" title="tactic">inversion</span></span> with <span class="inlinecode"><span class="id" title="inductive">even</span></span>. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">even_1_contra</span> : <span class="id" title="var">even</span> 1 -&gt; <span class="id" title="var">False</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">inversion</span> 1.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">even_3_contra</span> : <span class="id" title="var">even</span> 3 -&gt; <span class="id" title="var">False</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">inversion</span> 1.<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="variable">H</span> : <span class="id" title="inductive">even</span> 3<br/>
+&nbsp;&nbsp;<span class="id" title="variable">n</span> : <span class="id" title="inductive">nat</span><br/>
+&nbsp;&nbsp;<span class="id" title="variable">H1</span> : <span class="id" title="inductive">even</span> 1<br/>
+&nbsp;&nbsp;<span class="id" title="var">H0</span> : <span class="id" title="variable">n</span> = 1<br/>
+&nbsp;&nbsp;============================<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="inductive">False</span><br/>
+&nbsp;
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+   The <span class="inlinecode"><span class="id" title="tactic">inversion</span></span> tactic can be a little overzealous at times, as we can see here with the introduction of the unused variable <span class="inlinecode"><span class="id" title="variable">n</span></span> and an equality hypothesis about it.  For more complicated predicates, though, adding such assumptions is critical to dealing with the undecidability of general inversion.  More complex inductive definitions and theorems can cause <span class="inlinecode"><span class="id" title="tactic">inversion</span></span> to generate equalities where neither side is a variable. 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">inversion</span> <span class="id" title="var">H1</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+We can also do inductive proofs about <span class="inlinecode"><span class="id" title="inductive">even</span></span>. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">even_plus</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">n</span> <span class="id" title="var">m</span>, <span class="id" title="var">even</span> <span class="id" title="var">n</span> -&gt; <span class="id" title="var">even</span> <span class="id" title="var">m</span> -&gt; <span class="id" title="var">even</span> (<span class="id" title="var">n</span> + <span class="id" title="var">m</span>).<br/>
+</div>
+
+<div class="doc">
+It seems a reasonable first choice to proceed by induction on <span class="inlinecode"><span class="id" title="variable">n</span></span>. 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">induction</span> <span class="id" title="var">n</span>; <span class="id" title="var">crush</span>.<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="variable">n</span> : <span class="id" title="inductive">nat</span><br/>
+&nbsp;&nbsp;<span class="id" title="var">IHn</span> : <span class="id" title="keyword">forall</span> <span class="id" title="variable">m</span> : <span class="id" title="inductive">nat</span>, <span class="id" title="inductive">even</span> <span class="id" title="variable">n</span> -&gt; <span class="id" title="inductive">even</span> <span class="id" title="variable">m</span> -&gt; <span class="id" title="inductive">even</span> (<span class="id" title="variable">n</span> + <span class="id" title="variable">m</span>)<br/>
+&nbsp;&nbsp;<span class="id" title="variable">m</span> : <span class="id" title="inductive">nat</span><br/>
+&nbsp;&nbsp;<span class="id" title="variable">H</span> : <span class="id" title="inductive">even</span> (<span class="id" title="variable">S</span> <span class="id" title="variable">n</span>)<br/>
+&nbsp;&nbsp;<span class="id" title="var">H0</span> : <span class="id" title="inductive">even</span> <span class="id" title="variable">m</span><br/>
+&nbsp;&nbsp;============================<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="inductive">even</span> (<span class="id" title="variable">S</span> (<span class="id" title="variable">n</span> + <span class="id" title="variable">m</span>))<br/>
+&nbsp;
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+   We will need to use the hypotheses <span class="inlinecode"><span class="id" title="variable">H</span></span> and <span class="inlinecode"><span class="id" title="var">H0</span></span> somehow.  The most natural choice is to invert <span class="inlinecode"><span class="id" title="variable">H</span></span>. 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">inversion</span> <span class="id" title="var">H</span>.<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="variable">n</span> : <span class="id" title="inductive">nat</span><br/>
+&nbsp;&nbsp;<span class="id" title="var">IHn</span> : <span class="id" title="keyword">forall</span> <span class="id" title="variable">m</span> : <span class="id" title="inductive">nat</span>, <span class="id" title="inductive">even</span> <span class="id" title="variable">n</span> -&gt; <span class="id" title="inductive">even</span> <span class="id" title="variable">m</span> -&gt; <span class="id" title="inductive">even</span> (<span class="id" title="variable">n</span> + <span class="id" title="variable">m</span>)<br/>
+&nbsp;&nbsp;<span class="id" title="variable">m</span> : <span class="id" title="inductive">nat</span><br/>
+&nbsp;&nbsp;<span class="id" title="variable">H</span> : <span class="id" title="inductive">even</span> (<span class="id" title="variable">S</span> <span class="id" title="variable">n</span>)<br/>
+&nbsp;&nbsp;<span class="id" title="var">H0</span> : <span class="id" title="inductive">even</span> <span class="id" title="variable">m</span><br/>
+&nbsp;&nbsp;<span class="id" title="variable">n0</span> : <span class="id" title="inductive">nat</span><br/>
+&nbsp;&nbsp;<span class="id" title="variable">H2</span> : <span class="id" title="inductive">even</span> <span class="id" title="variable">n0</span><br/>
+&nbsp;&nbsp;<span class="id" title="variable">H1</span> : <span class="id" title="variable">S</span> <span class="id" title="variable">n0</span> = <span class="id" title="variable">n</span><br/>
+&nbsp;&nbsp;============================<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="inductive">even</span> (<span class="id" title="variable">S</span> (<span class="id" title="variable">S</span> <span class="id" title="variable">n0</span> + <span class="id" title="variable">m</span>))<br/>
+&nbsp;
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+  Simplifying the conclusion brings us to a point where we can apply a constructor. 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">simpl</span>.<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;============================<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="inductive">even</span> (<span class="id" title="variable">S</span> (<span class="id" title="variable">S</span> (<span class="id" title="variable">n0</span> + <span class="id" title="variable">m</span>)))
+<div class="paragraph"> </div>
+
+</span>   
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">constructor</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;============================<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="inductive">even</span> (<span class="id" title="variable">n0</span> + <span class="id" title="variable">m</span>)<br/>
+&nbsp;
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+   At this point, we would like to apply the inductive hypothesis, which is:
+
+<div class="paragraph"> </div>
+
+   <br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="var">IHn</span> : <span class="id" title="keyword">forall</span> <span class="id" title="variable">m</span> : <span class="id" title="inductive">nat</span>, <span class="id" title="inductive">even</span> <span class="id" title="variable">n</span> -&gt; <span class="id" title="inductive">even</span> <span class="id" title="variable">m</span> -&gt; <span class="id" title="inductive">even</span> (<span class="id" title="variable">n</span> + <span class="id" title="variable">m</span>)<br/>
+&nbsp;
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+  Unfortunately, the goal mentions <span class="inlinecode"><span class="id" title="variable">n0</span></span> where it would need to mention <span class="inlinecode"><span class="id" title="variable">n</span></span> to match <span class="inlinecode"><span class="id" title="var">IHn</span></span>.  We could keep looking for a way to finish this proof from here, but it turns out that we can make our lives much easier by changing our basic strategy.  Instead of inducting on the structure of <span class="inlinecode"><span class="id" title="variable">n</span></span>, we should induct <i>on the structure of one of the <span class="inlinecode"><span class="id" title="inductive">even</span></span> proofs</i>.  This technique is commonly called <i>rule induction</i> in programming language semantics.  In the setting of Coq, we have already seen how predicates are defined using the same inductive type mechanism as datatypes, so the fundamental unity of rule induction with "normal" induction is apparent.
+
+<div class="paragraph"> </div>
+
+  Recall that tactics like <span class="inlinecode"><span class="id" title="tactic">induction</span></span> and <span class="inlinecode"><span class="id" title="tactic">destruct</span></span> may be passed numbers to refer to unnamed lefthand sides of implications in the conclusion, where the argument <span class="inlinecode"><span class="id" title="variable">n</span></span> refers to the <span class="inlinecode"><span class="id" title="variable">n</span></span>th such hypothesis. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Restart</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">induction</span> 1.<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="variable">m</span> : <span class="id" title="inductive">nat</span><br/>
+&nbsp;&nbsp;============================<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="inductive">even</span> <span class="id" title="variable">m</span> -&gt; <span class="id" title="inductive">even</span> (0 + <span class="id" title="variable">m</span>)
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+<tt>subgoal 2 is</tt>
+<br/>
+<span class="inlinecode">&nbsp;<span class="id" title="inductive">even</span> <span class="id" title="variable">m</span> -&gt; <span class="id" title="inductive">even</span> (<span class="id" title="variable">S</span> (<span class="id" title="variable">S</span> <span class="id" title="variable">n</span>) + <span class="id" title="variable">m</span>)<br/>
+&nbsp;
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+ The first case is easily discharged by <span class="inlinecode"><span class="id" title="var">crush</span></span>, based on the hint we added earlier to try the constructors of <span class="inlinecode"><span class="id" title="inductive">even</span></span>. 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="var">crush</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Now we focus on the second case: 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intro</span>.<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="variable">m</span> : <span class="id" title="inductive">nat</span><br/>
+&nbsp;&nbsp;<span class="id" title="variable">n</span> : <span class="id" title="inductive">nat</span><br/>
+&nbsp;&nbsp;<span class="id" title="variable">H</span> : <span class="id" title="inductive">even</span> <span class="id" title="variable">n</span><br/>
+&nbsp;&nbsp;<span class="id" title="var">IHeven</span> : <span class="id" title="inductive">even</span> <span class="id" title="variable">m</span> -&gt; <span class="id" title="inductive">even</span> (<span class="id" title="variable">n</span> + <span class="id" title="variable">m</span>)<br/>
+&nbsp;&nbsp;<span class="id" title="var">H0</span> : <span class="id" title="inductive">even</span> <span class="id" title="variable">m</span><br/>
+&nbsp;&nbsp;============================<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="inductive">even</span> (<span class="id" title="variable">S</span> (<span class="id" title="variable">S</span> <span class="id" title="variable">n</span>) + <span class="id" title="variable">m</span>)<br/>
+&nbsp;
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+   We simplify and apply a constructor, as in our last proof attempt. 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">simpl</span>; <span class="id" title="tactic">constructor</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;============================<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="inductive">even</span> (<span class="id" title="variable">n</span> + <span class="id" title="variable">m</span>)<br/>
+&nbsp;
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+   Now we have an exact match with our inductive hypothesis, and the remainder of the proof is trivial. 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="var">IHeven</span>; <span class="id" title="tactic">assumption</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+In fact, <span class="inlinecode"><span class="id" title="var">crush</span></span> can handle all of the details of the proof once we declare the induction strategy. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Restart</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">induction</span> 1; <span class="id" title="var">crush</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Induction on recursive predicates has similar pitfalls to those we encountered with inversion in the last section. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">even_contra</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">n</span>, <span class="id" title="var">even</span> (<span class="id" title="var">S</span> (<span class="id" title="var">n</span> + <span class="id" title="var">n</span>)) -&gt; <span class="id" title="var">False</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">induction</span> 1.<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="variable">n</span> : <span class="id" title="inductive">nat</span><br/>
+&nbsp;&nbsp;============================<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="inductive">False</span>
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+<tt>subgoal 2 is</tt>
+<br/>
+<span class="inlinecode">&nbsp;<span class="id" title="inductive">False</span><br/>
+&nbsp;
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+ We are already sunk trying to prove the first subgoal, since the argument to <span class="inlinecode"><span class="id" title="inductive">even</span></span> was replaced by a fresh variable internally.  This time, we find it easier to prove this theorem by way of a lemma.  Instead of trusting <span class="inlinecode"><span class="id" title="tactic">induction</span></span> to replace expressions with fresh variables, we do it ourselves, explicitly adding the appropriate equalities as new assumptions. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Abort</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Lemma</span> <span class="id" title="var">even_contra'</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">n'</span>, <span class="id" title="var">even</span> <span class="id" title="var">n'</span> -&gt; <span class="id" title="keyword">forall</span> <span class="id" title="var">n</span>, <span class="id" title="var">n'</span> = <span class="id" title="var">S</span> (<span class="id" title="var">n</span> + <span class="id" title="var">n</span>) -&gt; <span class="id" title="var">False</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">induction</span> 1; <span class="id" title="var">crush</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+At this point, it is useful to consider all cases of <span class="inlinecode"><span class="id" title="variable">n</span></span> and <span class="inlinecode"><span class="id" title="variable">n0</span></span> being zero or nonzero.  Only one of these cases has any trickiness to it. 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">n</span>; <span class="id" title="tactic">destruct</span> <span class="id" title="var">n0</span>; <span class="id" title="var">crush</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="variable">n</span> : <span class="id" title="inductive">nat</span><br/>
+&nbsp;&nbsp;<span class="id" title="variable">H</span> : <span class="id" title="inductive">even</span> (<span class="id" title="variable">S</span> <span class="id" title="variable">n</span>)<br/>
+&nbsp;&nbsp;<span class="id" title="var">IHeven</span> : <span class="id" title="keyword">forall</span> <span class="id" title="variable">n0</span> : <span class="id" title="inductive">nat</span>, <span class="id" title="variable">S</span> <span class="id" title="variable">n</span> = <span class="id" title="variable">S</span> (<span class="id" title="variable">n0</span> + <span class="id" title="variable">n0</span>) -&gt; <span class="id" title="inductive">False</span><br/>
+&nbsp;&nbsp;<span class="id" title="variable">n0</span> : <span class="id" title="inductive">nat</span><br/>
+&nbsp;&nbsp;<span class="id" title="var">H0</span> : <span class="id" title="variable">S</span> <span class="id" title="variable">n</span> = <span class="id" title="variable">n0</span> + <span class="id" title="variable">S</span> <span class="id" title="variable">n0</span><br/>
+&nbsp;&nbsp;============================<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="inductive">False</span><br/>
+&nbsp;
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+  At this point it is useful to use a theorem from the standard library, which we also proved with a different name in the last chapter.  We can search for a theorem that allows us to rewrite terms of the form <span class="inlinecode"><span class="id" title="variable">x</span></span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" title="variable">S</span></span> <span class="inlinecode"><span class="id" title="variable">y</span></span>. 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">SearchRewrite</span> (<span class="id" title="var">_</span> + <span class="id" title="var">S</span> <span class="id" title="var">_</span>).<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="lemma">plus_n_Sm</span> : <span class="id" title="keyword">forall</span> <span class="id" title="variable">n</span> <span class="id" title="variable">m</span> : <span class="id" title="inductive">nat</span>, <span class="id" title="variable">S</span> (<span class="id" title="variable">n</span> + <span class="id" title="variable">m</span>) = <span class="id" title="variable">n</span> + <span class="id" title="variable">S</span> <span class="id" title="variable">m</span>
+<div class="paragraph"> </div>
+
+</span>     
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> &lt;- <span class="id" title="var">plus_n_Sm</span> <span class="id" title="keyword">in</span> <span class="id" title="var">H0</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+The induction hypothesis lets us complete the proof, if we use a variant of <span class="inlinecode"><span class="id" title="tactic">apply</span></span> that has a <span class="inlinecode"><span class="id" title="keyword">with</span></span> clause to give instantiations of quantified variables. 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="var">IHeven</span> <span class="id" title="keyword">with</span> <span class="id" title="var">n0</span>; <span class="id" title="tactic">assumption</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+As usual, we can rewrite the proof to avoid referencing any locally generated names, which makes our proof script more readable and more robust to changes in the theorem statement.  We use the notation <span class="inlinecode">&lt;-</span> to request a hint that does right-to-left rewriting, just like we can with the <span class="inlinecode"><span class="id" title="tactic">rewrite</span></span> tactic. 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Restart</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Hint Rewrite</span> &lt;- <span class="id" title="var">plus_n_Sm</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">induction</span> 1; <span class="id" title="var">crush</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="keyword">goal</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| [ <span class="id" title="var">H</span> : <span class="id" title="var">S</span> ?<span class="id" title="var">N</span> = ?<span class="id" title="var">N0</span> + ?<span class="id" title="var">N0</span> |- <span class="id" title="var">_</span> ] =&gt; <span class="id" title="tactic">destruct</span> <span class="id" title="var">N</span>; <span class="id" title="tactic">destruct</span> <span class="id" title="var">N0</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>; <span class="id" title="var">crush</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+We write the proof in a way that avoids the use of local variable or hypothesis names, using the <span class="inlinecode"><span class="id" title="keyword">match</span></span> tactic form to do pattern-matching on the goal.  We use unification variables prefixed by question marks in the pattern, and we take advantage of the possibility to mention a unification variable twice in one pattern, to enforce equality between occurrences.  The hint to rewrite with <span class="inlinecode"><span class="id" title="lemma">plus_n_Sm</span></span> in a particular direction saves us from having to figure out the right place to apply that theorem.
+
+<div class="paragraph"> </div>
+
+The original theorem now follows trivially from our lemma, using a new tactic <span class="inlinecode"><span class="id" title="tactic">eauto</span></span>, a fancier version of <span class="inlinecode"><span class="id" title="tactic">auto</span></span> whose explanation we postpone to Chapter 13. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">even_contra</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">n</span>, <span class="id" title="var">even</span> (<span class="id" title="var">S</span> (<span class="id" title="var">n</span> + <span class="id" title="var">n</span>)) -&gt; <span class="id" title="var">False</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span>; <span class="id" title="tactic">eapply</span> <span class="id" title="var">even_contra'</span>; <span class="id" title="tactic">eauto</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+We use a variant <span class="inlinecode"><span class="id" title="tactic">eapply</span></span> of <span class="inlinecode"><span class="id" title="tactic">apply</span></span> which has the same relationship to <span class="inlinecode"><span class="id" title="tactic">apply</span></span> as <span class="inlinecode"><span class="id" title="tactic">eauto</span></span> has to <span class="inlinecode"><span class="id" title="tactic">auto</span></span>.  An invocation of <span class="inlinecode"><span class="id" title="tactic">apply</span></span> only succeeds if all arguments to the rule being used can be determined from the form of the goal, whereas <span class="inlinecode"><span class="id" title="tactic">eapply</span></span> will introduce unification variables for undetermined arguments.  In this case, <span class="inlinecode"><span class="id" title="tactic">eauto</span></span> is able to determine the right values for those unification variables, using (unsurprisingly) a variant of the classic algorithm for <i>unification</i> .
+
+<div class="paragraph"> </div>
+
+By considering an alternate attempt at proving the lemma, we can see another common pitfall of inductive proofs in Coq.  Imagine that we had tried to prove <span class="inlinecode"><span class="id" title="lemma">even_contra'</span></span> with all of the <span class="inlinecode"><span class="id" title="keyword">forall</span></span> quantifiers moved to the front of the lemma statement. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Lemma</span> <span class="id" title="var">even_contra''</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">n'</span> <span class="id" title="var">n</span>, <span class="id" title="var">even</span> <span class="id" title="var">n'</span> -&gt; <span class="id" title="var">n'</span> = <span class="id" title="var">S</span> (<span class="id" title="var">n</span> + <span class="id" title="var">n</span>) -&gt; <span class="id" title="var">False</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">induction</span> 1; <span class="id" title="var">crush</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="keyword">goal</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| [ <span class="id" title="var">H</span> : <span class="id" title="var">S</span> ?<span class="id" title="var">N</span> = ?<span class="id" title="var">N0</span> + ?<span class="id" title="var">N0</span> |- <span class="id" title="var">_</span> ] =&gt; <span class="id" title="tactic">destruct</span> <span class="id" title="var">N</span>; <span class="id" title="tactic">destruct</span> <span class="id" title="var">N0</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>; <span class="id" title="var">crush</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+One subgoal remains:
+
+<div class="paragraph"> </div>
+
+     <br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="variable">n</span> : <span class="id" title="inductive">nat</span><br/>
+&nbsp;&nbsp;<span class="id" title="variable">H</span> : <span class="id" title="inductive">even</span> (<span class="id" title="variable">S</span> (<span class="id" title="variable">n</span> + <span class="id" title="variable">n</span>))<br/>
+&nbsp;&nbsp;<span class="id" title="var">IHeven</span> : <span class="id" title="variable">S</span> (<span class="id" title="variable">n</span> + <span class="id" title="variable">n</span>) = <span class="id" title="variable">S</span> (<span class="id" title="variable">S</span> (<span class="id" title="variable">S</span> (<span class="id" title="variable">n</span> + <span class="id" title="variable">n</span>))) -&gt; <span class="id" title="inductive">False</span><br/>
+&nbsp;&nbsp;============================<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="inductive">False</span><br/>
+&nbsp;
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+   We are out of luck here.  The inductive hypothesis is trivially true, since its assumption is false.  In the version of this proof that succeeded, <span class="inlinecode"><span class="id" title="var">IHeven</span></span> had an explicit quantification over <span class="inlinecode"><span class="id" title="variable">n</span></span>.  This is because the quantification of <span class="inlinecode"><span class="id" title="variable">n</span></span> <i>appeared after the thing we are inducting on</i> in the theorem statement.  In general, quantified variables and hypotheses that appear before the induction object in the theorem statement stay fixed throughout the inductive proof.  Variables and hypotheses that are quantified after the induction object may be varied explicitly in uses of inductive hypotheses. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Abort</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Why should Coq implement <span class="inlinecode"><span class="id" title="tactic">induction</span></span> this way?  One answer is that it avoids burdening this basic tactic with additional heuristic smarts, but that is not the whole picture.  Imagine that <span class="inlinecode"><span class="id" title="tactic">induction</span></span> analyzed dependencies among variables and reordered quantifiers to preserve as much freedom as possible in later uses of inductive hypotheses.  This could make the inductive hypotheses more complex, which could in turn cause particular automation machinery to fail when it would have succeeded before.  In general, we want to avoid quantifiers in our proofs whenever we can, and that goal is furthered by the refactoring that the <span class="inlinecode"><span class="id" title="tactic">induction</span></span> tactic forces us to do. 
+</div>
+<div class="code">
+
+<br/>
+</div>
+</div>
+
+<div id="footer">
+<hr/><a href="index.html">Index</a><hr/>This page has been generated by <a href="http://coq.inria.fr/">coqdoc</a>
+</div>
+
+</div>
+
+</body>
+</html>

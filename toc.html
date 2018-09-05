@@ -1,0 +1,484 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<link href="coqdoc.css" rel="stylesheet" type="text/css" />
+<title>Table of contents</title>
+</head>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+</div>
+
+<div id="main">
+
+<div id="toc">
+<a href="Coinductive.html"><h2>Library Coinductive</h2></a>
+<ul class="doclist">
+<li><a href="Coinductive.html#lab1">Computing with Infinite Data</a>
+
+</li>
+<li><a href="Coinductive.html#lab2">Infinite Proofs</a>
+
+</li>
+<li><a href="Coinductive.html#lab3">Simple Modeling of Non-Terminating Programs</a>
+
+</li>
+</ul>
+<a href="Conclusion.html"><h2>Library Conclusion</h2></a>
+<a href="CpdtTactics.html"><h2>Library CpdtTactics</h2></a>
+<ul class="doclist">
+<li><a href="CpdtTactics.html#lab4">Argument <span class="inlinecode"><span class="id" title="var">invOne</span></span> is a tuple-list of predicates for which we always do inversion automatically.</a>
+
+</li>
+<li><a href="CpdtTactics.html#lab5">The odd-looking check of the goal form is to avoid cases where <span class="inlinecode"><span class="id" title="tactic">injection</span></span> gives a more complex result because of dependent typing, which we aren't equipped to handle here.</a>
+
+</li>
+<li><a href="CpdtTactics.html#lab6"><span class="inlinecode"><span class="id" title="var">trace</span></span> is an accumulator recording which instantiations we choose.</a>
+
+</li>
+<li><a href="CpdtTactics.html#lab7">- A tuple-list of lemmas we try <span class="inlinecode"><span class="id" title="var">inster</span></span>-ing</a>
+
+</li>
+<li><a href="CpdtTactics.html#lab8">- A tuple-list of predicates we try inversion for</a>
+
+</li>
+<li><a href="CpdtTactics.html#lab9">Wrap Program's <span class="inlinecode"><span class="id" title="tactic">dependent</span></span> <span class="inlinecode"><span class="id" title="tactic">destruction</span></span> in a slightly more pleasant form</a>
+
+</li>
+<li><a href="CpdtTactics.html#lab10">Also prove the lefthand sides of any implications that this exposes, simplifying <span class="inlinecode"><span class="id" title="var">H</span></span> to leave out those implications.</a>
+
+</li>
+</ul>
+<a href="DataStruct.html"><h2>Library DataStruct</h2></a>
+<ul class="doclist">
+<li><a href="DataStruct.html#lab11">More Length-Indexed Lists</a>
+
+</li>
+<li><a href="DataStruct.html#lab12">Heterogeneous Lists</a>
+<ul class="doclist">
+<li><a href="DataStruct.html#lab13">A Lambda Calculus Interpreter</a>
+
+</li>
+</ul>
+
+</li>
+<li><a href="DataStruct.html#lab14">Recursive Type Definitions</a>
+
+</li>
+<li><a href="DataStruct.html#lab15">Data Structures as Index Functions</a>
+<ul class="doclist">
+<li><a href="DataStruct.html#lab16">Another Interpreter Example</a>
+
+</li>
+</ul>
+
+</li>
+<li><a href="DataStruct.html#lab17">Choosing Between Representations</a>
+
+</li>
+</ul>
+<a href="DepList.html"><h2>Library DepList</h2></a>
+<a href="Equality.html"><h2>Library Equality</h2></a>
+<ul class="doclist">
+<li><a href="Equality.html#lab18">The Definitional Equality</a>
+
+</li>
+<li><a href="Equality.html#lab19">Heterogeneous Lists Revisited</a>
+
+</li>
+<li><a href="Equality.html#lab20">Type-Casts in Theorem Statements</a>
+
+</li>
+<li><a href="Equality.html#lab21">Heterogeneous Equality</a>
+
+</li>
+<li><a href="Equality.html#lab22">Equivalence of Equality Axioms</a>
+
+</li>
+<li><a href="Equality.html#lab23">Equality of Functions</a>
+
+</li>
+</ul>
+<a href="Exercises.html"><h2>Library Exercises</h2></a>
+<ul class="doclist">
+<li><a href="Exercises.html#lab24">From InductiveTypes</a>
+
+</li>
+<li><a href="Exercises.html#lab25">From Predicates</a>
+
+</li>
+<li><a href="Exercises.html#lab26">From Coinductive</a>
+
+</li>
+<li><a href="Exercises.html#lab27">From Subset</a>
+
+</li>
+<li><a href="Exercises.html#lab28">From MoreDep</a>
+
+</li>
+<li><a href="Exercises.html#lab29">From DataStruct</a>
+
+</li>
+<li><a href="Exercises.html#lab30">From Equality</a>
+
+</li>
+<li><a href="Exercises.html#lab31">From LogicProg</a>
+
+</li>
+<li><a href="Exercises.html#lab32">From Match</a>
+
+</li>
+<li><a href="Exercises.html#lab33">Exercises</a>
+
+</li>
+</ul>
+<a href="GeneralRec.html"><h2>Library GeneralRec</h2></a>
+<ul class="doclist">
+<li><a href="GeneralRec.html#lab34">Well-Founded Recursion</a>
+
+</li>
+<li><a href="GeneralRec.html#lab35">A Non-Termination Monad Inspired by Domain Theory</a>
+
+</li>
+<li><a href="GeneralRec.html#lab36">Co-Inductive Non-Termination Monads</a>
+
+</li>
+<li><a href="GeneralRec.html#lab37">Comparing the Alternatives</a>
+
+</li>
+</ul>
+<a href="Generic.html"><h2>Library Generic</h2></a>
+<ul class="doclist">
+<li><a href="Generic.html#lab38">Reifying Datatype Definitions</a>
+
+</li>
+<li><a href="Generic.html#lab39">Recursive Definitions</a>
+<ul class="doclist">
+<li><a href="Generic.html#lab40">Pretty-Printing</a>
+
+</li>
+<li><a href="Generic.html#lab41">Mapping</a>
+
+</li>
+</ul>
+
+</li>
+<li><a href="Generic.html#lab42">Proving Theorems about Recursive Definitions</a>
+
+</li>
+</ul>
+<a href="InductiveTypes.html"><h2>Library InductiveTypes</h2></a>
+<ul class="doclist">
+<li><a href="InductiveTypes.html#lab43">Proof Terms</a>
+
+</li>
+<li><a href="InductiveTypes.html#lab44">Enumerations</a>
+
+</li>
+<li><a href="InductiveTypes.html#lab45">Simple Recursive Types</a>
+
+</li>
+<li><a href="InductiveTypes.html#lab46">Parameterized Types</a>
+
+</li>
+<li><a href="InductiveTypes.html#lab47">Mutually Inductive Types</a>
+
+</li>
+<li><a href="InductiveTypes.html#lab48">Reflexive Types</a>
+
+</li>
+<li><a href="InductiveTypes.html#lab49">An Interlude on Induction Principles</a>
+
+</li>
+<li><a href="InductiveTypes.html#lab50">Nested Inductive Types</a>
+
+</li>
+<li><a href="InductiveTypes.html#lab51">Manual Proofs About Constructors</a>
+
+</li>
+</ul>
+<a href="Intro.html"><h2>Library Intro</h2></a>
+<ul class="doclist">
+<li><a href="Intro.html#lab52">Whence This Book?</a>
+
+</li>
+<li><a href="Intro.html#lab53">Why Coq?</a>
+<ul class="doclist">
+<li><a href="Intro.html#lab54">高階の関数型プログラミング言語に基づいている</a>
+
+</li>
+<li><a href="Intro.html#lab55">依存型</a>
+
+</li>
+<li><a href="Intro.html#lab56">確認しやすいカーネル証明言語</a>
+
+</li>
+<li><a href="Intro.html#lab57">便利でプログラム可能な証明自動化</a>
+
+</li>
+<li><a href="Intro.html#lab58">リフレクションによる証明</a>
+
+</li>
+</ul>
+
+</li>
+<li><a href="Intro.html#lab59">他の依存型の言語じゃない理由</a>
+
+</li>
+<li><a href="Intro.html#lab60">証明支援器を使ったエンジニアリング</a>
+
+</li>
+<li><a href="Intro.html#lab61">前提知識</a>
+
+</li>
+<li><a href="Intro.html#lab62">Using This Book</a>
+<ul class="doclist">
+<li><a href="Intro.html#lab63">Reading This Book</a>
+
+</li>
+<li><a href="Intro.html#lab64">On the Tactic Library</a>
+
+</li>
+<li><a href="Intro.html#lab65">Installation and Emacs Set-Up</a>
+
+</li>
+</ul>
+
+</li>
+</ul>
+<a href="Large.html"><h2>Library Large</h2></a>
+<ul class="doclist">
+<li><a href="Large.html#lab66">Ltac アンチパターン</a>
+
+</li>
+<li><a href="Large.html#lab67">自動化証明のデバックと保守</a>
+
+</li>
+<li><a href="Large.html#lab68">モージュール</a>
+
+</li>
+<li><a href="Large.html#lab69">ビルド・プロセス</a>
+
+</li>
+</ul>
+<a href="LogicProg.html"><h2>Library LogicProg</h2></a>
+<ul class="doclist">
+<li><a href="LogicProg.html#lab70">論理プログラミング入門</a>
+
+</li>
+<li><a href="LogicProg.html#lab71">制約された値を探す</a>
+
+</li>
+<li><a href="LogicProg.html#lab72">プログラムの合成</a>
+
+</li>
+<li><a href="LogicProg.html#lab73">さらに <span class="inlinecode"><span class="id" title="tactic">auto</span></span> のヒントについて</a>
+
+</li>
+<li><a href="LogicProg.html#lab74">Rewrite のヒント</a>
+
+</li>
+</ul>
+<a href="Match.html"><h2>Library Match</h2></a>
+<ul class="doclist">
+<li><a href="Match.html#lab75">組み込み 自動化タクティク</a>
+
+</li>
+<li><a href="Match.html#lab76">Ltac プログラミングの基礎</a>
+
+</li>
+<li><a href="Match.html#lab77">Ltac による関数プログラミング</a>
+
+</li>
+<li><a href="Match.html#lab78">再帰的な証明探索</a>
+
+</li>
+<li><a href="Match.html#lab79">ユニフィケーション変数の生成</a>
+
+</li>
+</ul>
+<a href="MoreDep.html"><h2>Library MoreDep</h2></a>
+<ul class="doclist">
+<li><a href="MoreDep.html#lab80">Length-Indexed Lists</a>
+
+</li>
+<li><a href="MoreDep.html#lab81">The One Rule of Dependent Pattern Matching in Coq</a>
+
+</li>
+<li><a href="MoreDep.html#lab82">A Tagless Interpreter</a>
+
+</li>
+<li><a href="MoreDep.html#lab83">Dependently Typed Red-Black Trees</a>
+
+</li>
+<li><a href="MoreDep.html#lab84">A Certified Regular Expression Matcher</a>
+
+</li>
+</ul>
+<a href="MoreSpecif.html"><h2>Library MoreSpecif</h2></a>
+<a href="Predicates.html"><h2>Library Predicates</h2></a>
+<ul class="doclist">
+<li><a href="Predicates.html#lab85">命題論理</a>
+
+</li>
+<li><a href="Predicates.html#lab86">構成的とはどういうことか?</a>
+
+</li>
+<li><a href="Predicates.html#lab87">First-Order Logic</a>
+
+</li>
+<li><a href="Predicates.html#lab88">Predicates with Implicit Equality</a>
+
+</li>
+<li><a href="Predicates.html#lab89">Recursive Predicates</a>
+
+</li>
+</ul>
+<a href="ProgLang.html"><h2>Library ProgLang</h2></a>
+<ul class="doclist">
+<li><a href="ProgLang.html#lab90">Dependent de Bruijn Indices</a>
+
+</li>
+<li><a href="ProgLang.html#lab91">Parametric Higher-Order Abstract Syntax</a>
+<ul class="doclist">
+<li><a href="ProgLang.html#lab92">Functional Programming with PHOAS</a>
+
+</li>
+<li><a href="ProgLang.html#lab93">Verifying Program Transformations</a>
+
+</li>
+<li><a href="ProgLang.html#lab94">Establishing Term Well-Formedness</a>
+
+</li>
+<li><a href="ProgLang.html#lab95">A Few More Remarks</a>
+
+</li>
+</ul>
+
+</li>
+</ul>
+<a href="Reflection.html"><h2>Library Reflection</h2></a>
+<ul class="doclist">
+<li><a href="Reflection.html#lab96">偶数であることの証明</a>
+
+</li>
+<li><a href="Reflection.html#lab97">自明なトートロジーの言語の文法の具象化(reifying)</a>
+
+</li>
+<li><a href="Reflection.html#lab98">モノイド式の簡略化</a>
+
+</li>
+<li><a href="Reflection.html#lab99">賢いトートロジー・ソルバー</a>
+<ul class="doclist">
+<li><a href="Reflection.html#lab100">変数を持つ項の手動の具象化</a>
+
+</li>
+</ul>
+
+</li>
+<li><a href="Reflection.html#lab101">束縛のもとで再帰する具象化タクティクを作る</a>
+
+</li>
+</ul>
+<a href="StackMachine.html"><h2>Library StackMachine</h2></a>
+<ul class="doclist">
+<li><a href="StackMachine.html#lab102">自然数の算術式</a>
+<ul class="doclist">
+<li><a href="StackMachine.html#lab103">ソース言語</a>
+
+</li>
+<li><a href="StackMachine.html#lab104">ターゲット言語</a>
+
+</li>
+<li><a href="StackMachine.html#lab105">変換</a>
+
+</li>
+<li><a href="StackMachine.html#lab106">変換の正しさ</a>
+
+</li>
+</ul>
+
+</li>
+<li><a href="StackMachine.html#lab107">型付き式</a>
+<ul class="doclist">
+<li><a href="StackMachine.html#lab108">ソース言語</a>
+
+</li>
+<li><a href="StackMachine.html#lab109">ターゲット言語</a>
+
+</li>
+<li><a href="StackMachine.html#lab110">翻訳</a>
+
+</li>
+<li><a href="StackMachine.html#lab111">翻訳の正しさ</a>
+
+</li>
+</ul>
+
+</li>
+</ul>
+<a href="Subset.html"><h2>Library Subset</h2></a>
+<ul class="doclist">
+<li><a href="Subset.html#lab112">Introducing Subset Types</a>
+
+</li>
+<li><a href="Subset.html#lab113">Decidable Proposition Types</a>
+
+</li>
+<li><a href="Subset.html#lab114">Partial Subset Types</a>
+
+</li>
+<li><a href="Subset.html#lab115">Monadic Notations</a>
+
+</li>
+<li><a href="Subset.html#lab116">A Type-Checking Example</a>
+
+</li>
+</ul>
+<a href="Universes.html"><h2>Library Universes</h2></a>
+<ul class="doclist">
+<li><a href="Universes.html#lab117"><span class="inlinecode"><span class="id" title="keyword">Type</span></span> の階層</a>
+<ul class="doclist">
+<li><a href="Universes.html#lab118">帰納的定義</a>
+
+</li>
+<li><a href="Universes.html#lab119">不可解な単一化不能メッセージの謎を解く</a>
+
+</li>
+</ul>
+
+</li>
+<li><a href="Universes.html#lab120"><span class="inlinecode"><span class="id" title="keyword">Prop</span></span> 宇宙</a>
+
+</li>
+<li><a href="Universes.html#lab121">公理</a>
+<ul class="doclist">
+<li><a href="Universes.html#lab122">基本</a>
+
+</li>
+<li><a href="Universes.html#lab123">選択公理</a>
+
+</li>
+<li><a href="Universes.html#lab124">公理と計算</a>
+
+</li>
+<li><a href="Universes.html#lab125">公理を避けるための手法</a>
+
+</li>
+</ul>
+
+</li>
+</ul>
+</div>
+<hr/>This page has been generated by <a href="http://coq.inria.fr/">coqdoc</a>
+</div>
+
+</div>
+
+</body>
+</html>

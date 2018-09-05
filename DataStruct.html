@@ -1,0 +1,1339 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<link href="coqdoc.css" rel="stylesheet" type="text/css" />
+<title>DataStruct</title>
+</head>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+</div>
+
+<div id="main">
+
+<h1 class="libtitle">Library DataStruct</h1>
+
+<div class="code">
+
+<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+ 
+<div class="paragraph"> </div>
+
+ Our red-black tree example from the last chapter illustrated how dependent types enable static enforcement of data structure invariants.  To find interesting uses of dependent data structures, however, we need not look to the favorite examples of data structures and algorithms textbooks.  More basic examples like length-indexed and heterogeneous lists come up again and again as the building blocks of dependent programs.  There is a surprisingly large design space for this class of data structure, and we will spend this chapter exploring it. 
+<div class="paragraph"> </div>
+
+<a name="lab11"></a><h1 class="section">More Length-Indexed Lists</h1>
+
+<div class="paragraph"> </div>
+
+ We begin with a deeper look at the length-indexed lists that began the last chapter. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Section</span> <span class="id" title="var">ilist</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Variable</span> <span class="id" title="var">A</span> : <span class="id" title="keyword">Set</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Inductive</span> <span class="id" title="var">ilist</span> : <span class="id" title="var">nat</span> -&gt; <span class="id" title="keyword">Set</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" title="var">Nil</span> : <span class="id" title="var">ilist</span> <span class="id" title="var">O</span><br/>
+&nbsp;&nbsp;| <span class="id" title="var">Cons</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">n</span>, <span class="id" title="var">A</span> -&gt; <span class="id" title="var">ilist</span> <span class="id" title="var">n</span> -&gt; <span class="id" title="var">ilist</span> (<span class="id" title="var">S</span> <span class="id" title="var">n</span>).<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+We might like to have a certified function for selecting an element of an <span class="inlinecode"><span class="id" title="inductive">ilist</span></span> by position.  We could do this using subset types and explicit manipulation of proofs, but dependent types let us do it more directly.  It is helpful to define a type family <span class="inlinecode"><span class="id" title="inductive">fin</span></span>, where <span class="inlinecode"><span class="id" title="inductive">fin</span></span> <span class="inlinecode"><span class="id" title="variable">n</span></span> is isomorphic to <span class="inlinecode">{<span class="id" title="variable">m</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" title="inductive">nat</span></span> <span class="inlinecode">|</span> <span class="inlinecode"><span class="id" title="variable">m</span></span> <span class="inlinecode">&lt;</span> <span class="inlinecode"><span class="id" title="variable">n</span>}</span>.  The type family name stands for "finite." 
+</div>
+<div class="code">
+
+<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Inductive</span> <span class="id" title="var">fin</span> : <span class="id" title="var">nat</span> -&gt; <span class="id" title="keyword">Set</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" title="var">First</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">n</span>, <span class="id" title="var">fin</span> (<span class="id" title="var">S</span> <span class="id" title="var">n</span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="keyword">Next</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">n</span>, <span class="id" title="var">fin</span> <span class="id" title="var">n</span> -&gt; <span class="id" title="var">fin</span> (<span class="id" title="var">S</span> <span class="id" title="var">n</span>).<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+An instance of <span class="inlinecode"><span class="id" title="inductive">fin</span></span> is essentially a more richly typed copy of a prefix of the natural numbers.  Every element is a <span class="inlinecode"><span class="id" title="projection">First</span></span> iterated through applying <span class="inlinecode"><span class="id" title="keyword">Next</span></span> a number of times that indicates which number is being selected.  For instance, the three values of type <span class="inlinecode"><span class="id" title="inductive">fin</span></span> <span class="inlinecode">3</span> are <span class="inlinecode"><span class="id" title="projection">First</span></span> <span class="inlinecode">2</span>, <span class="inlinecode"><span class="id" title="keyword">Next</span></span> <span class="inlinecode">(<span class="id" title="projection">First</span></span> <span class="inlinecode">1)</span>, and <span class="inlinecode"><span class="id" title="keyword">Next</span></span> <span class="inlinecode">(<span class="id" title="keyword">Next</span></span> <span class="inlinecode">(<span class="id" title="projection">First</span></span> <span class="inlinecode">0))</span>.
+
+<div class="paragraph"> </div>
+
+     Now it is easy to pick a <span class="inlinecode"><span class="id" title="keyword">Prop</span></span>-free type for a selection function.  As usual, our first implementation attempt will not convince the type checker, and we will attack the deficiencies one at a time.
+     <br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="keyword">Fixpoint</span> <span class="id" title="definition">get</span> <span class="id" title="variable">n</span> (<span class="id" title="variable">ls</span> : <span class="id" title="inductive">ilist</span> <span class="id" title="variable">n</span>) : <span class="id" title="inductive">fin</span> <span class="id" title="variable">n</span> -&gt; <span class="id" title="variable">A</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="variable">ls</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="constructor">Nil</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="variable">idx</span> =&gt; ?<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="constructor">Cons</span> <span class="id" title="var">_</span> <span class="id" title="variable">x</span> <span class="id" title="variable">ls'</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="variable">idx</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="variable">idx</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="projection">First</span> <span class="id" title="var">_</span> =&gt; <span class="id" title="variable">x</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="keyword">Next</span> <span class="id" title="var">_</span> <span class="id" title="var">idx'</span> =&gt; <span class="id" title="definition">get</span> <span class="id" title="variable">ls'</span> <span class="id" title="var">idx'</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;
+<div class="paragraph"> </div>
+
+</span>    We apply the usual wisdom of delaying arguments in <span class="inlinecode"><span class="id" title="keyword">Fixpoint</span></span>s so that they may be included in <span class="inlinecode"><span class="id" title="keyword">return</span></span> clauses.  This still leaves us with a quandary in each of the <span class="inlinecode"><span class="id" title="keyword">match</span></span> cases.  First, we need to figure out how to take advantage of the contradiction in the <span class="inlinecode"><span class="id" title="constructor">Nil</span></span> case.  Every <span class="inlinecode"><span class="id" title="inductive">fin</span></span> has a type of the form <span class="inlinecode"><span class="id" title="variable">S</span></span> <span class="inlinecode"><span class="id" title="variable">n</span></span>, which cannot unify with the <span class="inlinecode"><span class="id" title="constructor">O</span></span> value that we learn for <span class="inlinecode"><span class="id" title="variable">n</span></span> in the <span class="inlinecode"><span class="id" title="constructor">Nil</span></span> case.  The solution we adopt is another case of <span class="inlinecode"><span class="id" title="keyword">match</span></span>-within-<span class="inlinecode"><span class="id" title="keyword">return</span></span>, with the <span class="inlinecode"><span class="id" title="keyword">return</span></span> clause chosen carefully so that it returns the proper type <span class="inlinecode"><span class="id" title="variable">A</span></span> in case the <span class="inlinecode"><span class="id" title="inductive">fin</span></span> index is <span class="inlinecode"><span class="id" title="constructor">O</span></span>, which we know is true here; and so that it returns an easy-to-inhabit type <span class="inlinecode"><span class="id" title="inductive">unit</span></span> in the remaining, impossible cases, which nonetheless appear explicitly in the body of the <span class="inlinecode"><span class="id" title="keyword">match</span></span>.
+    <br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="keyword">Fixpoint</span> <span class="id" title="definition">get</span> <span class="id" title="variable">n</span> (<span class="id" title="variable">ls</span> : <span class="id" title="inductive">ilist</span> <span class="id" title="variable">n</span>) : <span class="id" title="inductive">fin</span> <span class="id" title="variable">n</span> -&gt; <span class="id" title="variable">A</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="variable">ls</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="constructor">Nil</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="variable">idx</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="variable">idx</span> <span class="id" title="keyword">in</span> <span class="id" title="inductive">fin</span> <span class="id" title="variable">n'</span> <span class="id" title="keyword">return</span> (<span class="id" title="keyword">match</span> <span class="id" title="variable">n'</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="constructor">O</span> =&gt; <span class="id" title="variable">A</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="variable">S</span> <span class="id" title="var">_</span> =&gt; <span class="id" title="inductive">unit</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>) <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="projection">First</span> <span class="id" title="var">_</span> =&gt; <span class="id" title="constructor">tt</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="keyword">Next</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> =&gt; <span class="id" title="constructor">tt</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="constructor">Cons</span> <span class="id" title="var">_</span> <span class="id" title="variable">x</span> <span class="id" title="variable">ls'</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="variable">idx</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="variable">idx</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="projection">First</span> <span class="id" title="var">_</span> =&gt; <span class="id" title="variable">x</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="keyword">Next</span> <span class="id" title="var">_</span> <span class="id" title="var">idx'</span> =&gt; <span class="id" title="definition">get</span> <span class="id" title="variable">ls'</span> <span class="id" title="var">idx'</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;
+<div class="paragraph"> </div>
+
+</span>    Now the first <span class="inlinecode"><span class="id" title="keyword">match</span></span> case type-checks, and we see that the problem with the <span class="inlinecode"><span class="id" title="constructor">Cons</span></span> case is that the pattern-bound variable <span class="inlinecode"><span class="id" title="var">idx'</span></span> does not have an apparent type compatible with <span class="inlinecode"><span class="id" title="variable">ls'</span></span>.  In fact, the error message Coq gives for this exact code can be confusing, thanks to an overenthusiastic type inference heuristic.  We are told that the <span class="inlinecode"><span class="id" title="constructor">Nil</span></span> case body has type <span class="inlinecode"><span class="id" title="keyword">match</span></span> <span class="inlinecode"><span class="id" title="var">X</span></span> <span class="inlinecode"><span class="id" title="keyword">with</span></span> <span class="inlinecode">|</span> <span class="inlinecode"><span class="id" title="constructor">O</span></span> <span class="inlinecode">=&gt;</span> <span class="inlinecode"><span class="id" title="variable">A</span></span> <span class="inlinecode">|</span> <span class="inlinecode"><span class="id" title="variable">S</span></span> <span class="inlinecode"><span class="id" title="var">_</span></span> <span class="inlinecode">=&gt;</span> <span class="inlinecode"><span class="id" title="inductive">unit</span></span> <span class="inlinecode"><span class="id" title="keyword">end</span></span> for a unification variable <span class="inlinecode"><span class="id" title="var">X</span></span>, while it is expected to have type <span class="inlinecode"><span class="id" title="variable">A</span></span>.  We can see that setting <span class="inlinecode"><span class="id" title="var">X</span></span> to <span class="inlinecode"><span class="id" title="constructor">O</span></span> resolves the conflict, but Coq is not yet smart enough to do this unification automatically.  Repeating the function's type in a <span class="inlinecode"><span class="id" title="keyword">return</span></span> annotation, used with an <span class="inlinecode"><span class="id" title="keyword">in</span></span> annotation, leads us to a more informative error message, saying that <span class="inlinecode"><span class="id" title="var">idx'</span></span> has type <span class="inlinecode"><span class="id" title="inductive">fin</span></span> <span class="inlinecode"><span class="id" title="variable">n1</span></span> while it is expected to have type <span class="inlinecode"><span class="id" title="inductive">fin</span></span> <span class="inlinecode"><span class="id" title="variable">n0</span></span>, where <span class="inlinecode"><span class="id" title="variable">n0</span></span> is bound by the <span class="inlinecode"><span class="id" title="constructor">Cons</span></span> pattern and <span class="inlinecode"><span class="id" title="variable">n1</span></span> by the <span class="inlinecode"><span class="id" title="keyword">Next</span></span> pattern.  As the code is written above, nothing forces these two natural numbers to be equal, though we know intuitively that they must be.
+
+<div class="paragraph"> </div>
+
+    We need to use <span class="inlinecode"><span class="id" title="keyword">match</span></span> annotations to make the relationship explicit.  Unfortunately, the usual trick of postponing argument binding will not help us here.  We need to match on both <span class="inlinecode"><span class="id" title="variable">ls</span></span> and <span class="inlinecode"><span class="id" title="variable">idx</span></span>; one or the other must be matched first.  To get around this, we apply the convoy pattern that we met last chapter.  This application is a little more clever than those we saw before; we use the natural number predecessor function <span class="inlinecode"><span class="id" title="definition">pred</span></span> to express the relationship between the types of these variables.
+    <br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="keyword">Fixpoint</span> <span class="id" title="definition">get</span> <span class="id" title="variable">n</span> (<span class="id" title="variable">ls</span> : <span class="id" title="inductive">ilist</span> <span class="id" title="variable">n</span>) : <span class="id" title="inductive">fin</span> <span class="id" title="variable">n</span> -&gt; <span class="id" title="variable">A</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="variable">ls</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="constructor">Nil</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="variable">idx</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="variable">idx</span> <span class="id" title="keyword">in</span> <span class="id" title="inductive">fin</span> <span class="id" title="variable">n'</span> <span class="id" title="keyword">return</span> (<span class="id" title="keyword">match</span> <span class="id" title="variable">n'</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="constructor">O</span> =&gt; <span class="id" title="variable">A</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="variable">S</span> <span class="id" title="var">_</span> =&gt; <span class="id" title="inductive">unit</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>) <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="projection">First</span> <span class="id" title="var">_</span> =&gt; <span class="id" title="constructor">tt</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="keyword">Next</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> =&gt; <span class="id" title="constructor">tt</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="constructor">Cons</span> <span class="id" title="var">_</span> <span class="id" title="variable">x</span> <span class="id" title="variable">ls'</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="variable">idx</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="variable">idx</span> <span class="id" title="keyword">in</span> <span class="id" title="inductive">fin</span> <span class="id" title="variable">n'</span> <span class="id" title="keyword">return</span> <span class="id" title="inductive">ilist</span> (<span class="id" title="definition">pred</span> <span class="id" title="variable">n'</span>) -&gt; <span class="id" title="variable">A</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="projection">First</span> <span class="id" title="var">_</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="var">_</span> =&gt; <span class="id" title="variable">x</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="keyword">Next</span> <span class="id" title="var">_</span> <span class="id" title="var">idx'</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="variable">ls'</span> =&gt; <span class="id" title="definition">get</span> <span class="id" title="variable">ls'</span> <span class="id" title="var">idx'</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span> <span class="id" title="variable">ls'</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;
+<div class="paragraph"> </div>
+
+</span>    There is just one problem left with this implementation.  Though we know that the local <span class="inlinecode"><span class="id" title="variable">ls'</span></span> in the <span class="inlinecode"><span class="id" title="keyword">Next</span></span> case is equal to the original <span class="inlinecode"><span class="id" title="variable">ls'</span></span>, the type-checker is not satisfied that the recursive call to <span class="inlinecode"><span class="id" title="definition">get</span></span> does not introduce non-termination.  We solve the problem by convoy-binding the partial application of <span class="inlinecode"><span class="id" title="definition">get</span></span> to <span class="inlinecode"><span class="id" title="variable">ls'</span></span>, rather than <span class="inlinecode"><span class="id" title="variable">ls'</span></span> by itself. 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Fixpoint</span> <span class="id" title="var">get</span> <span class="id" title="var">n</span> (<span class="id" title="var">ls</span> : <span class="id" title="var">ilist</span> <span class="id" title="var">n</span>) : <span class="id" title="var">fin</span> <span class="id" title="var">n</span> -&gt; <span class="id" title="var">A</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">ls</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">Nil</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="var">idx</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">idx</span> <span class="id" title="keyword">in</span> <span class="id" title="var">fin</span> <span class="id" title="var">n'</span> <span class="id" title="keyword">return</span> (<span class="id" title="keyword">match</span> <span class="id" title="var">n'</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">O</span> =&gt; <span class="id" title="var">A</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">S</span> <span class="id" title="var">_</span> =&gt; <span class="id" title="var">unit</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>) <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">First</span> <span class="id" title="var">_</span> =&gt; <span class="id" title="var">tt</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="keyword">Next</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> =&gt; <span class="id" title="var">tt</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">Cons</span> <span class="id" title="var">_</span> <span class="id" title="var">x</span> <span class="id" title="var">ls'</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="var">idx</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">idx</span> <span class="id" title="keyword">in</span> <span class="id" title="var">fin</span> <span class="id" title="var">n'</span> <span class="id" title="keyword">return</span> (<span class="id" title="var">fin</span> (<span class="id" title="var">pred</span> <span class="id" title="var">n'</span>) -&gt; <span class="id" title="var">A</span>) -&gt; <span class="id" title="var">A</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">First</span> <span class="id" title="var">_</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="var">_</span> =&gt; <span class="id" title="var">x</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="keyword">Next</span> <span class="id" title="var">_</span> <span class="id" title="var">idx'</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="var">get_ls'</span> =&gt; <span class="id" title="var">get_ls'</span> <span class="id" title="var">idx'</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span> (<span class="id" title="var">get</span> <span class="id" title="var">ls'</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+<span class="id" title="keyword">End</span> <span class="id" title="var">ilist</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Implicit Arguments</span> <span class="id" title="var">Nil</span> [<span class="id" title="var">A</span>].<br/>
+<span class="id" title="keyword">Implicit Arguments</span> <span class="id" title="var">First</span> [<span class="id" title="var">n</span>].<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+A few examples show how to make use of these definitions. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Check</span> <span class="id" title="var">Cons</span> 0 (<span class="id" title="var">Cons</span> 1 (<span class="id" title="var">Cons</span> 2 <span class="id" title="var">Nil</span>)).<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="constructor">Cons</span> 0 (<span class="id" title="constructor">Cons</span> 1 (<span class="id" title="constructor">Cons</span> 2 <span class="id" title="constructor">Nil</span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="inductive">ilist</span> <span class="id" title="inductive">nat</span> 3
+<div class="paragraph"> </div>
+
+</span>
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Eval</span> <span class="id" title="tactic">simpl</span> <span class="id" title="keyword">in</span> <span class="id" title="var">get</span> (<span class="id" title="var">Cons</span> 0 (<span class="id" title="var">Cons</span> 1 (<span class="id" title="var">Cons</span> 2 <span class="id" title="var">Nil</span>))) <span class="id" title="var">First</span>.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= 0<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="inductive">nat</span>
+<div class="paragraph"> </div>
+
+</span>
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Eval</span> <span class="id" title="tactic">simpl</span> <span class="id" title="keyword">in</span> <span class="id" title="var">get</span> (<span class="id" title="var">Cons</span> 0 (<span class="id" title="var">Cons</span> 1 (<span class="id" title="var">Cons</span> 2 <span class="id" title="var">Nil</span>))) (<span class="id" title="keyword">Next</span> <span class="id" title="var">First</span>).<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= 1<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="inductive">nat</span>
+<div class="paragraph"> </div>
+
+</span>
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Eval</span> <span class="id" title="tactic">simpl</span> <span class="id" title="keyword">in</span> <span class="id" title="var">get</span> (<span class="id" title="var">Cons</span> 0 (<span class="id" title="var">Cons</span> 1 (<span class="id" title="var">Cons</span> 2 <span class="id" title="var">Nil</span>))) (<span class="id" title="keyword">Next</span> (<span class="id" title="keyword">Next</span> <span class="id" title="var">First</span>)).<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= 2<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="inductive">nat</span>
+<div class="paragraph"> </div>
+
+</span>
+</div>
+<div class="code">
+
+<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Our <span class="inlinecode"><span class="id" title="definition">get</span></span> function is also quite easy to reason about.  We show how with a short example about an analogue to the list <span class="inlinecode"><span class="id" title="definition">map</span></span> function. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Section</span> <span class="id" title="var">ilist_map</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Variables</span> <span class="id" title="var">A</span> <span class="id" title="var">B</span> : <span class="id" title="keyword">Set</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Variable</span> <span class="id" title="var">f</span> : <span class="id" title="var">A</span> -&gt; <span class="id" title="var">B</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Fixpoint</span> <span class="id" title="var">imap</span> <span class="id" title="var">n</span> (<span class="id" title="var">ls</span> : <span class="id" title="var">ilist</span> <span class="id" title="var">A</span> <span class="id" title="var">n</span>) : <span class="id" title="var">ilist</span> <span class="id" title="var">B</span> <span class="id" title="var">n</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">ls</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">Nil</span> =&gt; <span class="id" title="var">Nil</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">Cons</span> <span class="id" title="var">_</span> <span class="id" title="var">x</span> <span class="id" title="var">ls'</span> =&gt; <span class="id" title="var">Cons</span> (<span class="id" title="var">f</span> <span class="id" title="var">x</span>) (<span class="id" title="var">imap</span> <span class="id" title="var">ls'</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+It is easy to prove that <span class="inlinecode"><span class="id" title="definition">get</span></span> "distributes over" <span class="inlinecode"><span class="id" title="definition">imap</span></span> calls. 
+</div>
+<div class="code">
+
+<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Theorem</span> <span class="id" title="var">get_imap</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">n</span> (<span class="id" title="var">idx</span> : <span class="id" title="var">fin</span> <span class="id" title="var">n</span>) (<span class="id" title="var">ls</span> : <span class="id" title="var">ilist</span> <span class="id" title="var">A</span> <span class="id" title="var">n</span>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">get</span> (<span class="id" title="var">imap</span> <span class="id" title="var">ls</span>) <span class="id" title="var">idx</span> = <span class="id" title="var">f</span> (<span class="id" title="var">get</span> <span class="id" title="var">ls</span> <span class="id" title="var">idx</span>).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">induction</span> <span class="id" title="var">ls</span>; <span class="id" title="var">dep_destruct</span> <span class="id" title="var">idx</span>; <span class="id" title="var">crush</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
+<span class="id" title="keyword">End</span> <span class="id" title="var">ilist_map</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+The only tricky bit is remembering to use our <span class="inlinecode"><span class="id" title="var">dep_destruct</span></span> tactic in place of plain <span class="inlinecode"><span class="id" title="tactic">destruct</span></span> when faced with a baffling tactic error message. 
+<div class="paragraph"> </div>
+
+<a name="lab12"></a><h1 class="section">Heterogeneous Lists</h1>
+
+<div class="paragraph"> </div>
+
+ Programmers who move to statically typed functional languages from scripting languages often complain about the requirement that every element of a list have the same type.  With fancy type systems, we can partially lift this requirement.  We can index a list type with a "type-level" list that explains what type each element of the list should have.  This has been done in a variety of ways in Haskell using type classes, and we can do it much more cleanly and directly in Coq. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Section</span> <span class="id" title="var">hlist</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Variable</span> <span class="id" title="var">A</span> : <span class="id" title="keyword">Type</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Variable</span> <span class="id" title="var">B</span> : <span class="id" title="var">A</span> -&gt; <span class="id" title="keyword">Type</span>.<br/>
+
+<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+We parameterize our heterogeneous lists by a type <span class="inlinecode"><span class="id" title="variable">A</span></span> and an <span class="inlinecode"><span class="id" title="variable">A</span></span>-indexed type <span class="inlinecode"><span class="id" title="variable">B</span></span>. 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Inductive</span> <span class="id" title="var">hlist</span> : <span class="id" title="var">list</span> <span class="id" title="var">A</span> -&gt; <span class="id" title="keyword">Type</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" title="var">HNil</span> : <span class="id" title="var">hlist</span> <span class="id" title="var">nil</span><br/>
+&nbsp;&nbsp;| <span class="id" title="var">HCons</span> : <span class="id" title="keyword">forall</span> (<span class="id" title="var">x</span> : <span class="id" title="var">A</span>) (<span class="id" title="var">ls</span> : <span class="id" title="var">list</span> <span class="id" title="var">A</span>), <span class="id" title="var">B</span> <span class="id" title="var">x</span> -&gt; <span class="id" title="var">hlist</span> <span class="id" title="var">ls</span> -&gt; <span class="id" title="var">hlist</span> (<span class="id" title="var">x</span> :: <span class="id" title="var">ls</span>).<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+We can implement a variant of the last section's <span class="inlinecode"><span class="id" title="definition">get</span></span> function for <span class="inlinecode"><span class="id" title="inductive">hlist</span></span>s.  To get the dependent typing to work out, we will need to index our element selectors (in type family <span class="inlinecode"><span class="id" title="inductive">member</span></span>) by the types of data that they point to. 
+</div>
+<div class="code">
+
+<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Variable</span> <span class="id" title="var">elm</span> : <span class="id" title="var">A</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Inductive</span> <span class="id" title="var">member</span> : <span class="id" title="var">list</span> <span class="id" title="var">A</span> -&gt; <span class="id" title="keyword">Type</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" title="var">HFirst</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">ls</span>, <span class="id" title="var">member</span> (<span class="id" title="var">elm</span> :: <span class="id" title="var">ls</span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="var">HNext</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">x</span> <span class="id" title="var">ls</span>, <span class="id" title="var">member</span> <span class="id" title="var">ls</span> -&gt; <span class="id" title="var">member</span> (<span class="id" title="var">x</span> :: <span class="id" title="var">ls</span>).<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Because the element <span class="inlinecode"><span class="id" title="variable">elm</span></span> that we are "searching for" in a list does not change across the constructors of <span class="inlinecode"><span class="id" title="inductive">member</span></span>, we simplify our definitions by making <span class="inlinecode"><span class="id" title="variable">elm</span></span> a local variable.  In the definition of <span class="inlinecode"><span class="id" title="inductive">member</span></span>, we say that <span class="inlinecode"><span class="id" title="variable">elm</span></span> is found in any list that begins with <span class="inlinecode"><span class="id" title="variable">elm</span></span>, and, if removing the first element of a list leaves <span class="inlinecode"><span class="id" title="variable">elm</span></span> present, then <span class="inlinecode"><span class="id" title="variable">elm</span></span> is present in the original list, too.  The form looks much like a predicate for list membership, but we purposely define <span class="inlinecode"><span class="id" title="inductive">member</span></span> in <span class="inlinecode"><span class="id" title="keyword">Type</span></span> so that we may decompose its values to guide computations.
+
+<div class="paragraph"> </div>
+
+     We can use <span class="inlinecode"><span class="id" title="inductive">member</span></span> to adapt our definition of <span class="inlinecode"><span class="id" title="definition">get</span></span> to <span class="inlinecode"><span class="id" title="inductive">hlist</span></span>s.  The same basic <span class="inlinecode"><span class="id" title="keyword">match</span></span> tricks apply.  In the <span class="inlinecode"><span class="id" title="constructor">HCons</span></span> case, we form a two-element convoy, passing both the data element <span class="inlinecode"><span class="id" title="variable">x</span></span> and the recursor for the sublist <span class="inlinecode"><span class="id" title="var">mls'</span></span> to the result of the inner <span class="inlinecode"><span class="id" title="keyword">match</span></span>.  We did not need to do that in <span class="inlinecode"><span class="id" title="definition">get</span></span>'s definition because the types of list elements were not dependent there. 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Fixpoint</span> <span class="id" title="var">hget</span> <span class="id" title="var">ls</span> (<span class="id" title="var">mls</span> : <span class="id" title="var">hlist</span> <span class="id" title="var">ls</span>) : <span class="id" title="var">member</span> <span class="id" title="var">ls</span> -&gt; <span class="id" title="var">B</span> <span class="id" title="var">elm</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">mls</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">HNil</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="var">mem</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">mem</span> <span class="id" title="keyword">in</span> <span class="id" title="var">member</span> <span class="id" title="var">ls'</span> <span class="id" title="keyword">return</span> (<span class="id" title="keyword">match</span> <span class="id" title="var">ls'</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">nil</span> =&gt; <span class="id" title="var">B</span> <span class="id" title="var">elm</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">_</span> :: <span class="id" title="var">_</span> =&gt; <span class="id" title="var">unit</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>) <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">HFirst</span> <span class="id" title="var">_</span> =&gt; <span class="id" title="var">tt</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">HNext</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> =&gt; <span class="id" title="var">tt</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">HCons</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">x</span> <span class="id" title="var">mls'</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="var">mem</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">mem</span> <span class="id" title="keyword">in</span> <span class="id" title="var">member</span> <span class="id" title="var">ls'</span> <span class="id" title="keyword">return</span> (<span class="id" title="keyword">match</span> <span class="id" title="var">ls'</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">nil</span> =&gt; <span class="id" title="var">Empty_set</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">x'</span> :: <span class="id" title="var">ls''</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">B</span> <span class="id" title="var">x'</span> -&gt; (<span class="id" title="var">member</span> <span class="id" title="var">ls''</span> -&gt; <span class="id" title="var">B</span> <span class="id" title="var">elm</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt; <span class="id" title="var">B</span> <span class="id" title="var">elm</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>) <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">HFirst</span> <span class="id" title="var">_</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="var">x</span> <span class="id" title="var">_</span> =&gt; <span class="id" title="var">x</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">HNext</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">mem'</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="var">_</span> <span class="id" title="var">get_mls'</span> =&gt; <span class="id" title="var">get_mls'</span> <span class="id" title="var">mem'</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span> <span class="id" title="var">x</span> (<span class="id" title="var">hget</span> <span class="id" title="var">mls'</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+<span class="id" title="keyword">End</span> <span class="id" title="var">hlist</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Implicit Arguments</span> <span class="id" title="var">HNil</span> [<span class="id" title="var">A</span> <span class="id" title="var">B</span>].<br/>
+<span class="id" title="keyword">Implicit Arguments</span> <span class="id" title="var">HCons</span> [<span class="id" title="var">A</span> <span class="id" title="var">B</span> <span class="id" title="var">x</span> <span class="id" title="var">ls</span>].<br/>
+
+<br/>
+<span class="id" title="keyword">Implicit Arguments</span> <span class="id" title="var">HFirst</span> [<span class="id" title="var">A</span> <span class="id" title="var">elm</span> <span class="id" title="var">ls</span>].<br/>
+<span class="id" title="keyword">Implicit Arguments</span> <span class="id" title="var">HNext</span> [<span class="id" title="var">A</span> <span class="id" title="var">elm</span> <span class="id" title="var">x</span> <span class="id" title="var">ls</span>].<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+By putting the parameters <span class="inlinecode"><span class="id" title="variable">A</span></span> and <span class="inlinecode"><span class="id" title="variable">B</span></span> in <span class="inlinecode"><span class="id" title="keyword">Type</span></span>, we enable fancier kinds of polymorphism than in mainstream functional languages.  For instance, one use of <span class="inlinecode"><span class="id" title="inductive">hlist</span></span> is for the simple heterogeneous lists that we referred to earlier. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">someTypes</span> : <span class="id" title="var">list</span> <span class="id" title="keyword">Set</span> := <span class="id" title="var">nat</span> :: <span class="id" title="var">bool</span> :: <span class="id" title="var">nil</span>.<br/>
+
+<br/>
+
+<br/>
+<span class="id" title="keyword">Example</span> <span class="id" title="var">someValues</span> : <span class="id" title="var">hlist</span> (<span class="id" title="keyword">fun</span> <span class="id" title="var">T</span> : <span class="id" title="keyword">Set</span> =&gt; <span class="id" title="var">T</span>) <span class="id" title="var">someTypes</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="var">HCons</span> 5 (<span class="id" title="var">HCons</span> <span class="id" title="var">true</span> <span class="id" title="var">HNil</span>).<br/>
+
+<br/>
+<span class="id" title="keyword">Eval</span> <span class="id" title="tactic">simpl</span> <span class="id" title="keyword">in</span> <span class="id" title="var">hget</span> <span class="id" title="var">someValues</span> <span class="id" title="var">HFirst</span>.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= 5<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: (<span class="id" title="keyword">fun</span> <span class="id" title="variable">T</span> : <span class="id" title="keyword">Set</span> =&gt; <span class="id" title="variable">T</span>) <span class="id" title="inductive">nat</span>
+<div class="paragraph"> </div>
+
+</span>
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Eval</span> <span class="id" title="tactic">simpl</span> <span class="id" title="keyword">in</span> <span class="id" title="var">hget</span> <span class="id" title="var">someValues</span> (<span class="id" title="var">HNext</span> <span class="id" title="var">HFirst</span>).<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= <span class="id" title="constructor">true</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: (<span class="id" title="keyword">fun</span> <span class="id" title="variable">T</span> : <span class="id" title="keyword">Set</span> =&gt; <span class="id" title="variable">T</span>) <span class="id" title="inductive">bool</span>
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+ We can also build indexed lists of pairs in this way. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Example</span> <span class="id" title="var">somePairs</span> : <span class="id" title="var">hlist</span> (<span class="id" title="keyword">fun</span> <span class="id" title="var">T</span> : <span class="id" title="keyword">Set</span> =&gt; <span class="id" title="var">T</span> * <span class="id" title="var">T</span>)%<span class="id" title="var">type</span> <span class="id" title="var">someTypes</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="var">HCons</span> (1, 2) (<span class="id" title="var">HCons</span> (<span class="id" title="var">true</span>, <span class="id" title="var">false</span>) <span class="id" title="var">HNil</span>).<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+There are many other useful applications of heterogeneous lists, based on different choices of the first argument to <span class="inlinecode"><span class="id" title="inductive">hlist</span></span>. 
+</div>
+<div class="code">
+
+<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+<a name="lab13"></a><h2 class="section">A Lambda Calculus Interpreter</h2>
+
+<div class="paragraph"> </div>
+
+ Heterogeneous lists are very useful in implementing interpreters for functional programming languages.  Using the types and operations we have already defined, it is trivial to write an interpreter for simply typed lambda calculus.  Our interpreter can alternatively be thought of as a denotational semantics (but worry not if you are not familiar with such terminology from semantics).
+
+<div class="paragraph"> </div>
+
+   We start with an algebraic datatype for types. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Inductive</span> <span class="id" title="var">type</span> : <span class="id" title="keyword">Set</span> :=<br/>
+| <span class="id" title="var">Unit</span> : <span class="id" title="var">type</span><br/>
+| <span class="id" title="var">Arrow</span> : <span class="id" title="var">type</span> -&gt; <span class="id" title="var">type</span> -&gt; <span class="id" title="var">type</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Now we can define a type family for expressions.  An <span class="inlinecode"><span class="id" title="inductive">exp</span></span> <span class="inlinecode"><span class="id" title="variable">ts</span></span> <span class="inlinecode"><span class="id" title="variable">t</span></span> will stand for an expression that has type <span class="inlinecode"><span class="id" title="variable">t</span></span> and whose free variables have types in the list <span class="inlinecode"><span class="id" title="variable">ts</span></span>.  We effectively use the de Bruijn index variable representation.  Variables are represented as <span class="inlinecode"><span class="id" title="inductive">member</span></span> values; that is, a variable is more or less a constructive proof that a particular type is found in the type environment. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Inductive</span> <span class="id" title="var">exp</span> : <span class="id" title="var">list</span> <span class="id" title="var">type</span> -&gt; <span class="id" title="var">type</span> -&gt; <span class="id" title="keyword">Set</span> :=<br/>
+| <span class="id" title="var">Const</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">ts</span>, <span class="id" title="var">exp</span> <span class="id" title="var">ts</span> <span class="id" title="var">Unit</span><br/>
+<br/>
+| <span class="id" title="var">Var</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">ts</span> <span class="id" title="var">t</span>, <span class="id" title="var">member</span> <span class="id" title="var">t</span> <span class="id" title="var">ts</span> -&gt; <span class="id" title="var">exp</span> <span class="id" title="var">ts</span> <span class="id" title="var">t</span><br/>
+| <span class="id" title="var">App</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">ts</span> <span class="id" title="var">dom</span> <span class="id" title="var">ran</span>, <span class="id" title="var">exp</span> <span class="id" title="var">ts</span> (<span class="id" title="var">Arrow</span> <span class="id" title="var">dom</span> <span class="id" title="var">ran</span>) -&gt; <span class="id" title="var">exp</span> <span class="id" title="var">ts</span> <span class="id" title="var">dom</span> -&gt; <span class="id" title="var">exp</span> <span class="id" title="var">ts</span> <span class="id" title="var">ran</span><br/>
+| <span class="id" title="var">Abs</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">ts</span> <span class="id" title="var">dom</span> <span class="id" title="var">ran</span>, <span class="id" title="var">exp</span> (<span class="id" title="var">dom</span> :: <span class="id" title="var">ts</span>) <span class="id" title="var">ran</span> -&gt; <span class="id" title="var">exp</span> <span class="id" title="var">ts</span> (<span class="id" title="var">Arrow</span> <span class="id" title="var">dom</span> <span class="id" title="var">ran</span>).<br/>
+
+<br/>
+<span class="id" title="keyword">Implicit Arguments</span> <span class="id" title="var">Const</span> [<span class="id" title="var">ts</span>].<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+We write a simple recursive function to translate <span class="inlinecode"><span class="id" title="inductive">type</span></span>s into <span class="inlinecode"><span class="id" title="keyword">Set</span></span>s. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Fixpoint</span> <span class="id" title="var">typeDenote</span> (<span class="id" title="var">t</span> : <span class="id" title="var">type</span>) : <span class="id" title="keyword">Set</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">t</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">Unit</span> =&gt; <span class="id" title="var">unit</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">Arrow</span> <span class="id" title="var">t1</span> <span class="id" title="var">t2</span> =&gt; <span class="id" title="var">typeDenote</span> <span class="id" title="var">t1</span> -&gt; <span class="id" title="var">typeDenote</span> <span class="id" title="var">t2</span><br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Now it is straightforward to write an expression interpreter.  The type of the function, <span class="inlinecode"><span class="id" title="definition">expDenote</span></span>, tells us that we translate expressions into functions from properly typed environments to final values.  An environment for a free variable list <span class="inlinecode"><span class="id" title="variable">ts</span></span> is simply an <span class="inlinecode"><span class="id" title="inductive">hlist</span></span> <span class="inlinecode"><span class="id" title="definition">typeDenote</span></span> <span class="inlinecode"><span class="id" title="variable">ts</span></span>.  That is, for each free variable, the heterogeneous list that is the environment must have a value of the variable's associated type.  We use <span class="inlinecode"><span class="id" title="definition">hget</span></span> to implement the <span class="inlinecode"><span class="id" title="constructor">Var</span></span> case, and we use <span class="inlinecode"><span class="id" title="constructor">HCons</span></span> to extend the environment in the <span class="inlinecode"><span class="id" title="constructor">Abs</span></span> case. 
+</div>
+<div class="code">
+
+<br/>
+
+<br/>
+<span class="id" title="keyword">Fixpoint</span> <span class="id" title="var">expDenote</span> <span class="id" title="var">ts</span> <span class="id" title="var">t</span> (<span class="id" title="var">e</span> : <span class="id" title="var">exp</span> <span class="id" title="var">ts</span> <span class="id" title="var">t</span>) : <span class="id" title="var">hlist</span> <span class="id" title="var">typeDenote</span> <span class="id" title="var">ts</span> -&gt; <span class="id" title="var">typeDenote</span> <span class="id" title="var">t</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">e</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">Const</span> <span class="id" title="var">_</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="var">_</span> =&gt; <span class="id" title="var">tt</span><br/>
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">Var</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">mem</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="var">s</span> =&gt; <span class="id" title="var">hget</span> <span class="id" title="var">s</span> <span class="id" title="var">mem</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">App</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">e1</span> <span class="id" title="var">e2</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="var">s</span> =&gt; (<span class="id" title="var">expDenote</span> <span class="id" title="var">e1</span> <span class="id" title="var">s</span>) (<span class="id" title="var">expDenote</span> <span class="id" title="var">e2</span> <span class="id" title="var">s</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">Abs</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">e'</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="var">s</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="var">x</span> =&gt; <span class="id" title="var">expDenote</span> <span class="id" title="var">e'</span> (<span class="id" title="var">HCons</span> <span class="id" title="var">x</span> <span class="id" title="var">s</span>)<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Like for previous examples, our interpreter is easy to run with <span class="inlinecode"><span class="id" title="tactic">simpl</span></span>. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Eval</span> <span class="id" title="tactic">simpl</span> <span class="id" title="keyword">in</span> <span class="id" title="var">expDenote</span> <span class="id" title="var">Const</span> <span class="id" title="var">HNil</span>.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;= <span class="id" title="constructor">tt</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="definition">typeDenote</span> <span class="id" title="constructor">Unit</span>
+<div class="paragraph"> </div>
+
+</span>
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Eval</span> <span class="id" title="tactic">simpl</span> <span class="id" title="keyword">in</span> <span class="id" title="var">expDenote</span> (<span class="id" title="var">Abs</span> (<span class="id" title="var">dom</span> := <span class="id" title="var">Unit</span>) (<span class="id" title="var">Var</span> <span class="id" title="var">HFirst</span>)) <span class="id" title="var">HNil</span>.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= <span class="id" title="keyword">fun</span> <span class="id" title="variable">x</span> : <span class="id" title="inductive">unit</span> =&gt; <span class="id" title="variable">x</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="definition">typeDenote</span> (<span class="id" title="constructor">Arrow</span> <span class="id" title="constructor">Unit</span> <span class="id" title="constructor">Unit</span>)
+<div class="paragraph"> </div>
+
+</span>
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Eval</span> <span class="id" title="tactic">simpl</span> <span class="id" title="keyword">in</span> <span class="id" title="var">expDenote</span> (<span class="id" title="var">Abs</span> (<span class="id" title="var">dom</span> := <span class="id" title="var">Unit</span>)<br/>
+&nbsp;&nbsp;(<span class="id" title="var">Abs</span> (<span class="id" title="var">dom</span> := <span class="id" title="var">Unit</span>) (<span class="id" title="var">Var</span> (<span class="id" title="var">HNext</span> <span class="id" title="var">HFirst</span>)))) <span class="id" title="var">HNil</span>.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= <span class="id" title="keyword">fun</span> <span class="id" title="variable">x</span> <span class="id" title="var">_</span> : <span class="id" title="inductive">unit</span> =&gt; <span class="id" title="variable">x</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="definition">typeDenote</span> (<span class="id" title="constructor">Arrow</span> <span class="id" title="constructor">Unit</span> (<span class="id" title="constructor">Arrow</span> <span class="id" title="constructor">Unit</span> <span class="id" title="constructor">Unit</span>))
+<div class="paragraph"> </div>
+
+</span>
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Eval</span> <span class="id" title="tactic">simpl</span> <span class="id" title="keyword">in</span> <span class="id" title="var">expDenote</span> (<span class="id" title="var">Abs</span> (<span class="id" title="var">dom</span> := <span class="id" title="var">Unit</span>) (<span class="id" title="var">Abs</span> (<span class="id" title="var">dom</span> := <span class="id" title="var">Unit</span>) (<span class="id" title="var">Var</span> <span class="id" title="var">HFirst</span>))) <span class="id" title="var">HNil</span>.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= <span class="id" title="keyword">fun</span> <span class="id" title="var">_</span> <span class="id" title="var">x0</span> : <span class="id" title="inductive">unit</span> =&gt; <span class="id" title="var">x0</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="definition">typeDenote</span> (<span class="id" title="constructor">Arrow</span> <span class="id" title="constructor">Unit</span> (<span class="id" title="constructor">Arrow</span> <span class="id" title="constructor">Unit</span> <span class="id" title="constructor">Unit</span>))
+<div class="paragraph"> </div>
+
+</span>
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Eval</span> <span class="id" title="tactic">simpl</span> <span class="id" title="keyword">in</span> <span class="id" title="var">expDenote</span> (<span class="id" title="var">App</span> (<span class="id" title="var">Abs</span> (<span class="id" title="var">Var</span> <span class="id" title="var">HFirst</span>)) <span class="id" title="var">Const</span>) <span class="id" title="var">HNil</span>.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= <span class="id" title="constructor">tt</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="definition">typeDenote</span> <span class="id" title="constructor">Unit</span>
+<div class="paragraph"> </div>
+
+</span>
+</div>
+<div class="code">
+
+<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+We are starting to develop the tools behind dependent typing's amazing advantage over alternative approaches in several important areas.  Here, we have implemented complete syntax, typing rules, and evaluation semantics for simply typed lambda calculus without even needing to define a syntactic substitution operation.  We did it all without a single line of proof, and our implementation is manifestly executable.  Other, more common approaches to language formalization often state and prove explicit theorems about type safety of languages.  In the above example, we got type safety, termination, and other meta-theorems for free, by reduction to CIC, which we know has those properties. 
+<div class="paragraph"> </div>
+
+<a name="lab14"></a><h1 class="section">Recursive Type Definitions</h1>
+
+<div class="paragraph"> </div>
+
+ There is another style of datatype definition that leads to much simpler definitions of the <span class="inlinecode"><span class="id" title="definition">get</span></span> and <span class="inlinecode"><span class="id" title="definition">hget</span></span> definitions above.  Because Coq supports "type-level computation," we can redo our inductive definitions as <i>recursive</i> definitions.  Here we will preface type names with the letter <span class="inlinecode"><span class="id" title="variable">f</span></span> to indicate that they are based on explicit recursive <i>function</i> definitions. 
+</div>
+<div class="code">
+
+<br/>
+
+<br/>
+<span class="id" title="keyword">Section</span> <span class="id" title="var">filist</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Variable</span> <span class="id" title="var">A</span> : <span class="id" title="keyword">Set</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Fixpoint</span> <span class="id" title="var">filist</span> (<span class="id" title="var">n</span> : <span class="id" title="var">nat</span>) : <span class="id" title="keyword">Set</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">n</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">O</span> =&gt; <span class="id" title="var">unit</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">S</span> <span class="id" title="var">n'</span> =&gt; <span class="id" title="var">A</span> * <span class="id" title="var">filist</span> <span class="id" title="var">n'</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>%<span class="id" title="var">type</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+We say that a list of length 0 has no contents, and a list of length <span class="inlinecode"><span class="id" title="variable">S</span></span> <span class="inlinecode"><span class="id" title="variable">n'</span></span> is a pair of a data value and a list of length <span class="inlinecode"><span class="id" title="variable">n'</span></span>. 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Fixpoint</span> <span class="id" title="var">ffin</span> (<span class="id" title="var">n</span> : <span class="id" title="var">nat</span>) : <span class="id" title="keyword">Set</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">n</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">O</span> =&gt; <span class="id" title="var">Empty_set</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">S</span> <span class="id" title="var">n'</span> =&gt; <span class="id" title="var">option</span> (<span class="id" title="var">ffin</span> <span class="id" title="var">n'</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+We express that there are no index values when <span class="inlinecode"><span class="id" title="variable">n</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="constructor">O</span></span>, by defining such indices as type <span class="inlinecode"><span class="id" title="inductive">Empty_set</span></span>; and we express that, at <span class="inlinecode"><span class="id" title="variable">n</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="variable">S</span></span> <span class="inlinecode"><span class="id" title="variable">n'</span></span>, there is a choice between picking the first element of the list (represented as <span class="inlinecode"><span class="id" title="constructor">None</span></span>) or choosing a later element (represented by <span class="inlinecode"><span class="id" title="constructor">Some</span></span> <span class="inlinecode"><span class="id" title="variable">idx</span></span>, where <span class="inlinecode"><span class="id" title="variable">idx</span></span> is an index into the list tail).  For instance, the three values of type <span class="inlinecode"><span class="id" title="definition">ffin</span></span> <span class="inlinecode">3</span> are <span class="inlinecode"><span class="id" title="constructor">None</span></span>, <span class="inlinecode"><span class="id" title="constructor">Some</span></span> <span class="inlinecode"><span class="id" title="constructor">None</span></span>, and <span class="inlinecode"><span class="id" title="constructor">Some</span></span> <span class="inlinecode">(<span class="id" title="constructor">Some</span></span> <span class="inlinecode"><span class="id" title="constructor">None</span>)</span>. 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Fixpoint</span> <span class="id" title="var">fget</span> (<span class="id" title="var">n</span> : <span class="id" title="var">nat</span>) : <span class="id" title="var">filist</span> <span class="id" title="var">n</span> -&gt; <span class="id" title="var">ffin</span> <span class="id" title="var">n</span> -&gt; <span class="id" title="var">A</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">n</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">O</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="var">_</span> <span class="id" title="var">idx</span> =&gt; <span class="id" title="keyword">match</span> <span class="id" title="var">idx</span> <span class="id" title="keyword">with</span> <span class="id" title="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">S</span> <span class="id" title="var">n'</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="var">ls</span> <span class="id" title="var">idx</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">idx</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">None</span> =&gt; <span class="id" title="var">fst</span> <span class="id" title="var">ls</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">Some</span> <span class="id" title="var">idx'</span> =&gt; <span class="id" title="var">fget</span> <span class="id" title="var">n'</span> (<span class="id" title="var">snd</span> <span class="id" title="var">ls</span>) <span class="id" title="var">idx'</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Our new <span class="inlinecode"><span class="id" title="definition">get</span></span> implementation needs only one dependent <span class="inlinecode"><span class="id" title="keyword">match</span></span>, and its annotation is inferred for us.  Our choices of data structure implementations lead to just the right typing behavior for this new definition to work out. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">End</span> <span class="id" title="var">filist</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Heterogeneous lists are a little trickier to define with recursion, but we then reap similar benefits in simplicity of use. 
+</div>
+<div class="code">
+
+<br/>
+
+<br/>
+<span class="id" title="keyword">Section</span> <span class="id" title="var">fhlist</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Variable</span> <span class="id" title="var">A</span> : <span class="id" title="keyword">Type</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Variable</span> <span class="id" title="var">B</span> : <span class="id" title="var">A</span> -&gt; <span class="id" title="keyword">Type</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Fixpoint</span> <span class="id" title="var">fhlist</span> (<span class="id" title="var">ls</span> : <span class="id" title="var">list</span> <span class="id" title="var">A</span>) : <span class="id" title="keyword">Type</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">ls</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">nil</span> =&gt; <span class="id" title="var">unit</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">x</span> :: <span class="id" title="var">ls'</span> =&gt; <span class="id" title="var">B</span> <span class="id" title="var">x</span> * <span class="id" title="var">fhlist</span> <span class="id" title="var">ls'</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>%<span class="id" title="var">type</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+The definition of <span class="inlinecode"><span class="id" title="definition">fhlist</span></span> follows the definition of <span class="inlinecode"><span class="id" title="definition">filist</span></span>, with the added wrinkle of dependently typed data elements. 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Variable</span> <span class="id" title="var">elm</span> : <span class="id" title="var">A</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Fixpoint</span> <span class="id" title="var">fmember</span> (<span class="id" title="var">ls</span> : <span class="id" title="var">list</span> <span class="id" title="var">A</span>) : <span class="id" title="keyword">Type</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">ls</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">nil</span> =&gt; <span class="id" title="var">Empty_set</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">x</span> :: <span class="id" title="var">ls'</span> =&gt; (<span class="id" title="var">x</span> = <span class="id" title="var">elm</span>) + <span class="id" title="var">fmember</span> <span class="id" title="var">ls'</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>%<span class="id" title="var">type</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+The definition of <span class="inlinecode"><span class="id" title="definition">fmember</span></span> follows the definition of <span class="inlinecode"><span class="id" title="definition">ffin</span></span>.  Empty lists have no members, and member types for nonempty lists are built by adding one new option to the type of members of the list tail.  While for <span class="inlinecode"><span class="id" title="definition">ffin</span></span> we needed no new information associated with the option that we add, here we need to know that the head of the list equals the element we are searching for.  We express that idea with a sum type whose left branch is the appropriate equality proposition.  Since we define <span class="inlinecode"><span class="id" title="definition">fmember</span></span> to live in <span class="inlinecode"><span class="id" title="keyword">Type</span></span>, we can insert <span class="inlinecode"><span class="id" title="keyword">Prop</span></span> types as needed, because <span class="inlinecode"><span class="id" title="keyword">Prop</span></span> is a subtype of <span class="inlinecode"><span class="id" title="keyword">Type</span></span>.
+
+<div class="paragraph"> </div>
+
+     We know all of the tricks needed to write a first attempt at a <span class="inlinecode"><span class="id" title="definition">get</span></span> function for <span class="inlinecode"><span class="id" title="definition">fhlist</span></span>s.
+     <br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="keyword">Fixpoint</span> <span class="id" title="definition">fhget</span> (<span class="id" title="variable">ls</span> : <span class="id" title="inductive">list</span> <span class="id" title="variable">A</span>) : <span class="id" title="definition">fhlist</span> <span class="id" title="variable">ls</span> -&gt; <span class="id" title="definition">fmember</span> <span class="id" title="variable">ls</span> -&gt; <span class="id" title="variable">B</span> <span class="id" title="variable">elm</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="variable">ls</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="constructor">nil</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="var">_</span> <span class="id" title="variable">idx</span> =&gt; <span class="id" title="keyword">match</span> <span class="id" title="variable">idx</span> <span class="id" title="keyword">with</span> <span class="id" title="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">_</span> :: <span class="id" title="variable">ls'</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="variable">mls</span> <span class="id" title="variable">idx</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="variable">idx</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="constructor">inl</span> <span class="id" title="var">_</span> =&gt; <span class="id" title="definition">fst</span> <span class="id" title="variable">mls</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="constructor">inr</span> <span class="id" title="var">idx'</span> =&gt; <span class="id" title="definition">fhget</span> <span class="id" title="variable">ls'</span> (<span class="id" title="definition">snd</span> <span class="id" title="variable">mls</span>) <span class="id" title="var">idx'</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;
+<div class="paragraph"> </div>
+
+</span>    Only one problem remains.  The expression <span class="inlinecode"><span class="id" title="definition">fst</span></span> <span class="inlinecode"><span class="id" title="variable">mls</span></span> is not known to have the proper type.  To demonstrate that it does, we need to use the proof available in the <span class="inlinecode"><span class="id" title="constructor">inl</span></span> case of the inner <span class="inlinecode"><span class="id" title="keyword">match</span></span>. 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Fixpoint</span> <span class="id" title="var">fhget</span> (<span class="id" title="var">ls</span> : <span class="id" title="var">list</span> <span class="id" title="var">A</span>) : <span class="id" title="var">fhlist</span> <span class="id" title="var">ls</span> -&gt; <span class="id" title="var">fmember</span> <span class="id" title="var">ls</span> -&gt; <span class="id" title="var">B</span> <span class="id" title="var">elm</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">ls</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">nil</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="var">_</span> <span class="id" title="var">idx</span> =&gt; <span class="id" title="keyword">match</span> <span class="id" title="var">idx</span> <span class="id" title="keyword">with</span> <span class="id" title="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">_</span> :: <span class="id" title="var">ls'</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="var">mls</span> <span class="id" title="var">idx</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">idx</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">inl</span> <span class="id" title="var">pf</span> =&gt; <span class="id" title="keyword">match</span> <span class="id" title="var">pf</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">eq_refl</span> =&gt; <span class="id" title="var">fst</span> <span class="id" title="var">mls</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">inr</span> <span class="id" title="var">idx'</span> =&gt; <span class="id" title="var">fhget</span> <span class="id" title="var">ls'</span> (<span class="id" title="var">snd</span> <span class="id" title="var">mls</span>) <span class="id" title="var">idx'</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+By pattern-matching on the equality proof <span class="inlinecode"><span class="id" title="variable">pf</span></span>, we make that equality known to the type-checker.  Exactly why this works can be seen by studying the definition of equality. 
+</div>
+<div class="code">
+
+<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Print</span> <span class="id" title="var">eq</span>.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode"><span class="id" title="keyword">Inductive</span> <span class="id" title="inductive">eq</span> (<span class="id" title="variable">A</span> : <span class="id" title="keyword">Type</span>) (<span class="id" title="variable">x</span> : <span class="id" title="variable">A</span>) : <span class="id" title="variable">A</span> -&gt; <span class="id" title="keyword">Prop</span> :=  <span class="id" title="constructor">eq_refl</span> : <span class="id" title="variable">x</span> = <span class="id" title="variable">x</span>
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+In a proposition <span class="inlinecode"><span class="id" title="variable">x</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="variable">y</span></span>, we see that <span class="inlinecode"><span class="id" title="variable">x</span></span> is a parameter and <span class="inlinecode"><span class="id" title="variable">y</span></span> is a regular argument.  The type of the constructor <span class="inlinecode"><span class="id" title="constructor">eq_refl</span></span> shows that <span class="inlinecode"><span class="id" title="variable">y</span></span> can only ever be instantiated to <span class="inlinecode"><span class="id" title="variable">x</span></span>.  Thus, within a pattern-match with <span class="inlinecode"><span class="id" title="constructor">eq_refl</span></span>, occurrences of <span class="inlinecode"><span class="id" title="variable">y</span></span> can be replaced with occurrences of <span class="inlinecode"><span class="id" title="variable">x</span></span> for typing purposes. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">End</span> <span class="id" title="var">fhlist</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Implicit Arguments</span> <span class="id" title="var">fhget</span> [<span class="id" title="var">A</span> <span class="id" title="var">B</span> <span class="id" title="var">elm</span> <span class="id" title="var">ls</span>].<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+How does one choose between the two data structure encoding strategies we have presented so far?  Before answering that question in this chapter's final section, we introduce one further approach. 
+<div class="paragraph"> </div>
+
+<a name="lab15"></a><h1 class="section">Data Structures as Index Functions</h1>
+
+<div class="paragraph"> </div>
+
+ Indexed lists can be useful in defining other inductive types with constructors that take variable numbers of arguments.  In this section, we consider parameterized trees with arbitrary branching factor. 
+</div>
+<div class="code">
+
+<br/>
+
+<br/>
+<span class="id" title="keyword">Section</span> <span class="id" title="var">tree</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Variable</span> <span class="id" title="var">A</span> : <span class="id" title="keyword">Set</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Inductive</span> <span class="id" title="var">tree</span> : <span class="id" title="keyword">Set</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" title="var">Leaf</span> : <span class="id" title="var">A</span> -&gt; <span class="id" title="var">tree</span><br/>
+&nbsp;&nbsp;| <span class="id" title="var">Node</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">n</span>, <span class="id" title="var">ilist</span> <span class="id" title="var">tree</span> <span class="id" title="var">n</span> -&gt; <span class="id" title="var">tree</span>.<br/>
+<span class="id" title="keyword">End</span> <span class="id" title="var">tree</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Every <span class="inlinecode"><span class="id" title="constructor">Node</span></span> of a <span class="inlinecode"><span class="id" title="inductive">tree</span></span> has a natural number argument, which gives the number of child trees in the second argument, typed with <span class="inlinecode"><span class="id" title="inductive">ilist</span></span>.  We can define two operations on trees of naturals: summing their elements and incrementing their elements.  It is useful to define a generic fold function on <span class="inlinecode"><span class="id" title="inductive">ilist</span></span>s first. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Section</span> <span class="id" title="var">ifoldr</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Variables</span> <span class="id" title="var">A</span> <span class="id" title="var">B</span> : <span class="id" title="keyword">Set</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Variable</span> <span class="id" title="var">f</span> : <span class="id" title="var">A</span> -&gt; <span class="id" title="var">B</span> -&gt; <span class="id" title="var">B</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Variable</span> <span class="id" title="var">i</span> : <span class="id" title="var">B</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Fixpoint</span> <span class="id" title="var">ifoldr</span> <span class="id" title="var">n</span> (<span class="id" title="var">ls</span> : <span class="id" title="var">ilist</span> <span class="id" title="var">A</span> <span class="id" title="var">n</span>) : <span class="id" title="var">B</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">ls</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">Nil</span> =&gt; <span class="id" title="var">i</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">Cons</span> <span class="id" title="var">_</span> <span class="id" title="var">x</span> <span class="id" title="var">ls'</span> =&gt; <span class="id" title="var">f</span> <span class="id" title="var">x</span> (<span class="id" title="var">ifoldr</span> <span class="id" title="var">ls'</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+<span class="id" title="keyword">End</span> <span class="id" title="var">ifoldr</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Fixpoint</span> <span class="id" title="var">sum</span> (<span class="id" title="var">t</span> : <span class="id" title="var">tree</span> <span class="id" title="var">nat</span>) : <span class="id" title="var">nat</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">t</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">Leaf</span> <span class="id" title="var">n</span> =&gt; <span class="id" title="var">n</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">Node</span> <span class="id" title="var">_</span> <span class="id" title="var">ls</span> =&gt; <span class="id" title="var">ifoldr</span> (<span class="id" title="keyword">fun</span> <span class="id" title="var">t'</span> <span class="id" title="var">n</span> =&gt; <span class="id" title="var">sum</span> <span class="id" title="var">t'</span> + <span class="id" title="var">n</span>) <span class="id" title="var">O</span> <span class="id" title="var">ls</span><br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Fixpoint</span> <span class="id" title="var">inc</span> (<span class="id" title="var">t</span> : <span class="id" title="var">tree</span> <span class="id" title="var">nat</span>) : <span class="id" title="var">tree</span> <span class="id" title="var">nat</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">t</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">Leaf</span> <span class="id" title="var">n</span> =&gt; <span class="id" title="var">Leaf</span> (<span class="id" title="var">S</span> <span class="id" title="var">n</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">Node</span> <span class="id" title="var">_</span> <span class="id" title="var">ls</span> =&gt; <span class="id" title="var">Node</span> (<span class="id" title="var">imap</span> <span class="id" title="var">inc</span> <span class="id" title="var">ls</span>)<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Now we might like to prove that <span class="inlinecode"><span class="id" title="definition">inc</span></span> does not decrease a tree's <span class="inlinecode"><span class="id" title="inductive">sum</span></span>. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">sum_inc</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">t</span>, <span class="id" title="var">sum</span> (<span class="id" title="var">inc</span> <span class="id" title="var">t</span>) &gt;= <span class="id" title="var">sum</span> <span class="id" title="var">t</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">induction</span> <span class="id" title="var">t</span>; <span class="id" title="var">crush</span>.<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="variable">n</span> : <span class="id" title="inductive">nat</span><br/>
+&nbsp;&nbsp;<span class="id" title="definition">i</span> : <span class="id" title="inductive">ilist</span> (<span class="id" title="inductive">tree</span> <span class="id" title="inductive">nat</span>) <span class="id" title="variable">n</span><br/>
+&nbsp;&nbsp;============================<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="definition">ifoldr</span> (<span class="id" title="keyword">fun</span> (<span class="id" title="variable">t'</span> : <span class="id" title="inductive">tree</span> <span class="id" title="inductive">nat</span>) (<span class="id" title="variable">n0</span> : <span class="id" title="inductive">nat</span>) =&gt; <span class="id" title="inductive">sum</span> <span class="id" title="variable">t'</span> + <span class="id" title="variable">n0</span>) 0 (<span class="id" title="definition">imap</span> <span class="id" title="definition">inc</span> <span class="id" title="definition">i</span>) &gt;=<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="definition">ifoldr</span> (<span class="id" title="keyword">fun</span> (<span class="id" title="variable">t'</span> : <span class="id" title="inductive">tree</span> <span class="id" title="inductive">nat</span>) (<span class="id" title="variable">n0</span> : <span class="id" title="inductive">nat</span>) =&gt; <span class="id" title="inductive">sum</span> <span class="id" title="variable">t'</span> + <span class="id" title="variable">n0</span>) 0 <span class="id" title="definition">i</span><br/>
+&nbsp;
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+   We are left with a single subgoal which does not seem provable directly.  This is the same problem that we met in Chapter 3 with other nested inductive types. 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Check</span> <span class="id" title="var">tree_ind</span>.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="definition">tree_ind</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="keyword">forall</span> (<span class="id" title="variable">A</span> : <span class="id" title="keyword">Set</span>) (<span class="id" title="variable">P</span> : <span class="id" title="inductive">tree</span> <span class="id" title="variable">A</span> -&gt; <span class="id" title="keyword">Prop</span>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">forall</span> <span class="id" title="variable">a</span> : <span class="id" title="variable">A</span>, <span class="id" title="variable">P</span> (<span class="id" title="constructor">Leaf</span> <span class="id" title="variable">a</span>)) -&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">forall</span> (<span class="id" title="variable">n</span> : <span class="id" title="inductive">nat</span>) (<span class="id" title="definition">i</span> : <span class="id" title="inductive">ilist</span> (<span class="id" title="inductive">tree</span> <span class="id" title="variable">A</span>) <span class="id" title="variable">n</span>), <span class="id" title="variable">P</span> (<span class="id" title="constructor">Node</span> <span class="id" title="definition">i</span>)) -&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">forall</span> <span class="id" title="variable">t</span> : <span class="id" title="inductive">tree</span> <span class="id" title="variable">A</span>, <span class="id" title="variable">P</span> <span class="id" title="variable">t</span>
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+The automatically generated induction principle is too weak.  For the <span class="inlinecode"><span class="id" title="constructor">Node</span></span> case, it gives us no inductive hypothesis.  We could write our own induction principle, as we did in Chapter 3, but there is an easier way, if we are willing to alter the definition of <span class="inlinecode"><span class="id" title="inductive">tree</span></span>. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Abort</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Reset</span> <span class="id" title="var">tree</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+First, let us try using our recursive definition of <span class="inlinecode"><span class="id" title="inductive">ilist</span></span>s instead of the inductive version. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Section</span> <span class="id" title="var">tree</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Variable</span> <span class="id" title="var">A</span> : <span class="id" title="keyword">Set</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="keyword">Inductive</span> <span class="id" title="inductive">tree</span> : <span class="id" title="keyword">Set</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" title="constructor">Leaf</span> : <span class="id" title="variable">A</span> -&gt; <span class="id" title="inductive">tree</span><br/>
+&nbsp;&nbsp;| <span class="id" title="constructor">Node</span> : <span class="id" title="keyword">forall</span> <span class="id" title="variable">n</span>, <span class="id" title="definition">filist</span> <span class="id" title="inductive">tree</span> <span class="id" title="variable">n</span> -&gt; <span class="id" title="inductive">tree</span>.
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+<pre>
+Error: Non strictly positive occurrence of "tree" in
+ "forall n : nat, filist tree n -&gt; tree"
+</pre>
+
+<div class="paragraph"> </div>
+
+  The special-case rule for nested datatypes only works with nested uses of other inductive types, which could be replaced with uses of new mutually inductive types.  We defined <span class="inlinecode"><span class="id" title="definition">filist</span></span> recursively, so it may not be used in nested inductive definitions.
+
+<div class="paragraph"> </div>
+
+  Our final solution uses yet another of the inductive definition techniques introduced in Chapter 3, reflexive types.  Instead of merely using <span class="inlinecode"><span class="id" title="inductive">fin</span></span> to get elements out of <span class="inlinecode"><span class="id" title="inductive">ilist</span></span>, we can <i>define</i> <span class="inlinecode"><span class="id" title="inductive">ilist</span></span> in terms of <span class="inlinecode"><span class="id" title="inductive">fin</span></span>.  For the reasons outlined above, it turns out to be easier to work with <span class="inlinecode"><span class="id" title="definition">ffin</span></span> in place of <span class="inlinecode"><span class="id" title="inductive">fin</span></span>. 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Inductive</span> <span class="id" title="var">tree</span> : <span class="id" title="keyword">Set</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" title="var">Leaf</span> : <span class="id" title="var">A</span> -&gt; <span class="id" title="var">tree</span><br/>
+&nbsp;&nbsp;| <span class="id" title="var">Node</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">n</span>, (<span class="id" title="var">ffin</span> <span class="id" title="var">n</span> -&gt; <span class="id" title="var">tree</span>) -&gt; <span class="id" title="var">tree</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+A <span class="inlinecode"><span class="id" title="constructor">Node</span></span> is indexed by a natural number <span class="inlinecode"><span class="id" title="variable">n</span></span>, and the node's <span class="inlinecode"><span class="id" title="variable">n</span></span> children are represented as a function from <span class="inlinecode"><span class="id" title="definition">ffin</span></span> <span class="inlinecode"><span class="id" title="variable">n</span></span> to trees, which is isomorphic to the <span class="inlinecode"><span class="id" title="inductive">ilist</span></span>-based representation that we used above. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">End</span> <span class="id" title="var">tree</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Implicit Arguments</span> <span class="id" title="var">Node</span> [<span class="id" title="var">A</span> <span class="id" title="var">n</span>].<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+We can redefine <span class="inlinecode"><span class="id" title="inductive">sum</span></span> and <span class="inlinecode"><span class="id" title="definition">inc</span></span> for our new <span class="inlinecode"><span class="id" title="inductive">tree</span></span> type.  Again, it is useful to define a generic fold function first.  This time, it takes in a function whose domain is some <span class="inlinecode"><span class="id" title="definition">ffin</span></span> type, and it folds another function over the results of calling the first function at every possible <span class="inlinecode"><span class="id" title="definition">ffin</span></span> value. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Section</span> <span class="id" title="var">rifoldr</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Variables</span> <span class="id" title="var">A</span> <span class="id" title="var">B</span> : <span class="id" title="keyword">Set</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Variable</span> <span class="id" title="var">f</span> : <span class="id" title="var">A</span> -&gt; <span class="id" title="var">B</span> -&gt; <span class="id" title="var">B</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Variable</span> <span class="id" title="var">i</span> : <span class="id" title="var">B</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Fixpoint</span> <span class="id" title="var">rifoldr</span> (<span class="id" title="var">n</span> : <span class="id" title="var">nat</span>) : (<span class="id" title="var">ffin</span> <span class="id" title="var">n</span> -&gt; <span class="id" title="var">A</span>) -&gt; <span class="id" title="var">B</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">n</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">O</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="var">_</span> =&gt; <span class="id" title="var">i</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">S</span> <span class="id" title="var">n'</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="var">get</span> =&gt; <span class="id" title="var">f</span> (<span class="id" title="var">get</span> <span class="id" title="var">None</span>) (<span class="id" title="var">rifoldr</span> <span class="id" title="var">n'</span> (<span class="id" title="keyword">fun</span> <span class="id" title="var">idx</span> =&gt; <span class="id" title="var">get</span> (<span class="id" title="var">Some</span> <span class="id" title="var">idx</span>)))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+<span class="id" title="keyword">End</span> <span class="id" title="var">rifoldr</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Implicit Arguments</span> <span class="id" title="var">rifoldr</span> [<span class="id" title="var">A</span> <span class="id" title="var">B</span> <span class="id" title="var">n</span>].<br/>
+
+<br/>
+<span class="id" title="keyword">Fixpoint</span> <span class="id" title="var">sum</span> (<span class="id" title="var">t</span> : <span class="id" title="var">tree</span> <span class="id" title="var">nat</span>) : <span class="id" title="var">nat</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">t</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">Leaf</span> <span class="id" title="var">n</span> =&gt; <span class="id" title="var">n</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">Node</span> <span class="id" title="var">_</span> <span class="id" title="var">f</span> =&gt; <span class="id" title="var">rifoldr</span> <span class="id" title="var">plus</span> <span class="id" title="var">O</span> (<span class="id" title="keyword">fun</span> <span class="id" title="var">idx</span> =&gt; <span class="id" title="var">sum</span> (<span class="id" title="var">f</span> <span class="id" title="var">idx</span>))<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Fixpoint</span> <span class="id" title="var">inc</span> (<span class="id" title="var">t</span> : <span class="id" title="var">tree</span> <span class="id" title="var">nat</span>) : <span class="id" title="var">tree</span> <span class="id" title="var">nat</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">t</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">Leaf</span> <span class="id" title="var">n</span> =&gt; <span class="id" title="var">Leaf</span> (<span class="id" title="var">S</span> <span class="id" title="var">n</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">Node</span> <span class="id" title="var">_</span> <span class="id" title="var">f</span> =&gt; <span class="id" title="var">Node</span> (<span class="id" title="keyword">fun</span> <span class="id" title="var">idx</span> =&gt; <span class="id" title="var">inc</span> (<span class="id" title="var">f</span> <span class="id" title="var">idx</span>))<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Now we are ready to prove the theorem where we got stuck before.  We will not need to define any new induction principle, but it <i>will</i> be helpful to prove some lemmas. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Lemma</span> <span class="id" title="var">plus_ge</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">x1</span> <span class="id" title="var">y1</span> <span class="id" title="var">x2</span> <span class="id" title="var">y2</span>,<br/>
+&nbsp;&nbsp;<span class="id" title="var">x1</span> &gt;= <span class="id" title="var">x2</span><br/>
+&nbsp;&nbsp;-&gt; <span class="id" title="var">y1</span> &gt;= <span class="id" title="var">y2</span><br/>
+&nbsp;&nbsp;-&gt; <span class="id" title="var">x1</span> + <span class="id" title="var">y1</span> &gt;= <span class="id" title="var">x2</span> + <span class="id" title="var">y2</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="var">crush</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Lemma</span> <span class="id" title="var">sum_inc'</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">n</span> (<span class="id" title="var">f1</span> <span class="id" title="var">f2</span> : <span class="id" title="var">ffin</span> <span class="id" title="var">n</span> -&gt; <span class="id" title="var">nat</span>),<br/>
+&nbsp;&nbsp;(<span class="id" title="keyword">forall</span> <span class="id" title="var">idx</span>, <span class="id" title="var">f1</span> <span class="id" title="var">idx</span> &gt;= <span class="id" title="var">f2</span> <span class="id" title="var">idx</span>)<br/>
+&nbsp;&nbsp;-&gt; <span class="id" title="var">rifoldr</span> <span class="id" title="var">plus</span> <span class="id" title="var">O</span> <span class="id" title="var">f1</span> &gt;= <span class="id" title="var">rifoldr</span> <span class="id" title="var">plus</span> <span class="id" title="var">O</span> <span class="id" title="var">f2</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Hint Resolve</span> <span class="id" title="var">plus_ge</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">induction</span> <span class="id" title="var">n</span>; <span class="id" title="var">crush</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">sum_inc</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">t</span>, <span class="id" title="var">sum</span> (<span class="id" title="var">inc</span> <span class="id" title="var">t</span>) &gt;= <span class="id" title="var">sum</span> <span class="id" title="var">t</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Hint Resolve</span> <span class="id" title="var">sum_inc'</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">induction</span> <span class="id" title="var">t</span>; <span class="id" title="var">crush</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Even if Coq would generate complete induction principles automatically for nested inductive definitions like the one we started with, there would still be advantages to using this style of reflexive encoding.  We see one of those advantages in the definition of <span class="inlinecode"><span class="id" title="definition">inc</span></span>, where we did not need to use any kind of auxiliary function.  In general, reflexive encodings often admit direct implementations of operations that would require recursion if performed with more traditional inductive data structures. 
+<div class="paragraph"> </div>
+
+<a name="lab16"></a><h2 class="section">Another Interpreter Example</h2>
+
+<div class="paragraph"> </div>
+
+ We develop another example of variable-arity constructors, in the form of optimization of a small expression language with a construct like Scheme's <tt>cond</tt>.  Each of our conditional expressions takes a list of pairs of boolean tests and bodies.  The value of the conditional comes from the body of the first test in the list to evaluate to <span class="inlinecode"><span class="id" title="constructor">true</span></span>.  To simplify the interpreter we will write, we force each conditional to include a final, default case. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Inductive</span> <span class="id" title="var">type'</span> : <span class="id" title="keyword">Type</span> := <span class="id" title="var">Nat</span> | <span class="id" title="var">Bool</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Inductive</span> <span class="id" title="var">exp'</span> : <span class="id" title="var">type'</span> -&gt; <span class="id" title="keyword">Type</span> :=<br/>
+| <span class="id" title="var">NConst</span> : <span class="id" title="var">nat</span> -&gt; <span class="id" title="var">exp'</span> <span class="id" title="var">Nat</span><br/>
+| <span class="id" title="var">Plus</span> : <span class="id" title="var">exp'</span> <span class="id" title="var">Nat</span> -&gt; <span class="id" title="var">exp'</span> <span class="id" title="var">Nat</span> -&gt; <span class="id" title="var">exp'</span> <span class="id" title="var">Nat</span><br/>
+| <span class="id" title="var">Eq</span> : <span class="id" title="var">exp'</span> <span class="id" title="var">Nat</span> -&gt; <span class="id" title="var">exp'</span> <span class="id" title="var">Nat</span> -&gt; <span class="id" title="var">exp'</span> <span class="id" title="var">Bool</span><br/>
+<br/>
+| <span class="id" title="var">BConst</span> : <span class="id" title="var">bool</span> -&gt; <span class="id" title="var">exp'</span> <span class="id" title="var">Bool</span><br/>
+<br/>
+| <span class="id" title="var">Cond</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">n</span> <span class="id" title="var">t</span>, (<span class="id" title="var">ffin</span> <span class="id" title="var">n</span> -&gt; <span class="id" title="var">exp'</span> <span class="id" title="var">Bool</span>)<br/>
+&nbsp;&nbsp;-&gt; (<span class="id" title="var">ffin</span> <span class="id" title="var">n</span> -&gt; <span class="id" title="var">exp'</span> <span class="id" title="var">t</span>) -&gt; <span class="id" title="var">exp'</span> <span class="id" title="var">t</span> -&gt; <span class="id" title="var">exp'</span> <span class="id" title="var">t</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+A <span class="inlinecode"><span class="id" title="constructor">Cond</span></span> is parameterized by a natural <span class="inlinecode"><span class="id" title="variable">n</span></span>, which tells us how many cases this conditional has.  The test expressions are represented with a function of type <span class="inlinecode"><span class="id" title="definition">ffin</span></span> <span class="inlinecode"><span class="id" title="variable">n</span></span> <span class="inlinecode">-&gt;</span> <span class="inlinecode"><span class="id" title="inductive">exp'</span></span> <span class="inlinecode"><span class="id" title="constructor">Bool</span></span>, and the bodies are represented with a function of type <span class="inlinecode"><span class="id" title="definition">ffin</span></span> <span class="inlinecode"><span class="id" title="variable">n</span></span> <span class="inlinecode">-&gt;</span> <span class="inlinecode"><span class="id" title="inductive">exp'</span></span> <span class="inlinecode"><span class="id" title="variable">t</span></span>, where <span class="inlinecode"><span class="id" title="variable">t</span></span> is the overall type.  The final <span class="inlinecode"><span class="id" title="inductive">exp'</span></span> <span class="inlinecode"><span class="id" title="variable">t</span></span> argument is the default case.  For example, here is an expression that successively checks whether <span class="inlinecode">2</span> <span class="inlinecode">+</span> <span class="inlinecode">2</span> <span class="inlinecode">=</span> <span class="inlinecode">5</span> (returning 0 if so) or if <span class="inlinecode">1</span> <span class="inlinecode">+</span> <span class="inlinecode">1</span> <span class="inlinecode">=</span> <span class="inlinecode">2</span> (returning 1 if so), returning 2 otherwise. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Example</span> <span class="id" title="var">ex1</span> := <span class="id" title="var">Cond</span> 2<br/>
+&nbsp;&nbsp;(<span class="id" title="keyword">fun</span> <span class="id" title="var">f</span> =&gt; <span class="id" title="keyword">match</span> <span class="id" title="var">f</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">None</span> =&gt; <span class="id" title="var">Eq</span> (<span class="id" title="var">Plus</span> (<span class="id" title="var">NConst</span> 2) (<span class="id" title="var">NConst</span> 2)) (<span class="id" title="var">NConst</span> 5)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">Some</span> <span class="id" title="var">None</span> =&gt; <span class="id" title="var">Eq</span> (<span class="id" title="var">Plus</span> (<span class="id" title="var">NConst</span> 1) (<span class="id" title="var">NConst</span> 1)) (<span class="id" title="var">NConst</span> 2)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">Some</span> (<span class="id" title="var">Some</span> <span class="id" title="var">v</span>) =&gt; <span class="id" title="keyword">match</span> <span class="id" title="var">v</span> <span class="id" title="keyword">with</span> <span class="id" title="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>)<br/>
+&nbsp;&nbsp;(<span class="id" title="keyword">fun</span> <span class="id" title="var">f</span> =&gt; <span class="id" title="keyword">match</span> <span class="id" title="var">f</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">None</span> =&gt; <span class="id" title="var">NConst</span> 0<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">Some</span> <span class="id" title="var">None</span> =&gt; <span class="id" title="var">NConst</span> 1<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">Some</span> (<span class="id" title="var">Some</span> <span class="id" title="var">v</span>) =&gt; <span class="id" title="keyword">match</span> <span class="id" title="var">v</span> <span class="id" title="keyword">with</span> <span class="id" title="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>)<br/>
+&nbsp;&nbsp;(<span class="id" title="var">NConst</span> 2).<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+We start implementing our interpreter with a standard type denotation function. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">type'Denote</span> (<span class="id" title="var">t</span> : <span class="id" title="var">type'</span>) : <span class="id" title="keyword">Set</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">t</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">Nat</span> =&gt; <span class="id" title="var">nat</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">Bool</span> =&gt; <span class="id" title="var">bool</span><br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+To implement the expression interpreter, it is useful to have the following function that implements the functionality of <span class="inlinecode"><span class="id" title="constructor">Cond</span></span> without involving any syntax. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Section</span> <span class="id" title="var">cond</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Variable</span> <span class="id" title="var">A</span> : <span class="id" title="keyword">Set</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Variable</span> <span class="id" title="var">default</span> : <span class="id" title="var">A</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Fixpoint</span> <span class="id" title="var">cond</span> (<span class="id" title="var">n</span> : <span class="id" title="var">nat</span>) : (<span class="id" title="var">ffin</span> <span class="id" title="var">n</span> -&gt; <span class="id" title="var">bool</span>) -&gt; (<span class="id" title="var">ffin</span> <span class="id" title="var">n</span> -&gt; <span class="id" title="var">A</span>) -&gt; <span class="id" title="var">A</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">n</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">O</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> =&gt; <span class="id" title="var">default</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">S</span> <span class="id" title="var">n'</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="var">tests</span> <span class="id" title="var">bodies</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">if</span> <span class="id" title="var">tests</span> <span class="id" title="var">None</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">then</span> <span class="id" title="var">bodies</span> <span class="id" title="var">None</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">else</span> <span class="id" title="var">cond</span> <span class="id" title="var">n'</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">fun</span> <span class="id" title="var">idx</span> =&gt; <span class="id" title="var">tests</span> (<span class="id" title="var">Some</span> <span class="id" title="var">idx</span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">fun</span> <span class="id" title="var">idx</span> =&gt; <span class="id" title="var">bodies</span> (<span class="id" title="var">Some</span> <span class="id" title="var">idx</span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+<span class="id" title="keyword">End</span> <span class="id" title="var">cond</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Implicit Arguments</span> <span class="id" title="var">cond</span> [<span class="id" title="var">A</span> <span class="id" title="var">n</span>].<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Now the expression interpreter is straightforward to write. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Fixpoint</span> <span class="id" title="var">exp'Denote</span> <span class="id" title="var">t</span> (<span class="id" title="var">e</span> : <span class="id" title="var">exp'</span> <span class="id" title="var">t</span>) : <span class="id" title="var">type'Denote</span> <span class="id" title="var">t</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">e</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">NConst</span> <span class="id" title="var">n</span> =&gt; <span class="id" title="var">n</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">Plus</span> <span class="id" title="var">e1</span> <span class="id" title="var">e2</span> =&gt; <span class="id" title="var">exp'Denote</span> <span class="id" title="var">e1</span> + <span class="id" title="var">exp'Denote</span> <span class="id" title="var">e2</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">Eq</span> <span class="id" title="var">e1</span> <span class="id" title="var">e2</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">if</span> <span class="id" title="var">eq_nat_dec</span> (<span class="id" title="var">exp'Denote</span> <span class="id" title="var">e1</span>) (<span class="id" title="var">exp'Denote</span> <span class="id" title="var">e2</span>) <span class="id" title="keyword">then</span> <span class="id" title="var">true</span> <span class="id" title="keyword">else</span> <span class="id" title="var">false</span><br/>
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">BConst</span> <span class="id" title="var">b</span> =&gt; <span class="id" title="var">b</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">Cond</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">tests</span> <span class="id" title="var">bodies</span> <span class="id" title="var">default</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">cond</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">exp'Denote</span> <span class="id" title="var">default</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">fun</span> <span class="id" title="var">idx</span> =&gt; <span class="id" title="var">exp'Denote</span> (<span class="id" title="var">tests</span> <span class="id" title="var">idx</span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">fun</span> <span class="id" title="var">idx</span> =&gt; <span class="id" title="var">exp'Denote</span> (<span class="id" title="var">bodies</span> <span class="id" title="var">idx</span>))<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+We will implement a constant-folding function that optimizes conditionals, removing cases with known-<span class="inlinecode"><span class="id" title="constructor">false</span></span> tests and cases that come after known-<span class="inlinecode"><span class="id" title="constructor">true</span></span> tests.  A function <span class="inlinecode"><span class="id" title="definition">cfoldCond</span></span> implements the heart of this logic.  The convoy pattern is used again near the end of the implementation. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Section</span> <span class="id" title="var">cfoldCond</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Variable</span> <span class="id" title="var">t</span> : <span class="id" title="var">type'</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Variable</span> <span class="id" title="var">default</span> : <span class="id" title="var">exp'</span> <span class="id" title="var">t</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Fixpoint</span> <span class="id" title="var">cfoldCond</span> (<span class="id" title="var">n</span> : <span class="id" title="var">nat</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;: (<span class="id" title="var">ffin</span> <span class="id" title="var">n</span> -&gt; <span class="id" title="var">exp'</span> <span class="id" title="var">Bool</span>) -&gt; (<span class="id" title="var">ffin</span> <span class="id" title="var">n</span> -&gt; <span class="id" title="var">exp'</span> <span class="id" title="var">t</span>) -&gt; <span class="id" title="var">exp'</span> <span class="id" title="var">t</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">n</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">O</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> =&gt; <span class="id" title="var">default</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">S</span> <span class="id" title="var">n'</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="var">tests</span> <span class="id" title="var">bodies</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">tests</span> <span class="id" title="var">None</span> <span class="id" title="keyword">return</span> <span class="id" title="var">_</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">BConst</span> <span class="id" title="var">true</span> =&gt; <span class="id" title="var">bodies</span> <span class="id" title="var">None</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">BConst</span> <span class="id" title="var">false</span> =&gt; <span class="id" title="var">cfoldCond</span> <span class="id" title="var">n'</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">fun</span> <span class="id" title="var">idx</span> =&gt; <span class="id" title="var">tests</span> (<span class="id" title="var">Some</span> <span class="id" title="var">idx</span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">fun</span> <span class="id" title="var">idx</span> =&gt; <span class="id" title="var">bodies</span> (<span class="id" title="var">Some</span> <span class="id" title="var">idx</span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">_</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">let</span> <span class="id" title="var">e</span> := <span class="id" title="var">cfoldCond</span> <span class="id" title="var">n'</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">fun</span> <span class="id" title="var">idx</span> =&gt; <span class="id" title="var">tests</span> (<span class="id" title="var">Some</span> <span class="id" title="var">idx</span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">fun</span> <span class="id" title="var">idx</span> =&gt; <span class="id" title="var">bodies</span> (<span class="id" title="var">Some</span> <span class="id" title="var">idx</span>)) <span class="id" title="keyword">in</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">e</span> <span class="id" title="keyword">in</span> <span class="id" title="var">exp'</span> <span class="id" title="var">t</span> <span class="id" title="keyword">return</span> <span class="id" title="var">exp'</span> <span class="id" title="var">t</span> -&gt; <span class="id" title="var">exp'</span> <span class="id" title="var">t</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">Cond</span> <span class="id" title="var">n</span> <span class="id" title="var">_</span> <span class="id" title="var">tests'</span> <span class="id" title="var">bodies'</span> <span class="id" title="var">default'</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="var">body</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">Cond</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">S</span> <span class="id" title="var">n</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">fun</span> <span class="id" title="var">idx</span> =&gt; <span class="id" title="keyword">match</span> <span class="id" title="var">idx</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">None</span> =&gt; <span class="id" title="var">tests</span> <span class="id" title="var">None</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">Some</span> <span class="id" title="var">idx</span> =&gt; <span class="id" title="var">tests'</span> <span class="id" title="var">idx</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">fun</span> <span class="id" title="var">idx</span> =&gt; <span class="id" title="keyword">match</span> <span class="id" title="var">idx</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">None</span> =&gt; <span class="id" title="var">body</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">Some</span> <span class="id" title="var">idx</span> =&gt; <span class="id" title="var">bodies'</span> <span class="id" title="var">idx</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">default'</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">e</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="var">body</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">Cond</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">fun</span> <span class="id" title="var">_</span> =&gt; <span class="id" title="var">tests</span> <span class="id" title="var">None</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">fun</span> <span class="id" title="var">_</span> =&gt; <span class="id" title="var">body</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">e</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span> (<span class="id" title="var">bodies</span> <span class="id" title="var">None</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+<span class="id" title="keyword">End</span> <span class="id" title="var">cfoldCond</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Implicit Arguments</span> <span class="id" title="var">cfoldCond</span> [<span class="id" title="var">t</span> <span class="id" title="var">n</span>].<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Like for the interpreters, most of the action was in this helper function, and <span class="inlinecode"><span class="id" title="definition">cfold</span></span> itself is easy to write. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Fixpoint</span> <span class="id" title="var">cfold</span> <span class="id" title="var">t</span> (<span class="id" title="var">e</span> : <span class="id" title="var">exp'</span> <span class="id" title="var">t</span>) : <span class="id" title="var">exp'</span> <span class="id" title="var">t</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">e</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">NConst</span> <span class="id" title="var">n</span> =&gt; <span class="id" title="var">NConst</span> <span class="id" title="var">n</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">Plus</span> <span class="id" title="var">e1</span> <span class="id" title="var">e2</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">let</span> <span class="id" title="var">e1'</span> := <span class="id" title="var">cfold</span> <span class="id" title="var">e1</span> <span class="id" title="keyword">in</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">let</span> <span class="id" title="var">e2'</span> := <span class="id" title="var">cfold</span> <span class="id" title="var">e2</span> <span class="id" title="keyword">in</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">e1'</span>, <span class="id" title="var">e2'</span> <span class="id" title="keyword">return</span> <span class="id" title="var">exp'</span> <span class="id" title="var">Nat</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">NConst</span> <span class="id" title="var">n1</span>, <span class="id" title="var">NConst</span> <span class="id" title="var">n2</span> =&gt; <span class="id" title="var">NConst</span> (<span class="id" title="var">n1</span> + <span class="id" title="var">n2</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">_</span>, <span class="id" title="var">_</span> =&gt; <span class="id" title="var">Plus</span> <span class="id" title="var">e1'</span> <span class="id" title="var">e2'</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">Eq</span> <span class="id" title="var">e1</span> <span class="id" title="var">e2</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">let</span> <span class="id" title="var">e1'</span> := <span class="id" title="var">cfold</span> <span class="id" title="var">e1</span> <span class="id" title="keyword">in</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">let</span> <span class="id" title="var">e2'</span> := <span class="id" title="var">cfold</span> <span class="id" title="var">e2</span> <span class="id" title="keyword">in</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">e1'</span>, <span class="id" title="var">e2'</span> <span class="id" title="keyword">return</span> <span class="id" title="var">exp'</span> <span class="id" title="var">Bool</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">NConst</span> <span class="id" title="var">n1</span>, <span class="id" title="var">NConst</span> <span class="id" title="var">n2</span> =&gt; <span class="id" title="var">BConst</span> (<span class="id" title="keyword">if</span> <span class="id" title="var">eq_nat_dec</span> <span class="id" title="var">n1</span> <span class="id" title="var">n2</span> <span class="id" title="keyword">then</span> <span class="id" title="var">true</span> <span class="id" title="keyword">else</span> <span class="id" title="var">false</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">_</span>, <span class="id" title="var">_</span> =&gt; <span class="id" title="var">Eq</span> <span class="id" title="var">e1'</span> <span class="id" title="var">e2'</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span><br/>
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">BConst</span> <span class="id" title="var">b</span> =&gt; <span class="id" title="var">BConst</span> <span class="id" title="var">b</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">Cond</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">tests</span> <span class="id" title="var">bodies</span> <span class="id" title="var">default</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">cfoldCond</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">cfold</span> <span class="id" title="var">default</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">fun</span> <span class="id" title="var">idx</span> =&gt; <span class="id" title="var">cfold</span> (<span class="id" title="var">tests</span> <span class="id" title="var">idx</span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">fun</span> <span class="id" title="var">idx</span> =&gt; <span class="id" title="var">cfold</span> (<span class="id" title="var">bodies</span> <span class="id" title="var">idx</span>))<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+To prove our final correctness theorem, it is useful to know that <span class="inlinecode"><span class="id" title="definition">cfoldCond</span></span> preserves expression meanings.  The following lemma formalizes that property.  The proof is a standard mostly automated one, with the only wrinkle being a guided instantiation of the quantifiers in the induction hypothesis. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Lemma</span> <span class="id" title="var">cfoldCond_correct</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">t</span> (<span class="id" title="var">default</span> : <span class="id" title="var">exp'</span> <span class="id" title="var">t</span>)<br/>
+&nbsp;&nbsp;<span class="id" title="var">n</span> (<span class="id" title="var">tests</span> : <span class="id" title="var">ffin</span> <span class="id" title="var">n</span> -&gt; <span class="id" title="var">exp'</span> <span class="id" title="var">Bool</span>) (<span class="id" title="var">bodies</span> : <span class="id" title="var">ffin</span> <span class="id" title="var">n</span> -&gt; <span class="id" title="var">exp'</span> <span class="id" title="var">t</span>),<br/>
+&nbsp;&nbsp;<span class="id" title="var">exp'Denote</span> (<span class="id" title="var">cfoldCond</span> <span class="id" title="var">default</span> <span class="id" title="var">tests</span> <span class="id" title="var">bodies</span>)<br/>
+&nbsp;&nbsp;= <span class="id" title="var">exp'Denote</span> (<span class="id" title="var">Cond</span> <span class="id" title="var">n</span> <span class="id" title="var">tests</span> <span class="id" title="var">bodies</span> <span class="id" title="var">default</span>).<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">induction</span> <span class="id" title="var">n</span>; <span class="id" title="var">crush</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="keyword">goal</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| [ <span class="id" title="var">IHn</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">tests</span> <span class="id" title="var">bodies</span>, <span class="id" title="var">_</span>, <span class="id" title="var">tests</span> : <span class="id" title="var">_</span> -&gt; <span class="id" title="var">_</span>, <span class="id" title="var">bodies</span> : <span class="id" title="var">_</span> -&gt; <span class="id" title="var">_</span> |- <span class="id" title="var">_</span> ] =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">specialize</span> (<span class="id" title="var">IHn</span> (<span class="id" title="keyword">fun</span> <span class="id" title="var">idx</span> =&gt; <span class="id" title="var">tests</span> (<span class="id" title="var">Some</span> <span class="id" title="var">idx</span>)) (<span class="id" title="keyword">fun</span> <span class="id" title="var">idx</span> =&gt; <span class="id" title="var">bodies</span> (<span class="id" title="var">Some</span> <span class="id" title="var">idx</span>)))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">repeat</span> (<span class="id" title="keyword">match</span> <span class="id" title="keyword">goal</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| [ |- <span class="id" title="keyword">context</span>[<span class="id" title="keyword">match</span> ?<span class="id" title="var">E</span> <span class="id" title="keyword">with</span> <span class="id" title="var">NConst</span> <span class="id" title="var">_</span> =&gt; <span class="id" title="var">_</span> | <span class="id" title="var">_</span> =&gt; <span class="id" title="var">_</span> <span class="id" title="keyword">end</span>] ] =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">dep_destruct</span> <span class="id" title="var">E</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| [ |- <span class="id" title="keyword">context</span>[<span class="id" title="keyword">if</span> ?<span class="id" title="var">B</span> <span class="id" title="keyword">then</span> <span class="id" title="var">_</span> <span class="id" title="keyword">else</span> <span class="id" title="var">_</span>] ] =&gt; <span class="id" title="tactic">destruct</span> <span class="id" title="var">B</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>; <span class="id" title="var">crush</span>).<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+It is also useful to know that the result of a call to <span class="inlinecode"><span class="id" title="definition">cond</span></span> is not changed by substituting new tests and bodies functions, so long as the new functions have the same input-output behavior as the old.  It turns out that, in Coq, it is not possible to prove in general that functions related in this way are equal.  We treat this issue with our discussion of axioms in a later chapter.  For now, it suffices to prove that the particular function <span class="inlinecode"><span class="id" title="definition">cond</span></span> is <i>extensional</i>; that is, it is unaffected by substitution of functions with input-output equivalents. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Lemma</span> <span class="id" title="var">cond_ext</span> : <span class="id" title="keyword">forall</span> (<span class="id" title="var">A</span> : <span class="id" title="keyword">Set</span>) (<span class="id" title="var">default</span> : <span class="id" title="var">A</span>) <span class="id" title="var">n</span> (<span class="id" title="var">tests</span> <span class="id" title="var">tests'</span> : <span class="id" title="var">ffin</span> <span class="id" title="var">n</span> -&gt; <span class="id" title="var">bool</span>)<br/>
+&nbsp;&nbsp;(<span class="id" title="var">bodies</span> <span class="id" title="var">bodies'</span> : <span class="id" title="var">ffin</span> <span class="id" title="var">n</span> -&gt; <span class="id" title="var">A</span>),<br/>
+&nbsp;&nbsp;(<span class="id" title="keyword">forall</span> <span class="id" title="var">idx</span>, <span class="id" title="var">tests</span> <span class="id" title="var">idx</span> = <span class="id" title="var">tests'</span> <span class="id" title="var">idx</span>)<br/>
+&nbsp;&nbsp;-&gt; (<span class="id" title="keyword">forall</span> <span class="id" title="var">idx</span>, <span class="id" title="var">bodies</span> <span class="id" title="var">idx</span> = <span class="id" title="var">bodies'</span> <span class="id" title="var">idx</span>)<br/>
+&nbsp;&nbsp;-&gt; <span class="id" title="var">cond</span> <span class="id" title="var">default</span> <span class="id" title="var">tests</span> <span class="id" title="var">bodies</span><br/>
+&nbsp;&nbsp;= <span class="id" title="var">cond</span> <span class="id" title="var">default</span> <span class="id" title="var">tests'</span> <span class="id" title="var">bodies'</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">induction</span> <span class="id" title="var">n</span>; <span class="id" title="var">crush</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="keyword">goal</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| [ |- <span class="id" title="keyword">context</span>[<span class="id" title="keyword">if</span> ?<span class="id" title="var">E</span> <span class="id" title="keyword">then</span> <span class="id" title="var">_</span> <span class="id" title="keyword">else</span> <span class="id" title="var">_</span>] ] =&gt; <span class="id" title="tactic">destruct</span> <span class="id" title="var">E</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>; <span class="id" title="var">crush</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Now the final theorem is easy to prove. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">cfold_correct</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">t</span> (<span class="id" title="var">e</span> : <span class="id" title="var">exp'</span> <span class="id" title="var">t</span>),<br/>
+&nbsp;&nbsp;<span class="id" title="var">exp'Denote</span> (<span class="id" title="var">cfold</span> <span class="id" title="var">e</span>) = <span class="id" title="var">exp'Denote</span> <span class="id" title="var">e</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Hint Rewrite</span> <span class="id" title="var">cfoldCond_correct</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Hint Resolve</span> <span class="id" title="var">cond_ext</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">induction</span> <span class="id" title="var">e</span>; <span class="id" title="var">crush</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">repeat</span> (<span class="id" title="keyword">match</span> <span class="id" title="keyword">goal</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| [ |- <span class="id" title="keyword">context</span>[<span class="id" title="var">cfold</span> ?<span class="id" title="var">E</span>] ] =&gt; <span class="id" title="var">dep_destruct</span> (<span class="id" title="var">cfold</span> <span class="id" title="var">E</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>; <span class="id" title="var">crush</span>).<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+We add our two lemmas as hints and perform standard automation with pattern-matching of subterms to destruct. 
+<div class="paragraph"> </div>
+
+<a name="lab17"></a><h1 class="section">Choosing Between Representations</h1>
+
+<div class="paragraph"> </div>
+
+ It is not always clear which of these representation techniques to apply in a particular situation, but I will try to summarize the pros and cons of each.
+
+<div class="paragraph"> </div>
+
+   Inductive types are often the most pleasant to work with, after someone has spent the time implementing some basic library functions for them, using fancy <span class="inlinecode"><span class="id" title="keyword">match</span></span> annotations.  Many aspects of Coq's logic and tactic support are specialized to deal with inductive types, and you may miss out if you use alternate encodings.
+
+<div class="paragraph"> </div>
+
+   Recursive types usually involve much less initial effort, but they can be less convenient to use with proof automation.  For instance, the <span class="inlinecode"><span class="id" title="tactic">simpl</span></span> tactic (which is among the ingredients in <span class="inlinecode"><span class="id" title="var">crush</span></span>) will sometimes be overzealous in simplifying uses of functions over recursive types.  Consider a call <span class="inlinecode"><span class="id" title="definition">get</span></span> <span class="inlinecode"><span class="id" title="variable">l</span></span> <span class="inlinecode"><span class="id" title="variable">f</span></span>, where variable <span class="inlinecode"><span class="id" title="variable">l</span></span> has type <span class="inlinecode"><span class="id" title="definition">filist</span></span> <span class="inlinecode"><span class="id" title="variable">A</span></span> <span class="inlinecode">(<span class="id" title="variable">S</span></span> <span class="inlinecode"><span class="id" title="variable">n</span>)</span>.  The type of <span class="inlinecode"><span class="id" title="variable">l</span></span> would be simplified to an explicit pair type.  In a proof involving many recursive types, this kind of unhelpful "simplification" can lead to rapid bloat in the sizes of subgoals.  Even worse, it can prevent syntactic pattern-matching, like in cases where <span class="inlinecode"><span class="id" title="definition">filist</span></span> is expected but a pair type is found in the "simplified" version.  The same problem applies to applications of recursive functions to values in recursive types: the recursive function call may "simplify" when the top-level structure of the type index but not the recursive value is known, because such functions are generally defined by recursion on the index, not the value.
+
+<div class="paragraph"> </div>
+
+   Another disadvantage of recursive types is that they only apply to type families whose indices determine their "skeletons."  This is not true for all data structures; a good counterexample comes from the richly typed programming language syntax types we have used several times so far.  The fact that a piece of syntax has type <span class="inlinecode"><span class="id" title="constructor">Nat</span></span> tells us nothing about the tree structure of that syntax.
+
+<div class="paragraph"> </div>
+
+   Finally, Coq type inference can be more helpful in constructing values in inductive types.  Application of a particular constructor of that type tells Coq what to expect from the arguments, while, for instance, forming a generic pair does not make clear an intention to interpret the value as belonging to a particular recursive type.  This downside can be mitigated to an extent by writing "constructor" functions for a recursive type, mirroring the definition of the corresponding inductive type.
+
+<div class="paragraph"> </div>
+
+   Reflexive encodings of data types are seen relatively rarely.  As our examples demonstrated, manipulating index values manually can lead to hard-to-read code.  A normal inductive type is generally easier to work with, once someone has gone through the trouble of implementing an induction principle manually with the techniques we studied in Chapter 3.  For small developments, avoiding that kind of coding can justify the use of reflexive data structures.  There are also some useful instances of co-inductive definitions with nested data structures (e.g., lists of values in the co-inductive type) that can only be deconstructed effectively with reflexive encoding of the nested structures. 
+</div>
+<div class="code">
+</div>
+</div>
+
+<div id="footer">
+<hr/><a href="index.html">Index</a><hr/>This page has been generated by <a href="http://coq.inria.fr/">coqdoc</a>
+</div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,1235 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<link href="coqdoc.css" rel="stylesheet" type="text/css" />
+<title>Generic</title>
+</head>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+</div>
+
+<div id="main">
+
+<h1 class="libtitle">Library Generic</h1>
+
+<div class="code">
+
+<br/>
+
+<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+ 
+<div class="paragraph"> </div>
+
+  <i>Generic programming</i> makes it possible to write functions that operate over different types of data.  Parametric polymorphism in ML and Haskell is one of the simplest examples.  ML-style module systems and Haskell type classes are more flexible cases.  These language features are often not as powerful as we would like.  For instance, while Haskell includes a type class classifying those types whose values can be pretty-printed, per-type pretty-printing is usually either implemented manually or implemented via a <span class="inlinecode"><span class="id" title="var">deriving</span></span> clause, which triggers ad-hoc code generation.  Some clever encoding tricks have been used to achieve better within Haskell and other languages, but we can do <i>datatype-generic programming</i> much more cleanly with dependent types.  Thanks to the expressive power of CIC, we need no special language support.
+
+<div class="paragraph"> </div>
+
+   Generic programming can often be very useful in Coq developments, so we devote this chapter to studying it.  In a proof assistant, there is the new possibility of generic proofs about generic programs, which we also devote some space to. 
+<div class="paragraph"> </div>
+
+<a name="lab38"></a><h1 class="section">Reifying Datatype Definitions</h1>
+
+<div class="paragraph"> </div>
+
+ The key to generic programming with dependent types is <i>universe types</i>.  This concept should not be confused with the idea of <i>universes</i> from the metatheory of CIC and related languages, which we will study in more detail in the next chapter.  Rather, the idea of universe types is to define inductive types that provide <i>syntactic representations</i> of Coq types.  We cannot directly write CIC programs that do case analysis on types, but we <i>can</i> case analyze on reified syntactic versions of those types.
+
+<div class="paragraph"> </div>
+
+   Thus, to begin, we must define a syntactic representation of some class of datatypes.  In this chapter, our running example will have to do with basic algebraic datatypes, of the kind found in ML and Haskell, but without additional bells and whistles like type parameters and mutually recursive definitions.
+
+<div class="paragraph"> </div>
+
+   The first step is to define a representation for constructors of our datatypes.  We use the <span class="inlinecode"><span class="id" title="keyword">Record</span></span> command as a shorthand for defining an inductive type with a single constructor, plus projection functions for pulling out any of the named arguments to that constructor. 
+</div>
+<div class="code">
+
+<br/>
+
+<br/>
+<span class="id" title="keyword">Record</span> <span class="id" title="tactic">constructor</span> : <span class="id" title="keyword">Type</span> := <span class="id" title="var">Con</span> {<br/>
+&nbsp;&nbsp;<span class="id" title="var">nonrecursive</span> : <span class="id" title="keyword">Type</span>;<br/>
+&nbsp;&nbsp;<span class="id" title="var">recursive</span> : <span class="id" title="var">nat</span><br/>
+}.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+The idea is that a constructor represented as <span class="inlinecode"><span class="id" title="constructor">Con</span></span> <span class="inlinecode"><span class="id" title="variable">T</span></span> <span class="inlinecode"><span class="id" title="variable">n</span></span> has <span class="inlinecode"><span class="id" title="variable">n</span></span> arguments of the type that we are defining.  Additionally, all of the other, non-recursive arguments can be encoded in the type <span class="inlinecode"><span class="id" title="variable">T</span></span>.  When there are no non-recursive arguments, <span class="inlinecode"><span class="id" title="variable">T</span></span> can be <span class="inlinecode"><span class="id" title="inductive">unit</span></span>.  When there are two non-recursive arguments, of types <span class="inlinecode"><span class="id" title="variable">A</span></span> and <span class="inlinecode"><span class="id" title="variable">B</span></span>, <span class="inlinecode"><span class="id" title="variable">T</span></span> can be <span class="inlinecode"><span class="id" title="variable">A</span></span> <span class="inlinecode">*</span> <span class="inlinecode"><span class="id" title="variable">B</span></span>.  We can generalize to any number of arguments via tupling.
+
+<div class="paragraph"> </div>
+
+   With this definition, it is easy to define a datatype representation in terms of lists of constructors.  The intended meaning is that the datatype came from an inductive definition including exactly the constructors in the list. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">datatype</span> := <span class="id" title="var">list</span> <span class="id" title="tactic">constructor</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Here are a few example encodings for some common types from the Coq standard library.  While our syntax type does not support type parameters directly, we can implement them at the meta level, via functions from types to <span class="inlinecode"><span class="id" title="definition">datatype</span></span>s. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">Empty_set_dt</span> : <span class="id" title="var">datatype</span> := <span class="id" title="var">nil</span>.<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">unit_dt</span> : <span class="id" title="var">datatype</span> := <span class="id" title="var">Con</span> <span class="id" title="var">unit</span> 0 :: <span class="id" title="var">nil</span>.<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">bool_dt</span> : <span class="id" title="var">datatype</span> := <span class="id" title="var">Con</span> <span class="id" title="var">unit</span> 0 :: <span class="id" title="var">Con</span> <span class="id" title="var">unit</span> 0 :: <span class="id" title="var">nil</span>.<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">nat_dt</span> : <span class="id" title="var">datatype</span> := <span class="id" title="var">Con</span> <span class="id" title="var">unit</span> 0 :: <span class="id" title="var">Con</span> <span class="id" title="var">unit</span> 1 :: <span class="id" title="var">nil</span>.<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">list_dt</span> (<span class="id" title="var">A</span> : <span class="id" title="keyword">Type</span>) : <span class="id" title="var">datatype</span> := <span class="id" title="var">Con</span> <span class="id" title="var">unit</span> 0 :: <span class="id" title="var">Con</span> <span class="id" title="var">A</span> 1 :: <span class="id" title="var">nil</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+The type <span class="inlinecode"><span class="id" title="inductive">Empty_set</span></span> has no constructors, so its representation is the empty list.  The type <span class="inlinecode"><span class="id" title="inductive">unit</span></span> has one constructor with no arguments, so its one reified constructor indicates no non-recursive data and <span class="inlinecode">0</span> recursive arguments.  The representation for <span class="inlinecode"><span class="id" title="inductive">bool</span></span> just duplicates this single argumentless constructor.    We get from <span class="inlinecode"><span class="id" title="inductive">bool</span></span> to <span class="inlinecode"><span class="id" title="inductive">nat</span></span> by changing one of the constructors to indicate 1 recursive argument.  We get from <span class="inlinecode"><span class="id" title="inductive">nat</span></span> to <span class="inlinecode"><span class="id" title="inductive">list</span></span> by adding a non-recursive argument of a parameter type <span class="inlinecode"><span class="id" title="variable">A</span></span>.
+
+<div class="paragraph"> </div>
+
+   As a further example, we can do the same encoding for a generic binary tree type. 
+</div>
+<div class="code">
+
+<br/>
+
+<br/>
+<span class="id" title="keyword">Section</span> <span class="id" title="var">tree</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Variable</span> <span class="id" title="var">A</span> : <span class="id" title="keyword">Type</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Inductive</span> <span class="id" title="var">tree</span> : <span class="id" title="keyword">Type</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" title="var">Leaf</span> : <span class="id" title="var">A</span> -&gt; <span class="id" title="var">tree</span><br/>
+&nbsp;&nbsp;| <span class="id" title="var">Node</span> : <span class="id" title="var">tree</span> -&gt; <span class="id" title="var">tree</span> -&gt; <span class="id" title="var">tree</span>.<br/>
+<span class="id" title="keyword">End</span> <span class="id" title="var">tree</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">tree_dt</span> (<span class="id" title="var">A</span> : <span class="id" title="keyword">Type</span>) : <span class="id" title="var">datatype</span> := <span class="id" title="var">Con</span> <span class="id" title="var">A</span> 0 :: <span class="id" title="var">Con</span> <span class="id" title="var">unit</span> 2 :: <span class="id" title="var">nil</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Each datatype representation stands for a family of inductive types.  For a specific real datatype and a reputed representation for it, it is useful to define a type of <i>evidence</i> that the datatype is compatible with the encoding. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Section</span> <span class="id" title="var">denote</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Variable</span> <span class="id" title="var">T</span> : <span class="id" title="keyword">Type</span>.<br/>
+</div>
+
+<div class="doc">
+This variable stands for the concrete datatype that we are interested in. 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <span class="id" title="var">constructorDenote</span> (<span class="id" title="var">c</span> : <span class="id" title="tactic">constructor</span>) :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">nonrecursive</span> <span class="id" title="var">c</span> -&gt; <span class="id" title="var">ilist</span> <span class="id" title="var">T</span> (<span class="id" title="var">recursive</span> <span class="id" title="var">c</span>) -&gt; <span class="id" title="var">T</span>.<br/>
+</div>
+
+<div class="doc">
+We write that a constructor is represented as a function returning a <span class="inlinecode"><span class="id" title="variable">T</span></span>.  Such a function takes two arguments, which pack together the non-recursive and recursive arguments of the constructor.  We represent a tuple of all recursive arguments using the length-indexed list type <span class="inlinecode"><span class="id" title="inductive">ilist</span></span> that we met in Chapter 8. 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <span class="id" title="var">datatypeDenote</span> := <span class="id" title="var">hlist</span> <span class="id" title="var">constructorDenote</span>.<br/>
+</div>
+
+<div class="doc">
+Finally, the evidence for type <span class="inlinecode"><span class="id" title="variable">T</span></span> is a heterogeneous list, including a constructor denotation for every constructor encoding in a datatype encoding.  Recall that, since we are inside a section binding <span class="inlinecode"><span class="id" title="variable">T</span></span> as a variable, <span class="inlinecode"><span class="id" title="definition">constructorDenote</span></span> is automatically parameterized by <span class="inlinecode"><span class="id" title="variable">T</span></span>. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">End</span> <span class="id" title="var">denote</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Some example pieces of evidence should help clarify the convention.  First, we define a helpful notation for constructor denotations.   
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Notation</span> &quot;[ v , r ~&gt; x ]" := ((<span class="id" title="keyword">fun</span> <span class="id" title="var">v</span> <span class="id" title="var">r</span> =&gt; <span class="id" title="var">x</span>) : <span class="id" title="var">constructorDenote</span> <span class="id" title="var">_</span> (<span class="id" title="var">Con</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span>)).<br/>
+
+<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">Empty_set_den</span> : <span class="id" title="var">datatypeDenote</span> <span class="id" title="var">Empty_set</span> <span class="id" title="var">Empty_set_dt</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="var">HNil</span>.<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">unit_den</span> : <span class="id" title="var">datatypeDenote</span> <span class="id" title="var">unit</span> <span class="id" title="var">unit_dt</span> :=<br/>
+&nbsp;&nbsp;[<span class="id" title="var">_</span>, <span class="id" title="var">_</span> ~&gt; <span class="id" title="var">tt</span>] ::: <span class="id" title="var">HNil</span>.<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">bool_den</span> : <span class="id" title="var">datatypeDenote</span> <span class="id" title="var">bool</span> <span class="id" title="var">bool_dt</span> :=<br/>
+&nbsp;&nbsp;[<span class="id" title="var">_</span>, <span class="id" title="var">_</span> ~&gt; <span class="id" title="var">true</span>] ::: [<span class="id" title="var">_</span>, <span class="id" title="var">_</span> ~&gt; <span class="id" title="var">false</span>] ::: <span class="id" title="var">HNil</span>.<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">nat_den</span> : <span class="id" title="var">datatypeDenote</span> <span class="id" title="var">nat</span> <span class="id" title="var">nat_dt</span> :=<br/>
+&nbsp;&nbsp;[<span class="id" title="var">_</span>, <span class="id" title="var">_</span> ~&gt; <span class="id" title="var">O</span>] ::: [<span class="id" title="var">_</span>, <span class="id" title="var">r</span> ~&gt; <span class="id" title="var">S</span> (<span class="id" title="var">hd</span> <span class="id" title="var">r</span>)] ::: <span class="id" title="var">HNil</span>.<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">list_den</span> (<span class="id" title="var">A</span> : <span class="id" title="keyword">Type</span>) : <span class="id" title="var">datatypeDenote</span> (<span class="id" title="var">list</span> <span class="id" title="var">A</span>) (<span class="id" title="var">list_dt</span> <span class="id" title="var">A</span>) :=<br/>
+&nbsp;&nbsp;[<span class="id" title="var">_</span>, <span class="id" title="var">_</span> ~&gt; <span class="id" title="var">nil</span>] ::: [<span class="id" title="var">x</span>, <span class="id" title="var">r</span> ~&gt; <span class="id" title="var">x</span> :: <span class="id" title="var">hd</span> <span class="id" title="var">r</span>] ::: <span class="id" title="var">HNil</span>.<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">tree_den</span> (<span class="id" title="var">A</span> : <span class="id" title="keyword">Type</span>) : <span class="id" title="var">datatypeDenote</span> (<span class="id" title="var">tree</span> <span class="id" title="var">A</span>) (<span class="id" title="var">tree_dt</span> <span class="id" title="var">A</span>) :=<br/>
+&nbsp;&nbsp;[<span class="id" title="var">v</span>, <span class="id" title="var">_</span> ~&gt; <span class="id" title="var">Leaf</span> <span class="id" title="var">v</span>] ::: [<span class="id" title="var">_</span>, <span class="id" title="var">r</span> ~&gt; <span class="id" title="var">Node</span> (<span class="id" title="var">hd</span> <span class="id" title="var">r</span>) (<span class="id" title="var">hd</span> (<span class="id" title="var">tl</span> <span class="id" title="var">r</span>))] ::: <span class="id" title="var">HNil</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Recall that the <span class="inlinecode"><span class="id" title="definition">hd</span></span> and <span class="inlinecode"><span class="id" title="definition">tl</span></span> calls above operate on richly typed lists, where type indices tell us the lengths of lists, guaranteeing the safety of operations like <span class="inlinecode"><span class="id" title="definition">hd</span></span>.  The type annotation attached to each definition provides enough information for Coq to infer list lengths at appropriate points. 
+<div class="paragraph"> </div>
+
+<a name="lab39"></a><h1 class="section">Recursive Definitions</h1>
+
+</div>
+<div class="code">
+
+<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+We built these encodings of datatypes to help us write datatype-generic recursive functions.  To do so, we will want a reified representation of a <i>recursion scheme</i> for each type, similar to the <span class="inlinecode"><span class="id" title="var">T_rect</span></span> principle generated automatically for an inductive definition of <span class="inlinecode"><span class="id" title="variable">T</span></span>.  A clever reuse of <span class="inlinecode"><span class="id" title="definition">datatypeDenote</span></span> yields a short definition. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">fixDenote</span> (<span class="id" title="var">T</span> : <span class="id" title="keyword">Type</span>) (<span class="id" title="var">dt</span> : <span class="id" title="var">datatype</span>) :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">forall</span> (<span class="id" title="var">R</span> : <span class="id" title="keyword">Type</span>), <span class="id" title="var">datatypeDenote</span> <span class="id" title="var">R</span> <span class="id" title="var">dt</span> -&gt; (<span class="id" title="var">T</span> -&gt; <span class="id" title="var">R</span>).<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+The idea of a recursion scheme is parameterized by a type and a reputed encoding of it.  The principle itself is polymorphic in a type <span class="inlinecode"><span class="id" title="variable">R</span></span>, which is the return type of the recursive function that we mean to write.  The next argument is a heterogeneous list of one case of the recursive function definition for each datatype constructor.  The <span class="inlinecode"><span class="id" title="definition">datatypeDenote</span></span> function turns out to have just the right definition to express the type we need; a set of function cases is just like an alternate set of constructors where we replace the original type <span class="inlinecode"><span class="id" title="variable">T</span></span> with the function result type <span class="inlinecode"><span class="id" title="variable">R</span></span>.  Given such a reified definition, a <span class="inlinecode"><span class="id" title="definition">fixDenote</span></span> invocation returns a function from <span class="inlinecode"><span class="id" title="variable">T</span></span> to <span class="inlinecode"><span class="id" title="variable">R</span></span>, which is just what we wanted.
+
+<div class="paragraph"> </div>
+
+   We are ready to write some example functions now.  It will be useful to use one new function from the <span class="inlinecode"><span class="id" title="library">DepList</span></span> library included in the book source. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Check</span> <span class="id" title="var">hmake</span>.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="definition">hmake</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="keyword">forall</span> (<span class="id" title="variable">A</span> : <span class="id" title="keyword">Type</span>) (<span class="id" title="variable">B</span> : <span class="id" title="variable">A</span> -&gt; <span class="id" title="keyword">Type</span>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">forall</span> <span class="id" title="variable">x</span> : <span class="id" title="variable">A</span>, <span class="id" title="variable">B</span> <span class="id" title="variable">x</span>) -&gt; <span class="id" title="keyword">forall</span> <span class="id" title="variable">ls</span> : <span class="id" title="inductive">list</span> <span class="id" title="variable">A</span>, <span class="id" title="inductive">hlist</span> <span class="id" title="variable">B</span> <span class="id" title="variable">ls</span>
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+  The function <span class="inlinecode"><span class="id" title="definition">hmake</span></span> is a kind of <span class="inlinecode"><span class="id" title="definition">map</span></span> alternative that goes from a regular <span class="inlinecode"><span class="id" title="inductive">list</span></span> to an <span class="inlinecode"><span class="id" title="inductive">hlist</span></span>.  We can use it to define a generic size function that counts the number of constructors used to build a value in a datatype. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">size</span> <span class="id" title="var">T</span> <span class="id" title="var">dt</span> (<span class="id" title="var">fx</span> : <span class="id" title="var">fixDenote</span> <span class="id" title="var">T</span> <span class="id" title="var">dt</span>) : <span class="id" title="var">T</span> -&gt; <span class="id" title="var">nat</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="var">fx</span> <span class="id" title="var">nat</span> (<span class="id" title="var">hmake</span> (<span class="id" title="var">B</span> := <span class="id" title="var">constructorDenote</span> <span class="id" title="var">nat</span>) (<span class="id" title="keyword">fun</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">r</span> =&gt; <span class="id" title="var">foldr</span> <span class="id" title="var">plus</span> 1 <span class="id" title="var">r</span>) <span class="id" title="var">dt</span>).<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Our definition is parameterized over a recursion scheme <span class="inlinecode"><span class="id" title="variable">fx</span></span>.  We instantiate <span class="inlinecode"><span class="id" title="variable">fx</span></span> by passing it the function result type and a set of function cases, where we build the latter with <span class="inlinecode"><span class="id" title="definition">hmake</span></span>.  The function argument to <span class="inlinecode"><span class="id" title="definition">hmake</span></span> takes three arguments: the representation of a constructor, its non-recursive arguments, and the results of recursive calls on all of its recursive arguments.  We only need the recursive call results here, so we call them <span class="inlinecode"><span class="id" title="variable">r</span></span> and bind the other two inputs with wildcards.  The actual case body is simple: we add together the recursive call results and increment the result by one (to account for the current constructor).  This <span class="inlinecode"><span class="id" title="definition">foldr</span></span> function is an <span class="inlinecode"><span class="id" title="inductive">ilist</span></span>-specific version defined in the <span class="inlinecode"><span class="id" title="library">DepList</span></span> module.
+
+<div class="paragraph"> </div>
+
+   It is instructive to build <span class="inlinecode"><span class="id" title="definition">fixDenote</span></span> values for our example types and see what specialized <span class="inlinecode"><span class="id" title="definition">size</span></span> functions result from them. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">Empty_set_fix</span> : <span class="id" title="var">fixDenote</span> <span class="id" title="var">Empty_set</span> <span class="id" title="var">Empty_set_dt</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">fun</span> <span class="id" title="var">R</span> <span class="id" title="var">_</span> <span class="id" title="var">emp</span> =&gt; <span class="id" title="keyword">match</span> <span class="id" title="var">emp</span> <span class="id" title="keyword">with</span> <span class="id" title="keyword">end</span>.<br/>
+<span class="id" title="keyword">Eval</span> <span class="id" title="tactic">compute</span> <span class="id" title="keyword">in</span> <span class="id" title="var">size</span> <span class="id" title="var">Empty_set_fix</span>.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= <span class="id" title="keyword">fun</span> <span class="id" title="variable">emp</span> : <span class="id" title="inductive">Empty_set</span> =&gt; <span class="id" title="keyword">match</span> <span class="id" title="variable">emp</span> <span class="id" title="keyword">return</span> <span class="id" title="inductive">nat</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="inductive">Empty_set</span> -&gt; <span class="id" title="inductive">nat</span>
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+Despite all the fanciness of the generic <span class="inlinecode"><span class="id" title="definition">size</span></span> function, CIC's standard computation rules suffice to normalize the generic function specialization to exactly what we would have written manually. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">unit_fix</span> : <span class="id" title="var">fixDenote</span> <span class="id" title="var">unit</span> <span class="id" title="var">unit_dt</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">fun</span> <span class="id" title="var">R</span> <span class="id" title="var">cases</span> <span class="id" title="var">_</span> =&gt; (<span class="id" title="var">hhd</span> <span class="id" title="var">cases</span>) <span class="id" title="var">tt</span> <span class="id" title="var">INil</span>.<br/>
+<span class="id" title="keyword">Eval</span> <span class="id" title="tactic">compute</span> <span class="id" title="keyword">in</span> <span class="id" title="var">size</span> <span class="id" title="var">unit_fix</span>.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= <span class="id" title="keyword">fun</span> <span class="id" title="var">_</span> : <span class="id" title="inductive">unit</span> =&gt; 1<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="inductive">unit</span> -&gt; <span class="id" title="inductive">nat</span>
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+Again normalization gives us the natural function definition.  We see this pattern repeated for our other example types. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">bool_fix</span> : <span class="id" title="var">fixDenote</span> <span class="id" title="var">bool</span> <span class="id" title="var">bool_dt</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">fun</span> <span class="id" title="var">R</span> <span class="id" title="var">cases</span> <span class="id" title="var">b</span> =&gt; <span class="id" title="keyword">if</span> <span class="id" title="var">b</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">then</span> (<span class="id" title="var">hhd</span> <span class="id" title="var">cases</span>) <span class="id" title="var">tt</span> <span class="id" title="var">INil</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">else</span> (<span class="id" title="var">hhd</span> (<span class="id" title="var">htl</span> <span class="id" title="var">cases</span>)) <span class="id" title="var">tt</span> <span class="id" title="var">INil</span>.<br/>
+<span class="id" title="keyword">Eval</span> <span class="id" title="tactic">compute</span> <span class="id" title="keyword">in</span> <span class="id" title="var">size</span> <span class="id" title="var">bool_fix</span>.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= <span class="id" title="keyword">fun</span> <span class="id" title="variable">b</span> : <span class="id" title="inductive">bool</span> =&gt; <span class="id" title="keyword">if</span> <span class="id" title="variable">b</span> <span class="id" title="keyword">then</span> 1 <span class="id" title="keyword">else</span> 1<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="inductive">bool</span> -&gt; <span class="id" title="inductive">nat</span>
+<div class="paragraph"> </div>
+
+</span>
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">nat_fix</span> : <span class="id" title="var">fixDenote</span> <span class="id" title="var">nat</span> <span class="id" title="var">nat_dt</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">fun</span> <span class="id" title="var">R</span> <span class="id" title="var">cases</span> =&gt; <span class="id" title="keyword">fix</span> <span class="id" title="var">F</span> (<span class="id" title="var">n</span> : <span class="id" title="var">nat</span>) : <span class="id" title="var">R</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">n</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">O</span> =&gt; (<span class="id" title="var">hhd</span> <span class="id" title="var">cases</span>) <span class="id" title="var">tt</span> <span class="id" title="var">INil</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">S</span> <span class="id" title="var">n'</span> =&gt; (<span class="id" title="var">hhd</span> (<span class="id" title="var">htl</span> <span class="id" title="var">cases</span>)) <span class="id" title="var">tt</span> (<span class="id" title="var">ICons</span> (<span class="id" title="var">F</span> <span class="id" title="var">n'</span>) <span class="id" title="var">INil</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+To peek at the <span class="inlinecode"><span class="id" title="definition">size</span></span> function for <span class="inlinecode"><span class="id" title="inductive">nat</span></span>, it is useful to avoid full computation, so that the recursive definition of addition is not expanded inline.  We can accomplish this with proper flags for the <span class="inlinecode"><span class="id" title="tactic">cbv</span></span> reduction strategy. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Eval</span> <span class="id" title="tactic">cbv</span> <span class="id" title="keyword">beta</span> <span class="id" title="keyword">iota</span> <span class="id" title="keyword">delta</span> -[<span class="id" title="var">plus</span>] <span class="id" title="keyword">in</span> <span class="id" title="var">size</span> <span class="id" title="var">nat_fix</span>.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= <span class="id" title="keyword">fix</span> <span class="id" title="variable">F</span> (<span class="id" title="variable">n</span> : <span class="id" title="inductive">nat</span>) : <span class="id" title="inductive">nat</span> := <span class="id" title="keyword">match</span> <span class="id" title="variable">n</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| 0 =&gt; 1<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="variable">S</span> <span class="id" title="variable">n'</span> =&gt; <span class="id" title="variable">F</span> <span class="id" title="variable">n'</span> + 1<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="inductive">nat</span> -&gt; <span class="id" title="inductive">nat</span>
+<div class="paragraph"> </div>
+
+</span>
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">list_fix</span> (<span class="id" title="var">A</span> : <span class="id" title="keyword">Type</span>) : <span class="id" title="var">fixDenote</span> (<span class="id" title="var">list</span> <span class="id" title="var">A</span>) (<span class="id" title="var">list_dt</span> <span class="id" title="var">A</span>) :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">fun</span> <span class="id" title="var">R</span> <span class="id" title="var">cases</span> =&gt; <span class="id" title="keyword">fix</span> <span class="id" title="var">F</span> (<span class="id" title="var">ls</span> : <span class="id" title="var">list</span> <span class="id" title="var">A</span>) : <span class="id" title="var">R</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">ls</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">nil</span> =&gt; (<span class="id" title="var">hhd</span> <span class="id" title="var">cases</span>) <span class="id" title="var">tt</span> <span class="id" title="var">INil</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">x</span> :: <span class="id" title="var">ls'</span> =&gt; (<span class="id" title="var">hhd</span> (<span class="id" title="var">htl</span> <span class="id" title="var">cases</span>)) <span class="id" title="var">x</span> (<span class="id" title="var">ICons</span> (<span class="id" title="var">F</span> <span class="id" title="var">ls'</span>) <span class="id" title="var">INil</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+<span class="id" title="keyword">Eval</span> <span class="id" title="tactic">cbv</span> <span class="id" title="keyword">beta</span> <span class="id" title="keyword">iota</span> <span class="id" title="keyword">delta</span> -[<span class="id" title="var">plus</span>] <span class="id" title="keyword">in</span> <span class="id" title="keyword">fun</span> <span class="id" title="var">A</span> =&gt; <span class="id" title="var">size</span> (@<span class="id" title="var">list_fix</span> <span class="id" title="var">A</span>).<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= <span class="id" title="keyword">fun</span> <span class="id" title="variable">A</span> : <span class="id" title="keyword">Type</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">fix</span> <span class="id" title="variable">F</span> (<span class="id" title="variable">ls</span> : <span class="id" title="inductive">list</span> <span class="id" title="variable">A</span>) : <span class="id" title="inductive">nat</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="variable">ls</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="constructor">nil</span> =&gt; 1<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">_</span> :: <span class="id" title="variable">ls'</span> =&gt; <span class="id" title="variable">F</span> <span class="id" title="variable">ls'</span> + 1<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="keyword">forall</span> <span class="id" title="variable">A</span> : <span class="id" title="keyword">Type</span>, <span class="id" title="inductive">list</span> <span class="id" title="variable">A</span> -&gt; <span class="id" title="inductive">nat</span>
+<div class="paragraph"> </div>
+
+</span>
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">tree_fix</span> (<span class="id" title="var">A</span> : <span class="id" title="keyword">Type</span>) : <span class="id" title="var">fixDenote</span> (<span class="id" title="var">tree</span> <span class="id" title="var">A</span>) (<span class="id" title="var">tree_dt</span> <span class="id" title="var">A</span>) :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">fun</span> <span class="id" title="var">R</span> <span class="id" title="var">cases</span> =&gt; <span class="id" title="keyword">fix</span> <span class="id" title="var">F</span> (<span class="id" title="var">t</span> : <span class="id" title="var">tree</span> <span class="id" title="var">A</span>) : <span class="id" title="var">R</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">t</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">Leaf</span> <span class="id" title="var">x</span> =&gt; (<span class="id" title="var">hhd</span> <span class="id" title="var">cases</span>) <span class="id" title="var">x</span> <span class="id" title="var">INil</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">Node</span> <span class="id" title="var">t1</span> <span class="id" title="var">t2</span> =&gt; (<span class="id" title="var">hhd</span> (<span class="id" title="var">htl</span> <span class="id" title="var">cases</span>)) <span class="id" title="var">tt</span> (<span class="id" title="var">ICons</span> (<span class="id" title="var">F</span> <span class="id" title="var">t1</span>) (<span class="id" title="var">ICons</span> (<span class="id" title="var">F</span> <span class="id" title="var">t2</span>) <span class="id" title="var">INil</span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+<span class="id" title="keyword">Eval</span> <span class="id" title="tactic">cbv</span> <span class="id" title="keyword">beta</span> <span class="id" title="keyword">iota</span> <span class="id" title="keyword">delta</span> -[<span class="id" title="var">plus</span>] <span class="id" title="keyword">in</span> <span class="id" title="keyword">fun</span> <span class="id" title="var">A</span> =&gt; <span class="id" title="var">size</span> (@<span class="id" title="var">tree_fix</span> <span class="id" title="var">A</span>).<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= <span class="id" title="keyword">fun</span> <span class="id" title="variable">A</span> : <span class="id" title="keyword">Type</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">fix</span> <span class="id" title="variable">F</span> (<span class="id" title="variable">t</span> : <span class="id" title="inductive">tree</span> <span class="id" title="variable">A</span>) : <span class="id" title="inductive">nat</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="variable">t</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="constructor">Leaf</span> <span class="id" title="var">_</span> =&gt; 1<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="constructor">Node</span> <span class="id" title="lemma">t1</span> <span class="id" title="lemma">t2</span> =&gt; <span class="id" title="variable">F</span> <span class="id" title="lemma">t1</span> + (<span class="id" title="variable">F</span> <span class="id" title="lemma">t2</span> + 1)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="keyword">forall</span> <span class="id" title="variable">A</span> : <span class="id" title="keyword">Type</span>, <span class="id" title="inductive">tree</span> <span class="id" title="variable">A</span> -&gt; <span class="id" title="variable">n</span>
+<div class="paragraph"> </div>
+
+</span>
+</div>
+<div class="code">
+
+<br/>
+</div>
+
+<div class="doc">
+As our examples show, even recursive datatypes are mapped to normal-looking size functions. 
+<div class="paragraph"> </div>
+
+<a name="lab40"></a><h2 class="section">Pretty-Printing</h2>
+
+<div class="paragraph"> </div>
+
+ It is also useful to do generic pretty-printing of datatype values, rendering them as human-readable strings.  To do so, we will need a bit of metadata for each constructor.  Specifically, we need the name to print for the constructor and the function to use to render its non-recursive arguments.  Everything else can be done generically. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Record</span> <span class="id" title="var">print_constructor</span> (<span class="id" title="var">c</span> : <span class="id" title="tactic">constructor</span>) : <span class="id" title="keyword">Type</span> := <span class="id" title="var">PI</span> {<br/>
+&nbsp;&nbsp;<span class="id" title="var">printName</span> : <span class="id" title="var">string</span>;<br/>
+&nbsp;&nbsp;<span class="id" title="var">printNonrec</span> : <span class="id" title="var">nonrecursive</span> <span class="id" title="var">c</span> -&gt; <span class="id" title="var">string</span><br/>
+}.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+It is useful to define a shorthand for applying the constructor <span class="inlinecode"><span class="id" title="constructor">PI</span></span>.  By applying it explicitly to an unknown application of the constructor <span class="inlinecode"><span class="id" title="constructor">Con</span></span>, we help type inference work. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Notation</span> &quot;^" := (<span class="id" title="var">PI</span> (<span class="id" title="var">Con</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span>)).<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+As in earlier examples, we define the type of metadata for a datatype to be a heterogeneous list type collecting metadata for each constructor. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">print_datatype</span> := <span class="id" title="var">hlist</span> <span class="id" title="var">print_constructor</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+We will be doing some string manipulation here, so we import the notations associated with strings. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Local Open</span> <span class="id" title="keyword">Scope</span> <span class="id" title="var">string_scope</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Now it is easy to implement our generic printer, using another function from <span class="inlinecode"><span class="id" title="library">DepList</span>.</span> 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Check</span> <span class="id" title="var">hmap</span>.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="section">hmap</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="keyword">forall</span> (<span class="id" title="variable">A</span> : <span class="id" title="keyword">Type</span>) (<span class="id" title="variable">B1</span> <span class="id" title="variable">B2</span> : <span class="id" title="variable">A</span> -&gt; <span class="id" title="keyword">Type</span>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">forall</span> <span class="id" title="variable">x</span> : <span class="id" title="variable">A</span>, <span class="id" title="variable">B1</span> <span class="id" title="variable">x</span> -&gt; <span class="id" title="variable">B2</span> <span class="id" title="variable">x</span>) -&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">forall</span> <span class="id" title="variable">ls</span> : <span class="id" title="inductive">list</span> <span class="id" title="variable">A</span>, <span class="id" title="inductive">hlist</span> <span class="id" title="variable">B1</span> <span class="id" title="variable">ls</span> -&gt; <span class="id" title="inductive">hlist</span> <span class="id" title="variable">B2</span> <span class="id" title="variable">ls</span>
+<div class="paragraph"> </div>
+
+</span>
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">print</span> <span class="id" title="var">T</span> <span class="id" title="var">dt</span> (<span class="id" title="var">pr</span> : <span class="id" title="var">print_datatype</span> <span class="id" title="var">dt</span>) (<span class="id" title="var">fx</span> : <span class="id" title="var">fixDenote</span> <span class="id" title="var">T</span> <span class="id" title="var">dt</span>) : <span class="id" title="var">T</span> -&gt; <span class="id" title="var">string</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="var">fx</span> <span class="id" title="var">string</span> (<span class="id" title="var">hmap</span> (<span class="id" title="var">B1</span> := <span class="id" title="var">print_constructor</span>) (<span class="id" title="var">B2</span> := <span class="id" title="var">constructorDenote</span> <span class="id" title="var">string</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">fun</span> <span class="id" title="var">_</span> <span class="id" title="var">pc</span> <span class="id" title="var">x</span> <span class="id" title="var">r</span> =&gt; <span class="id" title="var">printName</span> <span class="id" title="var">pc</span> ++ "(" ++ <span class="id" title="var">printNonrec</span> <span class="id" title="var">pc</span> <span class="id" title="var">x</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++ <span class="id" title="var">foldr</span> (<span class="id" title="keyword">fun</span> <span class="id" title="var">s</span> <span class="id" title="var">acc</span> =&gt; ", " ++ <span class="id" title="var">s</span> ++ <span class="id" title="var">acc</span>) ")" <span class="id" title="var">r</span>) <span class="id" title="var">pr</span>).<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Some simple tests establish that <span class="inlinecode"><span class="id" title="definition">print</span></span> gets the job done. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Eval</span> <span class="id" title="tactic">compute</span> <span class="id" title="keyword">in</span> <span class="id" title="var">print</span> <span class="id" title="var">HNil</span> <span class="id" title="var">Empty_set_fix</span>.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= <span class="id" title="keyword">fun</span> <span class="id" title="variable">emp</span> : <span class="id" title="inductive">Empty_set</span> =&gt; <span class="id" title="keyword">match</span> <span class="id" title="variable">emp</span> <span class="id" title="keyword">return</span> <span class="id" title="inductive">string</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="inductive">Empty_set</span> -&gt; <span class="id" title="inductive">string</span>
+<div class="paragraph"> </div>
+
+</span>     
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Eval</span> <span class="id" title="tactic">compute</span> <span class="id" title="keyword">in</span> <span class="id" title="var">print</span> (^ "tt" (<span class="id" title="keyword">fun</span> <span class="id" title="var">_</span> =&gt; "") ::: <span class="id" title="var">HNil</span>) <span class="id" title="var">unit_fix</span>.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= <span class="id" title="keyword">fun</span> <span class="id" title="var">_</span> : <span class="id" title="inductive">unit</span> =&gt; "tt()"<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="inductive">unit</span> -&gt; <span class="id" title="inductive">string</span>
+<div class="paragraph"> </div>
+
+</span>   
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Eval</span> <span class="id" title="tactic">compute</span> <span class="id" title="keyword">in</span> <span class="id" title="var">print</span> (^ "true" (<span class="id" title="keyword">fun</span> <span class="id" title="var">_</span> =&gt; "")<br/>
+&nbsp;&nbsp;::: ^ "false" (<span class="id" title="keyword">fun</span> <span class="id" title="var">_</span> =&gt; "")<br/>
+&nbsp;&nbsp;::: <span class="id" title="var">HNil</span>) <span class="id" title="var">bool_fix</span>.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;= <span class="id" title="keyword">fun</span> <span class="id" title="variable">b</span> : <span class="id" title="inductive">bool</span> =&gt; <span class="id" title="keyword">if</span> <span class="id" title="variable">b</span> <span class="id" title="keyword">then</span> "true()" <span class="id" title="keyword">else</span> "false()"<br/>
+&nbsp;&nbsp;&nbsp;: <span class="id" title="inductive">bool</span> -&gt; <span class="id" title="inductive">string</span>
+<div class="paragraph"> </div>
+
+</span>   
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">print_nat</span> := <span class="id" title="var">print</span> (^ "O" (<span class="id" title="keyword">fun</span> <span class="id" title="var">_</span> =&gt; "")<br/>
+&nbsp;&nbsp;::: ^ "S" (<span class="id" title="keyword">fun</span> <span class="id" title="var">_</span> =&gt; "")<br/>
+&nbsp;&nbsp;::: <span class="id" title="var">HNil</span>) <span class="id" title="var">nat_fix</span>.<br/>
+<span class="id" title="keyword">Eval</span> <span class="id" title="tactic">cbv</span> <span class="id" title="keyword">beta</span> <span class="id" title="keyword">iota</span> <span class="id" title="keyword">delta</span> -[<span class="id" title="var">append</span>] <span class="id" title="keyword">in</span> <span class="id" title="var">print_nat</span>.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= <span class="id" title="keyword">fix</span> <span class="id" title="variable">F</span> (<span class="id" title="variable">n</span> : <span class="id" title="inductive">nat</span>) : <span class="id" title="inductive">string</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="variable">n</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| 0%<span class="id" title="inductive">nat</span> =&gt; "O" ++ "(" ++ "" ++ ")"<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="variable">S</span> <span class="id" title="variable">n'</span> =&gt; "S" ++ "(" ++ "" ++ ", " ++ <span class="id" title="variable">F</span> <span class="id" title="variable">n'</span> ++ ")"<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="inductive">nat</span> -&gt; <span class="id" title="inductive">string</span>
+<div class="paragraph"> </div>
+
+</span>     
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Eval</span> <span class="id" title="tactic">simpl</span> <span class="id" title="keyword">in</span> <span class="id" title="var">print_nat</span> 0.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= "O()"<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="inductive">string</span>
+<div class="paragraph"> </div>
+
+</span>     
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Eval</span> <span class="id" title="tactic">simpl</span> <span class="id" title="keyword">in</span> <span class="id" title="var">print_nat</span> 1.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= "S(, O())"<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="inductive">string</span>
+<div class="paragraph"> </div>
+
+</span>     
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Eval</span> <span class="id" title="tactic">simpl</span> <span class="id" title="keyword">in</span> <span class="id" title="var">print_nat</span> 2.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= "S(, S(, O()))"<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="inductive">string</span>
+<div class="paragraph"> </div>
+
+</span>     
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Eval</span> <span class="id" title="tactic">cbv</span> <span class="id" title="keyword">beta</span> <span class="id" title="keyword">iota</span> <span class="id" title="keyword">delta</span> -[<span class="id" title="var">append</span>] <span class="id" title="keyword">in</span> <span class="id" title="keyword">fun</span> <span class="id" title="var">A</span> (<span class="id" title="var">pr</span> : <span class="id" title="var">A</span> -&gt; <span class="id" title="var">string</span>) =&gt;<br/>
+&nbsp;&nbsp;<span class="id" title="var">print</span> (^ "nil" (<span class="id" title="keyword">fun</span> <span class="id" title="var">_</span> =&gt; "")<br/>
+&nbsp;&nbsp;::: ^ "cons" <span class="id" title="var">pr</span><br/>
+&nbsp;&nbsp;::: <span class="id" title="var">HNil</span>) (@<span class="id" title="var">list_fix</span> <span class="id" title="var">A</span>).<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= <span class="id" title="keyword">fun</span> (<span class="id" title="variable">A</span> : <span class="id" title="keyword">Type</span>) (<span class="id" title="variable">pr</span> : <span class="id" title="variable">A</span> -&gt; <span class="id" title="inductive">string</span>) =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">fix</span> <span class="id" title="variable">F</span> (<span class="id" title="variable">ls</span> : <span class="id" title="inductive">list</span> <span class="id" title="variable">A</span>) : <span class="id" title="inductive">string</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="variable">ls</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="constructor">nil</span> =&gt; "nil" ++ "(" ++ "" ++ ")"<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="variable">x</span> :: <span class="id" title="variable">ls'</span> =&gt; "cons" ++ "(" ++ <span class="id" title="variable">pr</span> <span class="id" title="variable">x</span> ++ ", " ++ <span class="id" title="variable">F</span> <span class="id" title="variable">ls'</span> ++ ")"<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="keyword">forall</span> <span class="id" title="variable">A</span> : <span class="id" title="keyword">Type</span>, (<span class="id" title="variable">A</span> -&gt; <span class="id" title="inductive">string</span>) -&gt; <span class="id" title="inductive">list</span> <span class="id" title="variable">A</span> -&gt; <span class="id" title="inductive">string</span>
+<div class="paragraph"> </div>
+
+</span>     
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Eval</span> <span class="id" title="tactic">cbv</span> <span class="id" title="keyword">beta</span> <span class="id" title="keyword">iota</span> <span class="id" title="keyword">delta</span> -[<span class="id" title="var">append</span>] <span class="id" title="keyword">in</span> <span class="id" title="keyword">fun</span> <span class="id" title="var">A</span> (<span class="id" title="var">pr</span> : <span class="id" title="var">A</span> -&gt; <span class="id" title="var">string</span>) =&gt;<br/>
+&nbsp;&nbsp;<span class="id" title="var">print</span> (^ "Leaf" <span class="id" title="var">pr</span><br/>
+&nbsp;&nbsp;::: ^ "Node" (<span class="id" title="keyword">fun</span> <span class="id" title="var">_</span> =&gt; "")<br/>
+&nbsp;&nbsp;::: <span class="id" title="var">HNil</span>) (@<span class="id" title="var">tree_fix</span> <span class="id" title="var">A</span>).<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= <span class="id" title="keyword">fun</span> (<span class="id" title="variable">A</span> : <span class="id" title="keyword">Type</span>) (<span class="id" title="variable">pr</span> : <span class="id" title="variable">A</span> -&gt; <span class="id" title="inductive">string</span>) =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">fix</span> <span class="id" title="variable">F</span> (<span class="id" title="variable">t</span> : <span class="id" title="inductive">tree</span> <span class="id" title="variable">A</span>) : <span class="id" title="inductive">string</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="variable">t</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="constructor">Leaf</span> <span class="id" title="variable">x</span> =&gt; "Leaf" ++ "(" ++ <span class="id" title="variable">pr</span> <span class="id" title="variable">x</span> ++ ")"<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="constructor">Node</span> <span class="id" title="lemma">t1</span> <span class="id" title="lemma">t2</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Node" ++ "(" ++ "" ++ ", " ++ <span class="id" title="variable">F</span> <span class="id" title="lemma">t1</span> ++ ", " ++ <span class="id" title="variable">F</span> <span class="id" title="lemma">t2</span> ++ ")"<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="keyword">forall</span> <span class="id" title="variable">A</span> : <span class="id" title="keyword">Type</span>, (<span class="id" title="variable">A</span> -&gt; <span class="id" title="inductive">string</span>) -&gt; <span class="id" title="inductive">tree</span> <span class="id" title="variable">A</span> -&gt; <span class="id" title="inductive">string</span>
+<div class="paragraph"> </div>
+
+</span>     
+</div>
+<div class="code">
+
+<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Some of these simplified terms seem overly complex because we have turned off simplification of calls to <span class="inlinecode"><span class="id" title="definition">append</span></span>, which is what uses of the <span class="inlinecode">++</span> operator desugar to.  Selective <span class="inlinecode">++</span> simplification would combine adjacent string literals, yielding more or less the code we would write manually to implement this printing scheme. 
+<div class="paragraph"> </div>
+
+<a name="lab41"></a><h2 class="section">Mapping</h2>
+
+<div class="paragraph"> </div>
+
+ By this point, we have developed enough machinery that it is old hat to define a generic function similar to the list <span class="inlinecode"><span class="id" title="definition">map</span></span> function. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">map</span> <span class="id" title="var">T</span> <span class="id" title="var">dt</span> (<span class="id" title="var">dd</span> : <span class="id" title="var">datatypeDenote</span> <span class="id" title="var">T</span> <span class="id" title="var">dt</span>) (<span class="id" title="var">fx</span> : <span class="id" title="var">fixDenote</span> <span class="id" title="var">T</span> <span class="id" title="var">dt</span>) (<span class="id" title="var">f</span> : <span class="id" title="var">T</span> -&gt; <span class="id" title="var">T</span>)<br/>
+&nbsp;&nbsp;: <span class="id" title="var">T</span> -&gt; <span class="id" title="var">T</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="var">fx</span> <span class="id" title="var">T</span> (<span class="id" title="var">hmap</span> (<span class="id" title="var">B1</span> := <span class="id" title="var">constructorDenote</span> <span class="id" title="var">T</span>) (<span class="id" title="var">B2</span> := <span class="id" title="var">constructorDenote</span> <span class="id" title="var">T</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">fun</span> <span class="id" title="var">_</span> <span class="id" title="var">c</span> <span class="id" title="var">x</span> <span class="id" title="var">r</span> =&gt; <span class="id" title="var">f</span> (<span class="id" title="var">c</span> <span class="id" title="var">x</span> <span class="id" title="var">r</span>)) <span class="id" title="var">dd</span>).<br/>
+
+<br/>
+<span class="id" title="keyword">Eval</span> <span class="id" title="tactic">compute</span> <span class="id" title="keyword">in</span> <span class="id" title="var">map</span> <span class="id" title="var">Empty_set_den</span> <span class="id" title="var">Empty_set_fix</span>.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= <span class="id" title="keyword">fun</span> (<span class="id" title="var">_</span> : <span class="id" title="inductive">Empty_set</span> -&gt; <span class="id" title="inductive">Empty_set</span>) (<span class="id" title="variable">emp</span> : <span class="id" title="inductive">Empty_set</span>) =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="variable">emp</span> <span class="id" title="keyword">return</span> <span class="id" title="inductive">Empty_set</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: (<span class="id" title="inductive">Empty_set</span> -&gt; <span class="id" title="inductive">Empty_set</span>) -&gt; <span class="id" title="inductive">Empty_set</span> -&gt; <span class="id" title="inductive">Empty_set</span>
+<div class="paragraph"> </div>
+
+</span>     
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Eval</span> <span class="id" title="tactic">compute</span> <span class="id" title="keyword">in</span> <span class="id" title="var">map</span> <span class="id" title="var">unit_den</span> <span class="id" title="var">unit_fix</span>.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= <span class="id" title="keyword">fun</span> (<span class="id" title="variable">f</span> : <span class="id" title="inductive">unit</span> -&gt; <span class="id" title="inductive">unit</span>) (<span class="id" title="var">_</span> : <span class="id" title="inductive">unit</span>) =&gt; <span class="id" title="variable">f</span> <span class="id" title="constructor">tt</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: (<span class="id" title="inductive">unit</span> -&gt; <span class="id" title="inductive">unit</span>) -&gt; <span class="id" title="inductive">unit</span> -&gt; <span class="id" title="inductive">unit</span>
+<div class="paragraph"> </div>
+
+</span>     
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Eval</span> <span class="id" title="tactic">compute</span> <span class="id" title="keyword">in</span> <span class="id" title="var">map</span> <span class="id" title="var">bool_den</span> <span class="id" title="var">bool_fix</span>.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= <span class="id" title="keyword">fun</span> (<span class="id" title="variable">f</span> : <span class="id" title="inductive">bool</span> -&gt; <span class="id" title="inductive">bool</span>) (<span class="id" title="variable">b</span> : <span class="id" title="inductive">bool</span>) =&gt; <span class="id" title="keyword">if</span> <span class="id" title="variable">b</span> <span class="id" title="keyword">then</span> <span class="id" title="variable">f</span> <span class="id" title="constructor">true</span> <span class="id" title="keyword">else</span> <span class="id" title="variable">f</span> <span class="id" title="constructor">false</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: (<span class="id" title="inductive">bool</span> -&gt; <span class="id" title="inductive">bool</span>) -&gt; <span class="id" title="inductive">bool</span> -&gt; <span class="id" title="inductive">bool</span>
+<div class="paragraph"> </div>
+
+</span>     
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Eval</span> <span class="id" title="tactic">compute</span> <span class="id" title="keyword">in</span> <span class="id" title="var">map</span> <span class="id" title="var">nat_den</span> <span class="id" title="var">nat_fix</span>.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= <span class="id" title="keyword">fun</span> <span class="id" title="variable">f</span> : <span class="id" title="inductive">nat</span> -&gt; <span class="id" title="inductive">nat</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">fix</span> <span class="id" title="variable">F</span> (<span class="id" title="variable">n</span> : <span class="id" title="inductive">nat</span>) : <span class="id" title="inductive">nat</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="variable">n</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| 0%<span class="id" title="inductive">nat</span> =&gt; <span class="id" title="variable">f</span> 0%<span class="id" title="inductive">nat</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="variable">S</span> <span class="id" title="variable">n'</span> =&gt; <span class="id" title="variable">f</span> (<span class="id" title="variable">S</span> (<span class="id" title="variable">F</span> <span class="id" title="variable">n'</span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: (<span class="id" title="inductive">nat</span> -&gt; <span class="id" title="inductive">nat</span>) -&gt; <span class="id" title="inductive">nat</span> -&gt; <span class="id" title="inductive">nat</span>
+<div class="paragraph"> </div>
+
+</span>     
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Eval</span> <span class="id" title="tactic">compute</span> <span class="id" title="keyword">in</span> <span class="id" title="keyword">fun</span> <span class="id" title="var">A</span> =&gt; <span class="id" title="var">map</span> (<span class="id" title="var">list_den</span> <span class="id" title="var">A</span>) (@<span class="id" title="var">list_fix</span> <span class="id" title="var">A</span>).<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= <span class="id" title="keyword">fun</span> (<span class="id" title="variable">A</span> : <span class="id" title="keyword">Type</span>) (<span class="id" title="variable">f</span> : <span class="id" title="inductive">list</span> <span class="id" title="variable">A</span> -&gt; <span class="id" title="inductive">list</span> <span class="id" title="variable">A</span>) =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">fix</span> <span class="id" title="variable">F</span> (<span class="id" title="variable">ls</span> : <span class="id" title="inductive">list</span> <span class="id" title="variable">A</span>) : <span class="id" title="inductive">list</span> <span class="id" title="variable">A</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="variable">ls</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="constructor">nil</span> =&gt; <span class="id" title="variable">f</span> <span class="id" title="constructor">nil</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="variable">x</span> :: <span class="id" title="variable">ls'</span> =&gt; <span class="id" title="variable">f</span> (<span class="id" title="variable">x</span> :: <span class="id" title="variable">F</span> <span class="id" title="variable">ls'</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="keyword">forall</span> <span class="id" title="variable">A</span> : <span class="id" title="keyword">Type</span>, (<span class="id" title="inductive">list</span> <span class="id" title="variable">A</span> -&gt; <span class="id" title="inductive">list</span> <span class="id" title="variable">A</span>) -&gt; <span class="id" title="inductive">list</span> <span class="id" title="variable">A</span> -&gt; <span class="id" title="inductive">list</span> <span class="id" title="variable">A</span>
+<div class="paragraph"> </div>
+
+</span>     
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Eval</span> <span class="id" title="tactic">compute</span> <span class="id" title="keyword">in</span> <span class="id" title="keyword">fun</span> <span class="id" title="var">A</span> =&gt; <span class="id" title="var">map</span> (<span class="id" title="var">tree_den</span> <span class="id" title="var">A</span>) (@<span class="id" title="var">tree_fix</span> <span class="id" title="var">A</span>).<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= <span class="id" title="keyword">fun</span> (<span class="id" title="variable">A</span> : <span class="id" title="keyword">Type</span>) (<span class="id" title="variable">f</span> : <span class="id" title="inductive">tree</span> <span class="id" title="variable">A</span> -&gt; <span class="id" title="inductive">tree</span> <span class="id" title="variable">A</span>) =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">fix</span> <span class="id" title="variable">F</span> (<span class="id" title="variable">t</span> : <span class="id" title="inductive">tree</span> <span class="id" title="variable">A</span>) : <span class="id" title="inductive">tree</span> <span class="id" title="variable">A</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="variable">t</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="constructor">Leaf</span> <span class="id" title="variable">x</span> =&gt; <span class="id" title="variable">f</span> (<span class="id" title="constructor">Leaf</span> <span class="id" title="variable">x</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="constructor">Node</span> <span class="id" title="lemma">t1</span> <span class="id" title="lemma">t2</span> =&gt; <span class="id" title="variable">f</span> (<span class="id" title="constructor">Node</span> (<span class="id" title="variable">F</span> <span class="id" title="lemma">t1</span>) (<span class="id" title="variable">F</span> <span class="id" title="lemma">t2</span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="keyword">forall</span> <span class="id" title="variable">A</span> : <span class="id" title="keyword">Type</span>, (<span class="id" title="inductive">tree</span> <span class="id" title="variable">A</span> -&gt; <span class="id" title="inductive">tree</span> <span class="id" title="variable">A</span>) -&gt; <span class="id" title="inductive">tree</span> <span class="id" title="variable">A</span> -&gt; <span class="id" title="inductive">tree</span> <span class="id" title="variable">A</span>
+<div class="paragraph"> </div>
+
+</span>     
+<div class="paragraph"> </div>
+
+ These <span class="inlinecode"><span class="id" title="definition">map</span></span> functions are just as easy to use as those we write by hand.  Can you figure out the input-output pattern that <span class="inlinecode"><span class="id" title="definition">map_nat</span></span> <span class="inlinecode"><span class="id" title="variable">S</span></span> displays in these examples? 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">map_nat</span> := <span class="id" title="var">map</span> <span class="id" title="var">nat_den</span> <span class="id" title="var">nat_fix</span>.<br/>
+<span class="id" title="keyword">Eval</span> <span class="id" title="tactic">simpl</span> <span class="id" title="keyword">in</span> <span class="id" title="var">map_nat</span> <span class="id" title="var">S</span> 0.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= 1%<span class="id" title="inductive">nat</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="inductive">nat</span>
+<div class="paragraph"> </div>
+
+</span>     
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Eval</span> <span class="id" title="tactic">simpl</span> <span class="id" title="keyword">in</span> <span class="id" title="var">map_nat</span> <span class="id" title="var">S</span> 1.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= 3%<span class="id" title="inductive">nat</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="inductive">nat</span>
+<div class="paragraph"> </div>
+
+</span>     
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Eval</span> <span class="id" title="tactic">simpl</span> <span class="id" title="keyword">in</span> <span class="id" title="var">map_nat</span> <span class="id" title="var">S</span> 2.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= 5%<span class="id" title="inductive">nat</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="inductive">nat</span>
+<div class="paragraph"> </div>
+
+</span>     
+<div class="paragraph"> </div>
+
+ We get <span class="inlinecode"><span class="id" title="definition">map_nat</span></span> <span class="inlinecode"><span class="id" title="variable">S</span></span> <span class="inlinecode"><span class="id" title="variable">n</span></span> = <span class="inlinecode">2</span> <span class="inlinecode">*</span> <span class="inlinecode"><span class="id" title="variable">n</span></span> <span class="inlinecode">+</span> <span class="inlinecode">1</span>, because the mapping process adds an extra <span class="inlinecode"><span class="id" title="variable">S</span></span> at every level of the inductive tree that defines a natural, including at the last level, the <span class="inlinecode"><span class="id" title="constructor">O</span></span> constructor. 
+<div class="paragraph"> </div>
+
+<a name="lab42"></a><h1 class="section">Proving Theorems about Recursive Definitions</h1>
+
+<div class="paragraph"> </div>
+
+ We would like to be able to prove theorems about our generic functions.  To do so, we need to establish additional well-formedness properties that must hold of pieces of evidence. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Section</span> <span class="id" title="var">ok</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Variable</span> <span class="id" title="var">T</span> : <span class="id" title="keyword">Type</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Variable</span> <span class="id" title="var">dt</span> : <span class="id" title="var">datatype</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Variable</span> <span class="id" title="var">dd</span> : <span class="id" title="var">datatypeDenote</span> <span class="id" title="var">T</span> <span class="id" title="var">dt</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Variable</span> <span class="id" title="var">fx</span> : <span class="id" title="var">fixDenote</span> <span class="id" title="var">T</span> <span class="id" title="var">dt</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+First, we characterize when a piece of evidence about a datatype is acceptable.  The basic idea is that the type <span class="inlinecode"><span class="id" title="variable">T</span></span> should really be an inductive type with the definition given by <span class="inlinecode"><span class="id" title="variable">dd</span></span>.  Semantically, inductive types are characterized by the ability to do induction on them.  Therefore, we require that the usual induction principle is true, with respect to the constructors given in the encoding <span class="inlinecode"><span class="id" title="variable">dd</span></span>. 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <span class="id" title="var">datatypeDenoteOk</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">forall</span> <span class="id" title="var">P</span> : <span class="id" title="var">T</span> -&gt; <span class="id" title="keyword">Prop</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">forall</span> <span class="id" title="var">c</span> (<span class="id" title="var">m</span> : <span class="id" title="var">member</span> <span class="id" title="var">c</span> <span class="id" title="var">dt</span>) (<span class="id" title="var">x</span> : <span class="id" title="var">nonrecursive</span> <span class="id" title="var">c</span>) (<span class="id" title="var">r</span> : <span class="id" title="var">ilist</span> <span class="id" title="var">T</span> (<span class="id" title="var">recursive</span> <span class="id" title="var">c</span>)),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">forall</span> <span class="id" title="var">i</span> : <span class="id" title="var">fin</span> (<span class="id" title="var">recursive</span> <span class="id" title="var">c</span>), <span class="id" title="var">P</span> (<span class="id" title="var">get</span> <span class="id" title="var">r</span> <span class="id" title="var">i</span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt; <span class="id" title="var">P</span> ((<span class="id" title="var">hget</span> <span class="id" title="var">dd</span> <span class="id" title="var">m</span>) <span class="id" title="var">x</span> <span class="id" title="var">r</span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt; <span class="id" title="keyword">forall</span> <span class="id" title="var">v</span>, <span class="id" title="var">P</span> <span class="id" title="var">v</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+This definition can take a while to digest.  The quantifier over <span class="inlinecode"><span class="id" title="variable">m</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" title="inductive">member</span></span> <span class="inlinecode"><span class="id" title="variable">c</span></span> <span class="inlinecode"><span class="id" title="variable">dt</span></span> is considering each constructor in turn; like in normal induction principles, each constructor has an associated proof case.  The expression <span class="inlinecode"><span class="id" title="definition">hget</span></span> <span class="inlinecode"><span class="id" title="variable">dd</span></span> <span class="inlinecode"><span class="id" title="variable">m</span></span> then names the constructor we have selected.  After binding <span class="inlinecode"><span class="id" title="variable">m</span></span>, we quantify over all possible arguments (encoded with <span class="inlinecode"><span class="id" title="variable">x</span></span> and <span class="inlinecode"><span class="id" title="variable">r</span></span>) to the constructor that <span class="inlinecode"><span class="id" title="variable">m</span></span> selects.  Within each specific case, we quantify further over <span class="inlinecode"><span class="id" title="definition">i</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" title="inductive">fin</span></span> <span class="inlinecode">(<span class="id" title="projection">recursive</span></span> <span class="inlinecode"><span class="id" title="variable">c</span>)</span> to consider all of our induction hypotheses, one for each recursive argument of the current constructor.
+
+<div class="paragraph"> </div>
+
+     We have completed half the burden of defining side conditions.  The other half comes in characterizing when a recursion scheme <span class="inlinecode"><span class="id" title="variable">fx</span></span> is valid.  The natural condition is that <span class="inlinecode"><span class="id" title="variable">fx</span></span> behaves appropriately when applied to any constructor application. 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <span class="id" title="var">fixDenoteOk</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">forall</span> (<span class="id" title="var">R</span> : <span class="id" title="keyword">Type</span>) (<span class="id" title="var">cases</span> : <span class="id" title="var">datatypeDenote</span> <span class="id" title="var">R</span> <span class="id" title="var">dt</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">c</span> (<span class="id" title="var">m</span> : <span class="id" title="var">member</span> <span class="id" title="var">c</span> <span class="id" title="var">dt</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">x</span> : <span class="id" title="var">nonrecursive</span> <span class="id" title="var">c</span>) (<span class="id" title="var">r</span> : <span class="id" title="var">ilist</span> <span class="id" title="var">T</span> (<span class="id" title="var">recursive</span> <span class="id" title="var">c</span>)),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">fx</span> <span class="id" title="var">cases</span> ((<span class="id" title="var">hget</span> <span class="id" title="var">dd</span> <span class="id" title="var">m</span>) <span class="id" title="var">x</span> <span class="id" title="var">r</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= (<span class="id" title="var">hget</span> <span class="id" title="var">cases</span> <span class="id" title="var">m</span>) <span class="id" title="var">x</span> (<span class="id" title="var">imap</span> (<span class="id" title="var">fx</span> <span class="id" title="var">cases</span>) <span class="id" title="var">r</span>).<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+As for <span class="inlinecode"><span class="id" title="definition">datatypeDenoteOk</span></span>, we consider all constructors and all possible arguments to them by quantifying over <span class="inlinecode"><span class="id" title="variable">m</span></span>, <span class="inlinecode"><span class="id" title="variable">x</span></span>, and <span class="inlinecode"><span class="id" title="variable">r</span></span>.  The lefthand side of the equality that follows shows a call to the recursive function on the specific constructor application that we selected.  The righthand side shows an application of the function case associated with constructor <span class="inlinecode"><span class="id" title="variable">m</span></span>, applied to the non-recursive arguments and to appropriate recursive calls on the recursive arguments. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">End</span> <span class="id" title="var">ok</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+We are now ready to prove that the <span class="inlinecode"><span class="id" title="definition">size</span></span> function we defined earlier always returns positive results.  First, we establish a simple lemma. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Lemma</span> <span class="id" title="var">foldr_plus</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">n</span> (<span class="id" title="var">ils</span> : <span class="id" title="var">ilist</span> <span class="id" title="var">nat</span> <span class="id" title="var">n</span>),<br/>
+&nbsp;&nbsp;<span class="id" title="var">foldr</span> <span class="id" title="var">plus</span> 1 <span class="id" title="var">ils</span> &gt; 0.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">induction</span> <span class="id" title="var">ils</span>; <span class="id" title="var">crush</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">size_positive</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">T</span> <span class="id" title="var">dt</span><br/>
+&nbsp;&nbsp;(<span class="id" title="var">dd</span> : <span class="id" title="var">datatypeDenote</span> <span class="id" title="var">T</span> <span class="id" title="var">dt</span>) (<span class="id" title="var">fx</span> : <span class="id" title="var">fixDenote</span> <span class="id" title="var">T</span> <span class="id" title="var">dt</span>)<br/>
+&nbsp;&nbsp;(<span class="id" title="var">dok</span> : <span class="id" title="var">datatypeDenoteOk</span> <span class="id" title="var">dd</span>) (<span class="id" title="var">fok</span> : <span class="id" title="var">fixDenoteOk</span> <span class="id" title="var">dd</span> <span class="id" title="var">fx</span>)<br/>
+&nbsp;&nbsp;(<span class="id" title="var">v</span> : <span class="id" title="var">T</span>),<br/>
+&nbsp;&nbsp;<span class="id" title="var">size</span> <span class="id" title="var">fx</span> <span class="id" title="var">v</span> &gt; 0.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">unfold</span> <span class="id" title="var">size</span>; <span class="id" title="tactic">intros</span>.<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;============================<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="variable">fx</span> <span class="id" title="inductive">nat</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="definition">hmake</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">fun</span> (<span class="id" title="variable">x</span> : <span class="id" title="tactic">constructor</span>) (<span class="id" title="var">_</span> : <span class="id" title="projection">nonrecursive</span> <span class="id" title="variable">x</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="variable">r</span> : <span class="id" title="inductive">ilist</span> <span class="id" title="inductive">nat</span> (<span class="id" title="projection">recursive</span> <span class="id" title="variable">x</span>)) =&gt; <span class="id" title="definition">foldr</span> <span class="id" title="definition">plus</span> 1%<span class="id" title="inductive">nat</span> <span class="id" title="variable">r</span>) <span class="id" title="variable">dt</span>) <span class="id" title="variable">v</span> &gt; 0
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+    Our goal is an inequality over a particular call to <span class="inlinecode"><span class="id" title="definition">size</span></span>, with its definition expanded.  How can we proceed here?  We cannot use <span class="inlinecode"><span class="id" title="tactic">induction</span></span> directly, because there is no way for Coq to know that <span class="inlinecode"><span class="id" title="variable">T</span></span> is an inductive type.  Instead, we need to use the induction principle encoded in our hypothesis <span class="inlinecode"><span class="id" title="var">dok</span></span> of type <span class="inlinecode"><span class="id" title="definition">datatypeDenoteOk</span></span> <span class="inlinecode"><span class="id" title="variable">dd</span></span>.  Let us try applying it directly.
+    <br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="var">dok</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;
+<div class="paragraph"> </div>
+
+</span>
+<pre>
+Error: Impossible to unify "datatypeDenoteOk dd" with
+ "fx nat
+    (hmake
+       (fun (x : constructor) (_ : nonrecursive x)
+          (r : ilist nat (recursive x)) =&gt; foldr plus 1%nat r) dt) v &gt; 0".
+</pre>
+
+<div class="paragraph"> </div>
+
+    Matching the type of <span class="inlinecode"><span class="id" title="var">dok</span></span> with the type of our conclusion requires more than simple first-order unification, so <span class="inlinecode"><span class="id" title="tactic">apply</span></span> is not up to the challenge.  We can use the <span class="inlinecode"><span class="id" title="tactic">pattern</span></span> tactic to get our goal into a form that makes it apparent exactly what the induction hypothesis is. 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">pattern</span> <span class="id" title="var">v</span>.<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;============================<br/>
+&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">fun</span> <span class="id" title="variable">t</span> : <span class="id" title="variable">T</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="variable">fx</span> <span class="id" title="inductive">nat</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="definition">hmake</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">fun</span> (<span class="id" title="variable">x</span> : <span class="id" title="tactic">constructor</span>) (<span class="id" title="var">_</span> : <span class="id" title="projection">nonrecursive</span> <span class="id" title="variable">x</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="variable">r</span> : <span class="id" title="inductive">ilist</span> <span class="id" title="inductive">nat</span> (<span class="id" title="projection">recursive</span> <span class="id" title="variable">x</span>)) =&gt; <span class="id" title="definition">foldr</span> <span class="id" title="definition">plus</span> 1%<span class="id" title="inductive">nat</span> <span class="id" title="variable">r</span>) <span class="id" title="variable">dt</span>) <span class="id" title="variable">t</span> &gt; 0) <span class="id" title="variable">v</span>
+<div class="paragraph"> </div>
+
+</span>      
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="var">dok</span>; <span class="id" title="var">crush</span>.<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="variable">H</span> : <span class="id" title="keyword">forall</span> <span class="id" title="definition">i</span> : <span class="id" title="inductive">fin</span> (<span class="id" title="projection">recursive</span> <span class="id" title="variable">c</span>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="variable">fx</span> <span class="id" title="inductive">nat</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="definition">hmake</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">fun</span> (<span class="id" title="variable">x</span> : <span class="id" title="tactic">constructor</span>) (<span class="id" title="var">_</span> : <span class="id" title="projection">nonrecursive</span> <span class="id" title="variable">x</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="variable">r</span> : <span class="id" title="inductive">ilist</span> <span class="id" title="inductive">nat</span> (<span class="id" title="projection">recursive</span> <span class="id" title="variable">x</span>)) =&gt; <span class="id" title="definition">foldr</span> <span class="id" title="definition">plus</span> 1%<span class="id" title="inductive">nat</span> <span class="id" title="variable">r</span>) <span class="id" title="variable">dt</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="definition">get</span> <span class="id" title="variable">r</span> <span class="id" title="definition">i</span>) &gt; 0<br/>
+&nbsp;&nbsp;============================<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="definition">hget</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="definition">hmake</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">fun</span> (<span class="id" title="var">x0</span> : <span class="id" title="tactic">constructor</span>) (<span class="id" title="var">_</span> : <span class="id" title="projection">nonrecursive</span> <span class="id" title="var">x0</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">r0</span> : <span class="id" title="inductive">ilist</span> <span class="id" title="inductive">nat</span> (<span class="id" title="projection">recursive</span> <span class="id" title="var">x0</span>)) =&gt; <span class="id" title="definition">foldr</span> <span class="id" title="definition">plus</span> 1%<span class="id" title="inductive">nat</span> <span class="id" title="var">r0</span>) <span class="id" title="variable">dt</span>) <span class="id" title="variable">m</span> <span class="id" title="variable">x</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="definition">imap</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="variable">fx</span> <span class="id" title="inductive">nat</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="definition">hmake</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">fun</span> (<span class="id" title="var">x0</span> : <span class="id" title="tactic">constructor</span>) (<span class="id" title="var">_</span> : <span class="id" title="projection">nonrecursive</span> <span class="id" title="var">x0</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">r0</span> : <span class="id" title="inductive">ilist</span> <span class="id" title="inductive">nat</span> (<span class="id" title="projection">recursive</span> <span class="id" title="var">x0</span>)) =&gt; <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="definition">foldr</span> <span class="id" title="definition">plus</span> 1%<span class="id" title="inductive">nat</span> <span class="id" title="var">r0</span>) <span class="id" title="variable">dt</span>)) <span class="id" title="variable">r</span>) &gt; 0
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+    An induction hypothesis <span class="inlinecode"><span class="id" title="variable">H</span></span> is generated, but we turn out not to need it for this example.  We can simplify the goal using a library theorem about the composition of <span class="inlinecode"><span class="id" title="definition">hget</span></span> and <span class="inlinecode"><span class="id" title="definition">hmake</span></span>. 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> <span class="id" title="var">hget_hmake</span>.<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;============================<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="definition">foldr</span> <span class="id" title="definition">plus</span> 1%<span class="id" title="inductive">nat</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="definition">imap</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="variable">fx</span> <span class="id" title="inductive">nat</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="definition">hmake</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">fun</span> (<span class="id" title="var">x0</span> : <span class="id" title="tactic">constructor</span>) (<span class="id" title="var">_</span> : <span class="id" title="projection">nonrecursive</span> <span class="id" title="var">x0</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">r0</span> : <span class="id" title="inductive">ilist</span> <span class="id" title="inductive">nat</span> (<span class="id" title="projection">recursive</span> <span class="id" title="var">x0</span>)) =&gt; <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="definition">foldr</span> <span class="id" title="definition">plus</span> 1%<span class="id" title="inductive">nat</span> <span class="id" title="var">r0</span>) <span class="id" title="variable">dt</span>)) <span class="id" title="variable">r</span>) &gt; 0
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+    The lemma we proved earlier finishes the proof. 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="var">foldr_plus</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Using hints, we can redo this proof in a nice automated form. 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Restart</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Hint Rewrite</span> <span class="id" title="var">hget_hmake</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Hint Resolve</span> <span class="id" title="var">foldr_plus</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">unfold</span> <span class="id" title="var">size</span>; <span class="id" title="tactic">intros</span>; <span class="id" title="tactic">pattern</span> <span class="id" title="var">v</span>; <span class="id" title="tactic">apply</span> <span class="id" title="var">dok</span>; <span class="id" title="var">crush</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+It turned out that, in this example, we only needed to use induction degenerately as case analysis.  A more involved theorem may only be proved using induction hypotheses.  We will give its proof only in unautomated form and leave effective automation as an exercise for the motivated reader.
+
+<div class="paragraph"> </div>
+
+   In particular, it ought to be the case that generic <span class="inlinecode"><span class="id" title="definition">map</span></span> applied to an identity function is itself an identity function. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">map_id</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">T</span> <span class="id" title="var">dt</span><br/>
+&nbsp;&nbsp;(<span class="id" title="var">dd</span> : <span class="id" title="var">datatypeDenote</span> <span class="id" title="var">T</span> <span class="id" title="var">dt</span>) (<span class="id" title="var">fx</span> : <span class="id" title="var">fixDenote</span> <span class="id" title="var">T</span> <span class="id" title="var">dt</span>)<br/>
+&nbsp;&nbsp;(<span class="id" title="var">dok</span> : <span class="id" title="var">datatypeDenoteOk</span> <span class="id" title="var">dd</span>) (<span class="id" title="var">fok</span> : <span class="id" title="var">fixDenoteOk</span> <span class="id" title="var">dd</span> <span class="id" title="var">fx</span>)<br/>
+&nbsp;&nbsp;(<span class="id" title="var">v</span> : <span class="id" title="var">T</span>),<br/>
+&nbsp;&nbsp;<span class="id" title="var">map</span> <span class="id" title="var">dd</span> <span class="id" title="var">fx</span> (<span class="id" title="keyword">fun</span> <span class="id" title="var">x</span> =&gt; <span class="id" title="var">x</span>) <span class="id" title="var">v</span> = <span class="id" title="var">v</span>.<br/>
+</div>
+
+<div class="doc">
+Let us begin as we did in the last theorem, after adding another useful library equality as a hint. 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Hint Rewrite</span> <span class="id" title="var">hget_hmap</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">unfold</span> <span class="id" title="var">map</span>; <span class="id" title="tactic">intros</span>; <span class="id" title="tactic">pattern</span> <span class="id" title="var">v</span>; <span class="id" title="tactic">apply</span> <span class="id" title="var">dok</span>; <span class="id" title="var">crush</span>.<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="variable">H</span> : <span class="id" title="keyword">forall</span> <span class="id" title="definition">i</span> : <span class="id" title="inductive">fin</span> (<span class="id" title="projection">recursive</span> <span class="id" title="variable">c</span>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="variable">fx</span> <span class="id" title="variable">T</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="section">hmap</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">fun</span> (<span class="id" title="variable">x</span> : <span class="id" title="tactic">constructor</span>) (<span class="id" title="variable">c</span> : <span class="id" title="definition">constructorDenote</span> <span class="id" title="variable">T</span> <span class="id" title="variable">x</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">x0</span> : <span class="id" title="projection">nonrecursive</span> <span class="id" title="variable">x</span>) (<span class="id" title="variable">r</span> : <span class="id" title="inductive">ilist</span> <span class="id" title="variable">T</span> (<span class="id" title="projection">recursive</span> <span class="id" title="variable">x</span>)) =&gt; <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="variable">c</span> <span class="id" title="var">x0</span> <span class="id" title="variable">r</span>) <span class="id" title="variable">dd</span>) (<span class="id" title="definition">get</span> <span class="id" title="variable">r</span> <span class="id" title="definition">i</span>) = <span class="id" title="definition">get</span> <span class="id" title="variable">r</span> <span class="id" title="definition">i</span><br/>
+&nbsp;&nbsp;============================<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="definition">hget</span> <span class="id" title="variable">dd</span> <span class="id" title="variable">m</span> <span class="id" title="variable">x</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="definition">imap</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="variable">fx</span> <span class="id" title="variable">T</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="section">hmap</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">fun</span> (<span class="id" title="var">x0</span> : <span class="id" title="tactic">constructor</span>) (<span class="id" title="var">c0</span> : <span class="id" title="definition">constructorDenote</span> <span class="id" title="variable">T</span> <span class="id" title="var">x0</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="variable">x1</span> : <span class="id" title="projection">nonrecursive</span> <span class="id" title="var">x0</span>) (<span class="id" title="var">r0</span> : <span class="id" title="inductive">ilist</span> <span class="id" title="variable">T</span> (<span class="id" title="projection">recursive</span> <span class="id" title="var">x0</span>)) =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">c0</span> <span class="id" title="variable">x1</span> <span class="id" title="var">r0</span>) <span class="id" title="variable">dd</span>)) <span class="id" title="variable">r</span>) = <span class="id" title="definition">hget</span> <span class="id" title="variable">dd</span> <span class="id" title="variable">m</span> <span class="id" title="variable">x</span> <span class="id" title="variable">r</span>
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+    Our goal is an equality whose two sides begin with the same function call and initial arguments.  We believe that the remaining arguments are in fact equal as well, and the <span class="inlinecode"><span class="id" title="tactic">f_equal</span></span> tactic applies this reasoning step for us formally. 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">f_equal</span>.<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;============================<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="definition">imap</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="variable">fx</span> <span class="id" title="variable">T</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="section">hmap</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">fun</span> (<span class="id" title="var">x0</span> : <span class="id" title="tactic">constructor</span>) (<span class="id" title="var">c0</span> : <span class="id" title="definition">constructorDenote</span> <span class="id" title="variable">T</span> <span class="id" title="var">x0</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="variable">x1</span> : <span class="id" title="projection">nonrecursive</span> <span class="id" title="var">x0</span>) (<span class="id" title="var">r0</span> : <span class="id" title="inductive">ilist</span> <span class="id" title="variable">T</span> (<span class="id" title="projection">recursive</span> <span class="id" title="var">x0</span>)) =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">c0</span> <span class="id" title="variable">x1</span> <span class="id" title="var">r0</span>) <span class="id" title="variable">dd</span>)) <span class="id" title="variable">r</span> = <span class="id" title="variable">r</span>
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+    At this point, it is helpful to proceed by an inner induction on the heterogeneous list <span class="inlinecode"><span class="id" title="variable">r</span></span> of recursive call results.  We could arrive at a cleaner proof by breaking this step out into an explicit lemma, but here we will do the induction inline to save space.
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">induction</span> <span class="id" title="var">r</span>; <span class="id" title="var">crush</span>.<br/>
+
+<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+The base case is discharged automatically, and the inductive case looks like this, where <span class="inlinecode"><span class="id" title="variable">H</span></span> is the outer IH (for induction over <span class="inlinecode"><span class="id" title="variable">T</span></span> values) and <span class="inlinecode"><span class="id" title="var">IHr</span></span> is the inner IH (for induction over the recursive arguments).
+     <br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="variable">H</span> : <span class="id" title="keyword">forall</span> <span class="id" title="definition">i</span> : <span class="id" title="inductive">fin</span> (<span class="id" title="variable">S</span> <span class="id" title="variable">n</span>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="variable">fx</span> <span class="id" title="variable">T</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="section">hmap</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">fun</span> (<span class="id" title="variable">x</span> : <span class="id" title="tactic">constructor</span>) (<span class="id" title="variable">c</span> : <span class="id" title="definition">constructorDenote</span> <span class="id" title="variable">T</span> <span class="id" title="variable">x</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">x0</span> : <span class="id" title="projection">nonrecursive</span> <span class="id" title="variable">x</span>) (<span class="id" title="variable">r</span> : <span class="id" title="inductive">ilist</span> <span class="id" title="variable">T</span> (<span class="id" title="projection">recursive</span> <span class="id" title="variable">x</span>)) =&gt; <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="variable">c</span> <span class="id" title="var">x0</span> <span class="id" title="variable">r</span>) <span class="id" title="variable">dd</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">match</span> <span class="id" title="definition">i</span> <span class="id" title="keyword">in</span> (<span class="id" title="inductive">fin</span> <span class="id" title="variable">n'</span>) <span class="id" title="keyword">return</span> ((<span class="id" title="inductive">fin</span> (<span class="id" title="definition">pred</span> <span class="id" title="variable">n'</span>) -&gt; <span class="id" title="variable">T</span>) -&gt; <span class="id" title="variable">T</span>) <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="projection">First</span> <span class="id" title="variable">n</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="var">_</span> : <span class="id" title="inductive">fin</span> <span class="id" title="variable">n</span> -&gt; <span class="id" title="variable">T</span> =&gt; <span class="id" title="variable">a</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="keyword">Next</span> <span class="id" title="variable">n</span> <span class="id" title="var">idx'</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="variable">get_ls'</span> : <span class="id" title="inductive">fin</span> <span class="id" title="variable">n</span> -&gt; <span class="id" title="variable">T</span> =&gt; <span class="id" title="variable">get_ls'</span> <span class="id" title="var">idx'</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span> (<span class="id" title="definition">get</span> <span class="id" title="variable">r</span>)) =<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="definition">i</span> <span class="id" title="keyword">in</span> (<span class="id" title="inductive">fin</span> <span class="id" title="variable">n'</span>) <span class="id" title="keyword">return</span> ((<span class="id" title="inductive">fin</span> (<span class="id" title="definition">pred</span> <span class="id" title="variable">n'</span>) -&gt; <span class="id" title="variable">T</span>) -&gt; <span class="id" title="variable">T</span>) <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="projection">First</span> <span class="id" title="variable">n</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="var">_</span> : <span class="id" title="inductive">fin</span> <span class="id" title="variable">n</span> -&gt; <span class="id" title="variable">T</span> =&gt; <span class="id" title="variable">a</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="keyword">Next</span> <span class="id" title="variable">n</span> <span class="id" title="var">idx'</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="variable">get_ls'</span> : <span class="id" title="inductive">fin</span> <span class="id" title="variable">n</span> -&gt; <span class="id" title="variable">T</span> =&gt; <span class="id" title="variable">get_ls'</span> <span class="id" title="var">idx'</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span> (<span class="id" title="definition">get</span> <span class="id" title="variable">r</span>)<br/>
+&nbsp;&nbsp;<span class="id" title="var">IHr</span> : (<span class="id" title="keyword">forall</span> <span class="id" title="definition">i</span> : <span class="id" title="inductive">fin</span> <span class="id" title="variable">n</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="variable">fx</span> <span class="id" title="variable">T</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="section">hmap</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">fun</span> (<span class="id" title="variable">x</span> : <span class="id" title="tactic">constructor</span>) (<span class="id" title="variable">c</span> : <span class="id" title="definition">constructorDenote</span> <span class="id" title="variable">T</span> <span class="id" title="variable">x</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">x0</span> : <span class="id" title="projection">nonrecursive</span> <span class="id" title="variable">x</span>) (<span class="id" title="variable">r</span> : <span class="id" title="inductive">ilist</span> <span class="id" title="variable">T</span> (<span class="id" title="projection">recursive</span> <span class="id" title="variable">x</span>)) =&gt; <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="variable">c</span> <span class="id" title="var">x0</span> <span class="id" title="variable">r</span>) <span class="id" title="variable">dd</span>) (<span class="id" title="definition">get</span> <span class="id" title="variable">r</span> <span class="id" title="definition">i</span>) = <span class="id" title="definition">get</span> <span class="id" title="variable">r</span> <span class="id" title="definition">i</span>) -&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="definition">imap</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="variable">fx</span> <span class="id" title="variable">T</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="section">hmap</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">fun</span> (<span class="id" title="variable">x</span> : <span class="id" title="tactic">constructor</span>) (<span class="id" title="variable">c</span> : <span class="id" title="definition">constructorDenote</span> <span class="id" title="variable">T</span> <span class="id" title="variable">x</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">x0</span> : <span class="id" title="projection">nonrecursive</span> <span class="id" title="variable">x</span>) (<span class="id" title="variable">r</span> : <span class="id" title="inductive">ilist</span> <span class="id" title="variable">T</span> (<span class="id" title="projection">recursive</span> <span class="id" title="variable">x</span>)) =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="variable">c</span> <span class="id" title="var">x0</span> <span class="id" title="variable">r</span>) <span class="id" title="variable">dd</span>)) <span class="id" title="variable">r</span> = <span class="id" title="variable">r</span><br/>
+&nbsp;&nbsp;============================<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="constructor">ICons</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="variable">fx</span> <span class="id" title="variable">T</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="section">hmap</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">fun</span> (<span class="id" title="var">x0</span> : <span class="id" title="tactic">constructor</span>) (<span class="id" title="var">c0</span> : <span class="id" title="definition">constructorDenote</span> <span class="id" title="variable">T</span> <span class="id" title="var">x0</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="variable">x1</span> : <span class="id" title="projection">nonrecursive</span> <span class="id" title="var">x0</span>) (<span class="id" title="var">r0</span> : <span class="id" title="inductive">ilist</span> <span class="id" title="variable">T</span> (<span class="id" title="projection">recursive</span> <span class="id" title="var">x0</span>)) =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">c0</span> <span class="id" title="variable">x1</span> <span class="id" title="var">r0</span>) <span class="id" title="variable">dd</span>) <span class="id" title="variable">a</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="definition">imap</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="variable">fx</span> <span class="id" title="variable">T</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="section">hmap</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">fun</span> (<span class="id" title="var">x0</span> : <span class="id" title="tactic">constructor</span>) (<span class="id" title="var">c0</span> : <span class="id" title="definition">constructorDenote</span> <span class="id" title="variable">T</span> <span class="id" title="var">x0</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="variable">x1</span> : <span class="id" title="projection">nonrecursive</span> <span class="id" title="var">x0</span>) (<span class="id" title="var">r0</span> : <span class="id" title="inductive">ilist</span> <span class="id" title="variable">T</span> (<span class="id" title="projection">recursive</span> <span class="id" title="var">x0</span>)) =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">c0</span> <span class="id" title="variable">x1</span> <span class="id" title="var">r0</span>) <span class="id" title="variable">dd</span>)) <span class="id" title="variable">r</span>) = <span class="id" title="constructor">ICons</span> <span class="id" title="variable">a</span> <span class="id" title="variable">r</span>
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+    We see another opportunity to apply <span class="inlinecode"><span class="id" title="tactic">f_equal</span></span>, this time to split our goal into two different equalities over corresponding arguments.  After that, the form of the first goal matches our outer induction hypothesis <span class="inlinecode"><span class="id" title="variable">H</span></span>, when we give type inference some help by specifying the right quantifier instantiation. 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">f_equal</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">apply</span> (<span class="id" title="var">H</span> <span class="id" title="var">First</span>).<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;============================<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="definition">imap</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="variable">fx</span> <span class="id" title="variable">T</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="section">hmap</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">fun</span> (<span class="id" title="var">x0</span> : <span class="id" title="tactic">constructor</span>) (<span class="id" title="var">c0</span> : <span class="id" title="definition">constructorDenote</span> <span class="id" title="variable">T</span> <span class="id" title="var">x0</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="variable">x1</span> : <span class="id" title="projection">nonrecursive</span> <span class="id" title="var">x0</span>) (<span class="id" title="var">r0</span> : <span class="id" title="inductive">ilist</span> <span class="id" title="variable">T</span> (<span class="id" title="projection">recursive</span> <span class="id" title="var">x0</span>)) =&gt; <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">c0</span> <span class="id" title="variable">x1</span> <span class="id" title="var">r0</span>) <span class="id" title="variable">dd</span>)) <span class="id" title="variable">r</span> = <span class="id" title="variable">r</span>
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+    Now the goal matches the inner IH <span class="inlinecode"><span class="id" title="var">IHr</span></span>. 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="var">IHr</span>; <span class="id" title="var">crush</span>.<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="definition">i</span> : <span class="id" title="inductive">fin</span> <span class="id" title="variable">n</span><br/>
+&nbsp;&nbsp;============================<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="variable">fx</span> <span class="id" title="variable">T</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="section">hmap</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">fun</span> (<span class="id" title="var">x0</span> : <span class="id" title="tactic">constructor</span>) (<span class="id" title="var">c0</span> : <span class="id" title="definition">constructorDenote</span> <span class="id" title="variable">T</span> <span class="id" title="var">x0</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="variable">x1</span> : <span class="id" title="projection">nonrecursive</span> <span class="id" title="var">x0</span>) (<span class="id" title="var">r0</span> : <span class="id" title="inductive">ilist</span> <span class="id" title="variable">T</span> (<span class="id" title="projection">recursive</span> <span class="id" title="var">x0</span>)) =&gt; <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">c0</span> <span class="id" title="variable">x1</span> <span class="id" title="var">r0</span>) <span class="id" title="variable">dd</span>) (<span class="id" title="definition">get</span> <span class="id" title="variable">r</span> <span class="id" title="definition">i</span>) = <span class="id" title="definition">get</span> <span class="id" title="variable">r</span> <span class="id" title="definition">i</span>
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+    We can finish the proof by applying the outer IH again, specialized to a different <span class="inlinecode"><span class="id" title="inductive">fin</span></span> value. 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">apply</span> (<span class="id" title="var">H</span> (<span class="id" title="keyword">Next</span> <span class="id" title="var">i</span>)).<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+The proof involves complex subgoals, but, still, few steps are required, and then we may reuse our work across a variety of datatypes. 
+</div>
+<div class="code">
+</div>
+</div>
+
+<div id="footer">
+<hr/><a href="index.html">Index</a><hr/>This page has been generated by <a href="http://coq.inria.fr/">coqdoc</a>
+</div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,775 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<link href="coqdoc.css" rel="stylesheet" type="text/css" />
+<title>Exercises</title>
+</head>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+</div>
+
+<div id="main">
+
+<h1 class="libtitle">Library Exercises</h1>
+
+<div class="code">
+
+<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+These exercises were originally included inline in the text, but my latest feeling is that I don't have the time to maintain the exercises at a sufficient quality level to match the level I'm targetting for the rest of the book.  I'm including them in this file for now. 
+<div class="paragraph"> </div>
+
+<a name="lab24"></a><h1 class="section">From InductiveTypes</h1>
+
+<div class="paragraph"> </div>
+
+ <ol>
+
+<div class="paragraph"> </div>
+
+<li> Define an inductive type <span class="inlinecode"><span class="id" title="var">truth</span></span> with three constructors, <span class="inlinecode"><span class="id" title="var">Yes</span></span>, <span class="inlinecode"><span class="id" title="var">No</span></span>, and <span class="inlinecode"><span class="id" title="var">Maybe</span></span>.  <span class="inlinecode"><span class="id" title="var">Yes</span></span> stands for certain truth, <span class="inlinecode"><span class="id" title="var">No</span></span> for certain falsehood, and <span class="inlinecode"><span class="id" title="var">Maybe</span></span> for an unknown situation.  Define "not," "and," and "or" for this replacement boolean algebra.  Prove that your implementation of "and" is commutative and distributes over your implementation of "or."</li>
+
+<div class="paragraph"> </div>
+
+<li> Define an inductive type <span class="inlinecode"><span class="id" title="var">slist</span></span> that implements lists with support for constant-time concatenation.  This type should be polymorphic in a choice of type for data values in lists.  The type <span class="inlinecode"><span class="id" title="var">slist</span></span> should have three constructors, for empty lists, singleton lists, and concatenation.  Define a function <span class="inlinecode"><span class="id" title="definition">flatten</span></span> that converts <span class="inlinecode"><span class="id" title="var">slist</span></span>s to <span class="inlinecode"><span class="id" title="inductive">list</span></span>s.  (You will want to run <span class="inlinecode"><span class="id" title="keyword">Require</span></span> <span class="inlinecode"><span class="id" title="keyword">Import</span></span> <tt>List</tt><span class="inlinecode">.</span> to bring list definitions into scope.)  Finally, prove that <span class="inlinecode"><span class="id" title="definition">flatten</span></span> distributes over concatenation, where the two sides of your quantified equality will use the <span class="inlinecode"><span class="id" title="var">slist</span></span> and <span class="inlinecode"><span class="id" title="inductive">list</span></span> versions of concatenation, as appropriate.  Recall from Chapter 2 that the infix operator <span class="inlinecode">++</span> is syntactic sugar for the <span class="inlinecode"><span class="id" title="inductive">list</span></span> concatenation function <span class="inlinecode"><span class="id" title="definition">app</span></span>.</li>
+
+<div class="paragraph"> </div>
+
+<li> Modify the first example language of Chapter 2 to include variables, where variables are represented with <span class="inlinecode"><span class="id" title="inductive">nat</span></span>.  Extend the syntax and semantics of expressions to accommodate the change.  Your new <span class="inlinecode"><span class="id" title="definition">expDenote</span></span> function should take as a new extra first argument a value of type <span class="inlinecode"><span class="id" title="variable">var</span></span> <span class="inlinecode">-&gt;</span> <span class="inlinecode"><span class="id" title="inductive">nat</span></span>, where <span class="inlinecode"><span class="id" title="variable">var</span></span> is a synonym for naturals-as-variables, and the function assigns a value to each variable.  Define a constant folding function which does a bottom-up pass over an expression, at each stage replacing every binary operation on constants with an equivalent constant.  Prove that constant folding preserves the meanings of expressions.</li>
+
+<div class="paragraph"> </div>
+
+<li> Reimplement the second example language of Chapter 2 to use mutually inductive types instead of dependent types.  That is, define two separate (non-dependent) inductive types <span class="inlinecode"><span class="id" title="var">nat_exp</span></span> and <span class="inlinecode"><span class="id" title="var">bool_exp</span></span> for expressions of the two different types, rather than a single indexed type.  To keep things simple, you may consider only the binary operators that take naturals as operands.  Add natural number variables to the language, as in the last exercise, and add an "if" expression form taking as arguments one boolean expression and two natural number expressions.  Define semantics and constant-folding functions for this new language.  Your constant folding should simplify not just binary operations (returning naturals or booleans) with known arguments, but also "if" expressions with known values for their test expressions but possibly undetermined "then" and "else" cases.  Prove that constant-folding a natural number expression preserves its meaning.</li>
+
+<div class="paragraph"> </div>
+
+<li> Define mutually inductive types of even and odd natural numbers, such that any natural number is isomorphic to a value of one of the two types.  (This problem does not ask you to prove that correspondence, though some interpretations of the task may be interesting exercises.)  Write a function that computes the sum of two even numbers, such that the function type guarantees that the output is even as well.  Prove that this function is commutative.</li>
+
+<div class="paragraph"> </div>
+
+<li> Using a reflexive inductive definition, define a type <span class="inlinecode"><span class="id" title="inductive">nat_tree</span></span> of infinitary trees, with natural numbers at their leaves and a countable infinity of new trees branching out of each internal node.  Define a function <span class="inlinecode"><span class="id" title="var">increment</span></span> that increments the number in every leaf of a <span class="inlinecode"><span class="id" title="inductive">nat_tree</span></span>.  Define a function <span class="inlinecode"><span class="id" title="var">leapfrog</span></span> over a natural <span class="inlinecode"><span class="id" title="definition">i</span></span> and a tree <span class="inlinecode"><span class="id" title="var">nt</span></span>.  <span class="inlinecode"><span class="id" title="var">leapfrog</span></span> should recurse into the <span class="inlinecode"><span class="id" title="definition">i</span></span>th child of <span class="inlinecode"><span class="id" title="var">nt</span></span>, the <span class="inlinecode"><span class="id" title="definition">i</span>+1</span>st child of that node, the <span class="inlinecode"><span class="id" title="definition">i</span>+2</span>nd child of the next node, and so on, until reaching a leaf, in which case <span class="inlinecode"><span class="id" title="var">leapfrog</span></span> should return the number at that leaf.  Prove that the result of any call to <span class="inlinecode"><span class="id" title="var">leapfrog</span></span> is incremented by one by calling <span class="inlinecode"><span class="id" title="var">increment</span></span> on the tree.</li>
+
+<div class="paragraph"> </div>
+
+<li> Define a type of trees of trees of trees of (repeat to infinity).  That is, define an inductive type <span class="inlinecode"><span class="id" title="var">trexp</span></span>, whose members are either base cases containing natural numbers or binary trees of <span class="inlinecode"><span class="id" title="var">trexp</span></span>s.  Base your definition on a parameterized binary tree type <span class="inlinecode"><span class="id" title="var">btree</span></span> that you will also define, so that <span class="inlinecode"><span class="id" title="var">trexp</span></span> is defined as a nested inductive type.  Define a function <span class="inlinecode"><span class="id" title="var">total</span></span> that sums all of the naturals at the leaves of a <span class="inlinecode"><span class="id" title="var">trexp</span></span>.  Define a function <span class="inlinecode"><span class="id" title="var">increment</span></span> that increments every leaf of a <span class="inlinecode"><span class="id" title="var">trexp</span></span> by one.  Prove that, for all <span class="inlinecode"><span class="id" title="variable">tr</span></span>, <span class="inlinecode"><span class="id" title="var">total</span></span> <span class="inlinecode">(<span class="id" title="var">increment</span></span> <span class="inlinecode"><span class="id" title="variable">tr</span>)</span> <span class="inlinecode">&gt;=</span> <span class="inlinecode"><span class="id" title="var">total</span></span> <span class="inlinecode"><span class="id" title="variable">tr</span></span>.  On the way to finishing this proof, you will probably want to prove a lemma and add it as a hint using the syntax <span class="inlinecode"><span class="id" title="keyword">Hint</span></span> <span class="inlinecode"><span class="id" title="keyword">Resolve</span></span> <span class="inlinecode"><span class="id" title="var">name_of_lemma</span>.</span>.</li>
+
+<div class="paragraph"> </div>
+
+<li> Prove discrimination and injectivity theorems for the <span class="inlinecode"><span class="id" title="inductive">nat_btree</span></span> type defined earlier in this chapter.  In particular, without using the tactics <span class="inlinecode"><span class="id" title="tactic">discriminate</span></span>, <span class="inlinecode"><span class="id" title="tactic">injection</span></span>, or <span class="inlinecode"><span class="id" title="tactic">congruence</span></span>, prove that no leaf equals any node, and prove that two equal nodes carry the same natural number.</li>
+
+<div class="paragraph"> </div>
+
+</ol> 
+<div class="paragraph"> </div>
+
+<a name="lab25"></a><h1 class="section">From Predicates</h1>
+
+<div class="paragraph"> </div>
+
+ <ol>
+
+<div class="paragraph"> </div>
+
+<li> Prove these tautologies of propositional logic, using only the tactics <span class="inlinecode"><span class="id" title="tactic">apply</span></span>, <span class="inlinecode"><span class="id" title="tactic">assumption</span></span>, <tt>constructor</tt>, <span class="inlinecode"><span class="id" title="tactic">destruct</span></span>, <span class="inlinecode"><span class="id" title="tactic">intro</span></span>, <span class="inlinecode"><span class="id" title="tactic">intros</span></span>, <tt>left</tt>, <tt>right</tt>, <span class="inlinecode"><span class="id" title="tactic">split</span></span>, and <span class="inlinecode"><span class="id" title="tactic">unfold</span></span>.
+  <ol>
+    <li> <span class="inlinecode">(</span><span class="inlinecode"><span class="id" title="inductive">True</span></span> <span class="inlinecode">\/</span> <span class="inlinecode"><span class="id" title="inductive">False</span>)</span> <span class="inlinecode">/\</span> <span class="inlinecode">(</span><span class="inlinecode"><span class="id" title="inductive">False</span></span> <span class="inlinecode">\/</span> <span class="inlinecode"><span class="id" title="inductive">True</span>)</span></li>
+    <li> <span class="inlinecode"><span class="id" title="variable">P</span></span> <span class="inlinecode">-&gt;</span> <span class="inlinecode">~</span> <span class="inlinecode">~</span> <span class="inlinecode"><span class="id" title="variable">P</span></span></li>
+    <li> <span class="inlinecode"><span class="id" title="variable">P</span></span> <span class="inlinecode">/\</span> <span class="inlinecode">(</span><span class="inlinecode"><span class="id" title="variable">Q</span></span> <span class="inlinecode">\/</span> <span class="inlinecode"><span class="id" title="variable">R</span>)</span> <span class="inlinecode">-&gt;</span> <span class="inlinecode">(</span><span class="inlinecode"><span class="id" title="variable">P</span></span> <span class="inlinecode">/\</span> <span class="inlinecode"><span class="id" title="variable">Q</span>)</span> <span class="inlinecode">\/</span> <span class="inlinecode">(</span><span class="inlinecode"><span class="id" title="variable">P</span></span> <span class="inlinecode">/\</span> <span class="inlinecode"><span class="id" title="variable">R</span>)</span></li>
+  </ol> </li>
+
+<div class="paragraph"> </div>
+
+  <li> Prove the following tautology of first-order logic, using only the tactics <span class="inlinecode"><span class="id" title="tactic">apply</span></span>, <span class="inlinecode"><span class="id" title="tactic">assert</span></span>, <span class="inlinecode"><span class="id" title="tactic">assumption</span></span>, <span class="inlinecode"><span class="id" title="tactic">destruct</span></span>, <span class="inlinecode"><span class="id" title="tactic">eapply</span></span>, <tt>eassumption</tt>, and <tt>exists</tt>.  You will probably find the <span class="inlinecode"><span class="id" title="tactic">assert</span></span> tactic useful for stating and proving an intermediate lemma, enabling a kind of "forward reasoning," in contrast to the "backward reasoning" that is the default for Coq tactics.  The tactic <tt>eassumption</tt> is a version of <span class="inlinecode"><span class="id" title="tactic">assumption</span></span> that will do matching of unification variables.  Let some variable <span class="inlinecode"><span class="id" title="variable">T</span></span> of type <span class="inlinecode"><span class="id" title="keyword">Set</span></span> be the set of individuals.  <span class="inlinecode"><span class="id" title="variable">x</span></span> is a constant symbol, <span class="inlinecode"><span class="id" title="variable">p</span></span> is a unary predicate symbol, <span class="inlinecode"><span class="id" title="variable">q</span></span> is a binary predicate symbol, and <span class="inlinecode"><span class="id" title="variable">f</span></span> is a unary function symbol.
+<ol>
+    <li> <span class="inlinecode"><span class="id" title="variable">p</span></span> <span class="inlinecode"><span class="id" title="variable">x</span></span> <span class="inlinecode">-&gt;</span> <span class="inlinecode">(</span><span class="inlinecode"><span class="id" title="keyword">forall</span></span> <span class="inlinecode"><span class="id" title="variable">x</span>,</span> <span class="inlinecode"><span class="id" title="variable">p</span></span> <span class="inlinecode"><span class="id" title="variable">x</span></span> <span class="inlinecode">-&gt;</span> <span class="inlinecode"><span class="id" title="tactic">exists</span></span> <span class="inlinecode"><span class="id" title="variable">y</span>,</span> <span class="inlinecode"><span class="id" title="variable">q</span></span> <span class="inlinecode"><span class="id" title="variable">x</span></span> <span class="inlinecode"><span class="id" title="variable">y</span>)</span> <span class="inlinecode">-&gt;</span> <span class="inlinecode">(</span><span class="inlinecode"><span class="id" title="keyword">forall</span></span> <span class="inlinecode"><span class="id" title="variable">x</span></span> <span class="inlinecode"><span class="id" title="variable">y</span>,</span> <span class="inlinecode"><span class="id" title="variable">q</span></span> <span class="inlinecode"><span class="id" title="variable">x</span></span> <span class="inlinecode"><span class="id" title="variable">y</span></span> <span class="inlinecode">-&gt;</span> <span class="inlinecode"><span class="id" title="variable">q</span></span> <span class="inlinecode"><span class="id" title="variable">y</span></span> <span class="inlinecode">(<span class="id" title="variable">f</span></span> <span class="inlinecode"><span class="id" title="variable">y</span>))</span> <span class="inlinecode">-&gt;</span> <span class="inlinecode"><span class="id" title="tactic">exists</span></span> <span class="inlinecode"><span class="id" title="variable">z</span>,</span> <span class="inlinecode"><span class="id" title="variable">q</span></span> <span class="inlinecode"><span class="id" title="variable">z</span></span> <span class="inlinecode">(<span class="id" title="variable">f</span></span> <span class="inlinecode"><span class="id" title="variable">z</span>)</span></li>
+  </ol> </li>
+
+<div class="paragraph"> </div>
+
+<li> Define an inductive predicate capturing when a natural number is an integer multiple of either 6 or 10.  Prove that 13 does not satisfy your predicate, and prove that any number satisfying the predicate is not odd.  It is probably easiest to prove the second theorem by indicating "odd-ness" as equality to <span class="inlinecode">2</span> <span class="inlinecode">*</span> <span class="inlinecode"><span class="id" title="variable">n</span></span> <span class="inlinecode">+</span> <span class="inlinecode">1</span> for some <span class="inlinecode"><span class="id" title="variable">n</span></span>.</li>
+
+<div class="paragraph"> </div>
+
+<li> Define a simple programming language, its semantics, and its typing rules, and then prove that well-typed programs cannot go wrong.  Specifically:
+  <ol>
+    <li> Define <span class="inlinecode"><span class="id" title="variable">var</span></span> as a synonym for the natural numbers.</li>
+    <li> Define an inductive type <span class="inlinecode"><span class="id" title="inductive">exp</span></span> of expressions, containing natural number constants, natural number addition, pairing of two other expressions, extraction of the first component of a pair, extraction of the second component of a pair, and variables (based on the <span class="inlinecode"><span class="id" title="variable">var</span></span> type you defined).</li>
+    <li> Define an inductive type <span class="inlinecode"><span class="id" title="inductive">cmd</span></span> of commands, containing expressions and variable assignments.  A variable assignment node should contain the variable being assigned, the expression being assigned to it, and the command to run afterward.</li>
+    <li> Define an inductive type <span class="inlinecode"><span class="id" title="var">val</span></span> of values, containing natural number constants and pairings of values.</li>
+    <li> Define a type of variable assignments, which assign a value to each variable.</li>
+    <li> Define a big-step evaluation relation <span class="inlinecode"><span class="id" title="tactic">eval</span></span>, capturing what it means for an expression to evaluate to a value under a particular variable assignment.  "Big step" means that the evaluation of every expression should be proved with a single instance of the inductive predicate you will define.  For instance, "<span class="inlinecode">1</span> <span class="inlinecode">+</span> <span class="inlinecode">1</span> evaluates to <span class="inlinecode">2</span> under assignment <span class="inlinecode"><span class="id" title="var">va</span></span>" should be derivable for any assignment <span class="inlinecode"><span class="id" title="var">va</span></span>.</li>
+    <li> Define a big-step evaluation relation <span class="inlinecode"><span class="id" title="definition">run</span></span>, capturing what it means for a command to run to a value under a particular variable assignment.  The value of a command is the result of evaluating its final expression.</li>
+    <li> Define a type of variable typings, which are like variable assignments, but map variables to types instead of values.  You might use polymorphism to share some code with your variable assignments.</li>
+    <li> Define typing judgments for expressions, values, and commands.  The expression and command cases will be in terms of a typing assignment.</li>
+    <li> Define a predicate <span class="inlinecode"><span class="id" title="var">varsType</span></span> to express when a variable assignment and a variable typing agree on the types of variables.</li>
+    <li> Prove that any expression that has type <span class="inlinecode"><span class="id" title="variable">t</span></span> under variable typing <span class="inlinecode"><span class="id" title="var">vt</span></span> evaluates under variable assignment <span class="inlinecode"><span class="id" title="var">va</span></span> to some value that also has type <span class="inlinecode"><span class="id" title="variable">t</span></span> in <span class="inlinecode"><span class="id" title="var">vt</span></span>, as long as <span class="inlinecode"><span class="id" title="var">va</span></span> and <span class="inlinecode"><span class="id" title="var">vt</span></span> agree.</li>
+    <li> Prove that any command that has type <span class="inlinecode"><span class="id" title="variable">t</span></span> under variable typing <span class="inlinecode"><span class="id" title="var">vt</span></span> evaluates under variable assignment <span class="inlinecode"><span class="id" title="var">va</span></span> to some value that also has type <span class="inlinecode"><span class="id" title="variable">t</span></span> in <span class="inlinecode"><span class="id" title="var">vt</span></span>, as long as <span class="inlinecode"><span class="id" title="var">va</span></span> and <span class="inlinecode"><span class="id" title="var">vt</span></span> agree.</li>
+  </ol> </li>
+  A few hints that may be helpful:
+  <ol>
+    <li> One easy way of defining variable assignments and typings is to define both as instances of a polymorphic map type.  The map type at parameter <span class="inlinecode"><span class="id" title="variable">T</span></span> can be defined to be the type of arbitrary functions from variables to <span class="inlinecode"><span class="id" title="variable">T</span></span>.  A helpful function for implementing insertion into such a functional map is <span class="inlinecode"><span class="id" title="definition">eq_nat_dec</span></span>, which you can make available with <span class="inlinecode"><span class="id" title="keyword">Require</span></span> <span class="inlinecode"><span class="id" title="keyword">Import</span></span> <span class="inlinecode"><span class="id" title="library">Arith</span>.</span>.  <span class="inlinecode"><span class="id" title="definition">eq_nat_dec</span></span> has a dependent type that tells you that it makes accurate decisions on whether two natural numbers are equal, but you can use it as if it returned a boolean, e.g., <span class="inlinecode"><span class="id" title="keyword">if</span></span> <span class="inlinecode"><span class="id" title="definition">eq_nat_dec</span></span> <span class="inlinecode"><span class="id" title="variable">n</span></span> <span class="inlinecode"><span class="id" title="variable">m</span></span> <span class="inlinecode"><span class="id" title="keyword">then</span></span> <span class="inlinecode"><span class="id" title="var">E1</span></span> <span class="inlinecode"><span class="id" title="keyword">else</span></span> <span class="inlinecode"><span class="id" title="var">E2</span></span>.</li>
+    <li> If you follow the last hint, you may find yourself writing a proof that involves an expression with <span class="inlinecode"><span class="id" title="definition">eq_nat_dec</span></span> that you would like to simplify.  Running <span class="inlinecode"><span class="id" title="tactic">destruct</span></span> on the particular call to <span class="inlinecode"><span class="id" title="definition">eq_nat_dec</span></span> should do the trick.  You can automate this advice with a piece of Ltac: <br/>
+<span class="inlinecode"><span class="id" title="keyword">match</span> <span class="id" title="keyword">goal</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;| [ |- <span class="id" title="keyword">context</span>[<span class="id" title="definition">eq_nat_dec</span> ?<span class="id" title="var">X</span> ?<span class="id" title="var">Y</span>] ] =&gt; <span class="id" title="tactic">destruct</span> (<span class="id" title="definition">eq_nat_dec</span> <span class="id" title="var">X</span> <span class="id" title="var">Y</span>)<br/>
+<span class="id" title="keyword">end</span>
+<div class="paragraph"> </div>
+
+</span>    </li>
+    <li> You probably do not want to use an inductive definition for compatibility of variable assignments and typings.</li>
+    <li> The <span class="inlinecode"><span class="id" title="library">CpdtTactics</span></span> module from this book contains a variant <span class="inlinecode"><span class="id" title="var">crush'</span></span> of <span class="inlinecode"><span class="id" title="var">crush</span></span>.  <span class="inlinecode"><span class="id" title="var">crush'</span></span> takes two arguments.  The first argument is a list of lemmas and other functions to be tried automatically in "forward reasoning" style, where we add new facts without being sure yet that they link into a proof of the conclusion.  The second argument is a list of predicates on which inversion should be attempted automatically.  For instance, running <span class="inlinecode"><span class="id" title="var">crush'</span></span> <span class="inlinecode">(<span class="id" title="lemma">lemma1</span>,</span> <span class="inlinecode"><span class="id" title="definition">lemma2</span>)</span> <span class="inlinecode"><span class="id" title="definition">pred</span></span> will search for chances to apply <span class="inlinecode"><span class="id" title="lemma">lemma1</span></span> and <span class="inlinecode"><span class="id" title="definition">lemma2</span></span> to hypotheses that are already available, adding the new concluded fact if suitable hypotheses can be found.  Inversion will be attempted on any hypothesis using <span class="inlinecode"><span class="id" title="definition">pred</span></span>, but only those inversions that narrow the field of possibilities to one possible rule will be kept.  The format of the list arguments to <span class="inlinecode"><span class="id" title="var">crush'</span></span> is that you can pass an empty list as <span class="inlinecode"><span class="id" title="constructor">tt</span></span>, a singleton list as the unadorned single element, and a multiple-element list as a tuple of the elements.</li>
+    <li> If you want <span class="inlinecode"><span class="id" title="var">crush'</span></span> to apply polymorphic lemmas, you may have to do a little extra work, if the type parameter is not a free variable of your proof context (so that <span class="inlinecode"><span class="id" title="var">crush'</span></span> does not know to try it).  For instance, if you define a polymorphic map insert function <span class="inlinecode"><span class="id" title="var">assign</span></span> of some type <span class="inlinecode"><span class="id" title="keyword">forall</span></span> <span class="inlinecode"><span class="id" title="variable">T</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" title="keyword">Set</span>,</span> <span class="inlinecode">...</span>, and you want particular applications of <span class="inlinecode"><span class="id" title="var">assign</span></span> added automatically with type parameter <span class="inlinecode"><span class="id" title="variable">U</span></span>, you would need to include <span class="inlinecode"><span class="id" title="var">assign</span></span> in the lemma list as <span class="inlinecode"><span class="id" title="var">assign</span></span> <span class="inlinecode"><span class="id" title="variable">U</span></span> (if you have implicit arguments off) or <span class="inlinecode"><span class="id" title="var">assign</span></span> <span class="inlinecode">(<span class="id" title="variable">T</span></span> <span class="inlinecode">:=</span> <span class="inlinecode"><span class="id" title="variable">U</span>)</span> or <span class="inlinecode">@<span class="id" title="var">assign</span></span> <span class="inlinecode"><span class="id" title="variable">U</span></span> (if you have implicit arguments on).</li>
+  </ol> </li>
+
+<div class="paragraph"> </div>
+
+</li>
+
+<div class="paragraph"> </div>
+
+</ol> 
+<div class="paragraph"> </div>
+
+<a name="lab26"></a><h1 class="section">From Coinductive</h1>
+
+<div class="paragraph"> </div>
+
+ <ol>
+
+<div class="paragraph"> </div>
+
+<li> <ol>
+  <li> Define a co-inductive type of infinite trees carrying data of a fixed parameter type.  Each node should contain a data value and two child trees.</li>
+  <li> Define a function <span class="inlinecode"><span class="id" title="definition">everywhere</span></span> for building a tree with the same data value at every node.</li>
+  <li> Define a function <span class="inlinecode"><span class="id" title="definition">map</span></span> for building an output tree out of two input trees by traversing them in parallel and applying a two-argument function to their corresponding data values.</li>
+  <li> Define a tree <span class="inlinecode"><span class="id" title="var">falses</span></span> where every node has the value <span class="inlinecode"><span class="id" title="constructor">false</span></span>.</li>
+  <li> Define a tree <span class="inlinecode"><span class="id" title="var">true_false</span></span> where the root node has value <span class="inlinecode"><span class="id" title="constructor">true</span></span>, its children have value <span class="inlinecode"><span class="id" title="constructor">false</span></span>, all nodes at the next have the value <span class="inlinecode"><span class="id" title="constructor">true</span></span>, and so on, alternating boolean values from level to level.</li>
+  <li> Prove that <span class="inlinecode"><span class="id" title="var">true_false</span></span> is equal to the result of mapping the boolean "or" function <span class="inlinecode"><span class="id" title="var">orb</span></span> over <span class="inlinecode"><span class="id" title="var">true_false</span></span> and <span class="inlinecode"><span class="id" title="var">falses</span></span>.  You can make <span class="inlinecode"><span class="id" title="var">orb</span></span> available with <span class="inlinecode"><span class="id" title="keyword">Require</span></span> <span class="inlinecode"><span class="id" title="keyword">Import</span></span> <span class="inlinecode"><span class="id" title="constructor">Bool</span>.</span>.  You may find the lemma <span class="inlinecode"><span class="id" title="var">orb_false_r</span></span> from the same module helpful.  Your proof here should not be about the standard equality <span class="inlinecode">=</span>, but rather about some new equality relation that you define.</li>
+</ol> </li>
+
+<div class="paragraph"> </div>
+
+</ol> 
+<div class="paragraph"> </div>
+
+<a name="lab27"></a><h1 class="section">From Subset</h1>
+
+<div class="paragraph"> </div>
+
+ All of the notations defined in this chapter, plus some extras, are available for import from the module <span class="inlinecode"><span class="id" title="library">MoreSpecif</span></span> of the book source.
+
+<div class="paragraph"> </div>
+
+<ol>
+<li> Write a function of type <span class="inlinecode"><span class="id" title="keyword">forall</span></span> <span class="inlinecode"><span class="id" title="variable">n</span></span> <span class="inlinecode"><span class="id" title="variable">m</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" title="inductive">nat</span>,</span> <span class="inlinecode">{</span><span class="inlinecode"><span class="id" title="variable">n</span></span> <span class="inlinecode">&lt;=</span> <span class="inlinecode"><span class="id" title="variable">m</span>}</span> <span class="inlinecode">+</span> <span class="inlinecode">{</span><span class="inlinecode"><span class="id" title="variable">n</span></span> <span class="inlinecode">&gt;</span> <span class="inlinecode"><span class="id" title="variable">m</span>}</span>.  That is, this function decides whether one natural is less than another, and its dependent type guarantees that its results are accurate.</li>
+
+<div class="paragraph"> </div>
+
+<li> <ol>
+  <li> Define <span class="inlinecode"><span class="id" title="variable">var</span></span>, a type of propositional variables, as a synonym for <span class="inlinecode"><span class="id" title="inductive">nat</span></span>.</li>
+  <li> Define an inductive type <span class="inlinecode"><span class="id" title="inductive">prop</span></span> of propositional logic formulas, consisting of variables, negation, and binary conjunction and disjunction.</li>
+  <li> Define a function <span class="inlinecode"><span class="id" title="var">propDenote</span></span> from variable truth assignments and <span class="inlinecode"><span class="id" title="inductive">prop</span></span>s to <span class="inlinecode"><span class="id" title="keyword">Prop</span></span>, based on the usual meanings of the connectives.  Represent truth assignments as functions from <span class="inlinecode"><span class="id" title="variable">var</span></span> to <span class="inlinecode"><span class="id" title="inductive">bool</span></span>.</li>
+  <li> Define a function <span class="inlinecode"><span class="id" title="var">bool_true_dec</span></span> that checks whether a boolean is true, with a maximally expressive dependent type.  That is, the function should have type <span class="inlinecode"><span class="id" title="keyword">forall</span></span> <span class="inlinecode"><span class="id" title="variable">b</span>,</span> <span class="inlinecode">{<span class="id" title="variable">b</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="constructor">true</span>}</span> <span class="inlinecode">+</span> <span class="inlinecode">{<span class="id" title="variable">b</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="constructor">true</span></span> <span class="inlinecode">-&gt;</span> <span class="inlinecode"><span class="id" title="inductive">False</span>}</span>. </li>
+  <li> Define a function <span class="inlinecode"><span class="id" title="var">decide</span></span> that determines whether a particular <span class="inlinecode"><span class="id" title="inductive">prop</span></span> is true under a particular truth assignment.  That is, the function should have type <span class="inlinecode"><span class="id" title="keyword">forall</span></span> <span class="inlinecode">(<span class="id" title="var">truth</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" title="variable">var</span></span> <span class="inlinecode">-&gt;</span> <span class="inlinecode"><span class="id" title="inductive">bool</span>)</span> <span class="inlinecode">(<span class="id" title="variable">p</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" title="inductive">prop</span>),</span> <span class="inlinecode">{<span class="id" title="var">propDenote</span></span> <span class="inlinecode"><span class="id" title="var">truth</span></span> <span class="inlinecode"><span class="id" title="variable">p</span>}</span> <span class="inlinecode">+</span> <span class="inlinecode">{~</span> <span class="inlinecode"><span class="id" title="var">propDenote</span></span> <span class="inlinecode"><span class="id" title="var">truth</span></span> <span class="inlinecode"><span class="id" title="variable">p</span>}</span>.  This function is probably easiest to write in the usual tactical style, instead of programming with <span class="inlinecode"><span class="id" title="tactic">refine</span></span>.  The function <span class="inlinecode"><span class="id" title="var">bool_true_dec</span></span> may come in handy as a hint.</li>
+  <li> Define a function <span class="inlinecode"><span class="id" title="var">negate</span></span> that returns a simplified version of the negation of a <span class="inlinecode"><span class="id" title="inductive">prop</span></span>.  That is, the function should have type <span class="inlinecode"><span class="id" title="keyword">forall</span></span> <span class="inlinecode"><span class="id" title="variable">p</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" title="inductive">prop</span>,</span> <span class="inlinecode">{<span class="id" title="variable">p'</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" title="inductive">prop</span></span> <span class="inlinecode">|</span> <span class="inlinecode"><span class="id" title="keyword">forall</span></span> <span class="inlinecode"><span class="id" title="var">truth</span>,</span> <span class="inlinecode"><span class="id" title="var">propDenote</span></span> <span class="inlinecode"><span class="id" title="var">truth</span></span> <span class="inlinecode"><span class="id" title="variable">p</span></span> <span class="inlinecode">&lt;-&gt;</span> <span class="inlinecode">~</span> <span class="inlinecode"><span class="id" title="var">propDenote</span></span> <span class="inlinecode"><span class="id" title="var">truth</span></span> <span class="inlinecode"><span class="id" title="variable">p'</span>}</span>.  To simplify a variable, just negate it.  Simplify a negation by returning its argument.  Simplify conjunctions and disjunctions using De Morgan's laws, negating the arguments recursively and switching the kind of connective.  Your <span class="inlinecode"><span class="id" title="var">decide</span></span> function may be useful in some of the proof obligations, even if you do not use it in the computational part of <span class="inlinecode"><span class="id" title="var">negate</span></span>'s definition.  Lemmas like <span class="inlinecode"><span class="id" title="var">decide</span></span> allow us to compensate for the lack of a general Law of the Excluded Middle in CIC.</li>
+</ol> </li>
+
+<div class="paragraph"> </div>
+
+<li> Implement the DPLL satisfiability decision procedure for boolean formulas in conjunctive normal form, with a dependent type that guarantees its correctness.  An example of a reasonable type for this function would be <span class="inlinecode"><span class="id" title="keyword">forall</span></span> <span class="inlinecode"><span class="id" title="variable">f</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" title="inductive">formula</span>,</span> <span class="inlinecode">{<span class="id" title="var">truth</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" title="var">tvals</span></span> <span class="inlinecode">|</span> <span class="inlinecode"><span class="id" title="var">formulaTrue</span></span> <span class="inlinecode"><span class="id" title="var">truth</span></span> <span class="inlinecode"><span class="id" title="variable">f</span>}</span> <span class="inlinecode">+</span> <span class="inlinecode">{</span><span class="inlinecode"><span class="id" title="keyword">forall</span></span> <span class="inlinecode"><span class="id" title="var">truth</span>,</span> <span class="inlinecode">~</span> <span class="inlinecode"><span class="id" title="var">formulaTrue</span></span> <span class="inlinecode"><span class="id" title="var">truth</span></span> <span class="inlinecode"><span class="id" title="variable">f</span>}</span>.  Implement at least "the basic backtracking algorithm" as defined here:
+  
+  <blockquote><a href="http://en.wikipedia.org/wiki/DPLL_algorithm">http://en.wikipedia.org/wiki/DPLL_algorithm</a></blockquote>
+It might also be instructive to implement the unit propagation and pure literal elimination optimizations described there or some other optimizations that have been used in modern SAT solvers.</li>
+
+<div class="paragraph"> </div>
+
+</ol> 
+<div class="paragraph"> </div>
+
+<a name="lab28"></a><h1 class="section">From MoreDep</h1>
+
+<div class="paragraph"> </div>
+
+ <ol>
+
+<div class="paragraph"> </div>
+
+<li> Define a kind of dependently typed lists, where a list's type index gives a lower bound on how many of its elements satisfy a particular predicate.  In particular, for an arbitrary set <span class="inlinecode"><span class="id" title="variable">A</span></span> and a predicate <span class="inlinecode"><span class="id" title="variable">P</span></span> over it:
+<ol>
+  <li> Define a type <span class="inlinecode"><span class="id" title="var">plist</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" title="inductive">nat</span></span> <span class="inlinecode">-&gt;</span> <span class="inlinecode"><span class="id" title="keyword">Set</span></span>.  Each <span class="inlinecode"><span class="id" title="var">plist</span></span> <span class="inlinecode"><span class="id" title="variable">n</span></span> should be a list of <span class="inlinecode"><span class="id" title="variable">A</span></span>s, where it is guaranteed that at least <span class="inlinecode"><span class="id" title="variable">n</span></span> distinct elements satisfy <span class="inlinecode"><span class="id" title="variable">P</span></span>.  There is wide latitude in choosing how to encode this.  You should try to avoid using subset types or any other mechanism based on annotating non-dependent types with propositions after-the-fact.</li>
+  <li> Define a version of list concatenation that works on <span class="inlinecode"><span class="id" title="var">plist</span></span>s.  The type of this new function should express as much information as possible about the output <span class="inlinecode"><span class="id" title="var">plist</span></span>.</li>
+  <li> Define a function <span class="inlinecode"><span class="id" title="var">plistOut</span></span> for translating <span class="inlinecode"><span class="id" title="var">plist</span></span>s to normal <span class="inlinecode"><span class="id" title="inductive">list</span></span>s.</li>
+  <li> Define a function <span class="inlinecode"><span class="id" title="var">plistIn</span></span> for translating <span class="inlinecode"><span class="id" title="inductive">list</span></span>s to <span class="inlinecode"><span class="id" title="var">plist</span></span>s.  The type of <span class="inlinecode"><span class="id" title="var">plistIn</span></span> should make it clear that the best bound on <span class="inlinecode"><span class="id" title="variable">P</span></span>-matching elements is chosen.  You may assume that you are given a dependently typed function for deciding instances of <span class="inlinecode"><span class="id" title="variable">P</span></span>.</li>
+  <li> Prove that, for any list <span class="inlinecode"><span class="id" title="variable">ls</span></span>, <span class="inlinecode"><span class="id" title="var">plistOut</span></span> <span class="inlinecode">(<span class="id" title="var">plistIn</span></span> <span class="inlinecode"><span class="id" title="variable">ls</span>)</span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="variable">ls</span></span>.  This should be the only part of the exercise where you use tactic-based proving.</li>
+  <li> Define a function <span class="inlinecode"><span class="id" title="var">grab</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" title="keyword">forall</span></span> <span class="inlinecode"><span class="id" title="variable">n</span></span> <span class="inlinecode">(<span class="id" title="variable">ls</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" title="var">plist</span></span> <span class="inlinecode">(</span><span class="inlinecode"><span class="id" title="variable">S</span></span> <span class="inlinecode"><span class="id" title="variable">n</span>)),</span> <span class="inlinecode"><span class="id" title="inductive">sig</span></span> <span class="inlinecode"><span class="id" title="variable">P</span></span>.  That is, when given a <span class="inlinecode"><span class="id" title="var">plist</span></span> guaranteed to contain at least one element satisfying <span class="inlinecode"><span class="id" title="variable">P</span></span>, <span class="inlinecode"><span class="id" title="var">grab</span></span> produces such an element.  The type family <span class="inlinecode"><span class="id" title="inductive">sig</span></span> is the one we met earlier for sigma types (i.e., dependent pairs of programs and proofs), and <span class="inlinecode"><span class="id" title="inductive">sig</span></span> <span class="inlinecode"><span class="id" title="variable">P</span></span> is extensionally equivalent to <span class="inlinecode">{</span><span class="inlinecode"><span class="id" title="variable">x</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" title="variable">A</span></span> <span class="inlinecode">|</span> <span class="inlinecode"><span class="id" title="variable">P</span></span> <span class="inlinecode"><span class="id" title="variable">x</span>}</span>, though the latter form uses an eta-expansion of <span class="inlinecode"><span class="id" title="variable">P</span></span> instead of <span class="inlinecode"><span class="id" title="variable">P</span></span> itself as the predicate.</li>
+</ol> </li>
+
+<div class="paragraph"> </div>
+
+</ol> 
+<div class="paragraph"> </div>
+
+<a name="lab29"></a><h1 class="section">From DataStruct</h1>
+
+<div class="paragraph"> </div>
+
+ remove printing * 
+<div class="paragraph"> </div>
+
+ Some of the type family definitions and associated functions from this chapter are duplicated in the <span class="inlinecode"><span class="id" title="library">DepList</span></span> module of the book source.  Some of their names have been changed to be more sensible in a general context.
+
+<div class="paragraph"> </div>
+
+<ol>
+
+<div class="paragraph"> </div>
+
+<li> Define a tree analogue of <span class="inlinecode"><span class="id" title="inductive">hlist</span></span>.  That is, define a parameterized type of binary trees with data at their leaves, and define a type family <span class="inlinecode"><span class="id" title="var">htree</span></span> indexed by trees.  The structure of an <span class="inlinecode"><span class="id" title="var">htree</span></span> mirrors its index tree, with the type of each data element (which only occur at leaves) determined by applying a type function to the corresponding element of the index tree.  Define a type standing for all possible paths from the root of a tree to leaves and use it to implement a function <span class="inlinecode"><span class="id" title="var">tget</span></span> for extracting an element of an <span class="inlinecode"><span class="id" title="var">htree</span></span> by path.  Define a function <span class="inlinecode"><span class="id" title="var">htmap2</span></span> for "mapping over two trees in parallel."  That is, <span class="inlinecode"><span class="id" title="var">htmap2</span></span> takes in two <span class="inlinecode"><span class="id" title="var">htree</span></span>s with the same index tree, and it forms a new <span class="inlinecode"><span class="id" title="var">htree</span></span> with the same index by applying a binary function pointwise.
+
+<div class="paragraph"> </div>
+
+  Repeat this process so that you implement each definition for each of the three definition styles covered in this chapter: inductive, recursive, and index function.</li>
+
+<div class="paragraph"> </div>
+
+<li> Write a dependently typed interpreter for a simple programming language with ML-style pattern-matching, using one of the encodings of heterogeneous lists to represent the different branches of a <span class="inlinecode"><span class="id" title="tactic">case</span></span> expression.  (There are other ways to represent the same thing, but the point of this exercise is to practice using those heterogeneous list types.)  The object language is defined informally by this grammar:
+  <br/>
+<span class="inlinecode"><span class="id" title="variable">t</span> ::= <span class="id" title="inductive">bool</span> | <span class="id" title="variable">t</span> + <span class="id" title="variable">t</span><br/>
+<span class="id" title="variable">p</span> ::= <span class="id" title="variable">x</span> | <span class="id" title="variable">b</span> | <span class="id" title="constructor">inl</span> <span class="id" title="variable">p</span> | <span class="id" title="constructor">inr</span> <span class="id" title="variable">p</span><br/>
+<span class="id" title="variable">e</span> ::= <span class="id" title="variable">x</span> | <span class="id" title="variable">b</span> | <span class="id" title="constructor">inl</span> <span class="id" title="variable">e</span> | <span class="id" title="constructor">inr</span> <span class="id" title="variable">e</span> | <span class="id" title="tactic">case</span> <span class="id" title="variable">e</span> <span class="id" title="var">of</span> [<span class="id" title="variable">p</span> =&gt; <span class="id" title="variable">e</span>]* | <span class="id" title="var">_</span> =&gt; <span class="id" title="variable">e</span>
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+  The non-terminal <span class="inlinecode"><span class="id" title="variable">x</span></span> stands for a variable, and <span class="inlinecode"><span class="id" title="variable">b</span></span> stands for a boolean constant.  The production for <span class="inlinecode"><span class="id" title="tactic">case</span></span> expressions means that a pattern-match includes zero or more pairs of patterns and expressions, along with a default case.
+
+<div class="paragraph"> </div>
+
+  Your interpreter should be implemented in the style demonstrated in this chapter.  That is, your definition of expressions should use dependent types and de Bruijn indices to combine syntax and typing rules, such that the type of an expression tells the types of variables that are in scope.  You should implement a simple recursive function translating types <span class="inlinecode"><span class="id" title="variable">t</span></span> to <span class="inlinecode"><span class="id" title="keyword">Set</span></span>, and your interpreter should produce values in the image of this translation.</li>
+
+<div class="paragraph"> </div>
+
+</ol> 
+<div class="paragraph"> </div>
+
+<a name="lab30"></a><h1 class="section">From Equality</h1>
+
+<div class="paragraph"> </div>
+
+ <ol>
+
+<div class="paragraph"> </div>
+
+<li> Implement and prove correct a substitution function for simply typed lambda calculus.  In particular:
+<ol>
+  <li> Define a datatype <span class="inlinecode"><span class="id" title="inductive">type</span></span> of lambda types, including just booleans and function types.</li>
+  <li> Define a type family <span class="inlinecode"><span class="id" title="inductive">exp</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" title="inductive">list</span></span> <span class="inlinecode"><span class="id" title="inductive">type</span></span> <span class="inlinecode">-&gt;</span> <span class="inlinecode"><span class="id" title="inductive">type</span></span> <span class="inlinecode">-&gt;</span> <span class="inlinecode"><span class="id" title="keyword">Type</span></span> of lambda expressions, including boolean constants, variables, and function application and abstraction.</li>
+  <li> Implement a definitional interpreter for <span class="inlinecode"><span class="id" title="inductive">exp</span></span>s, by way of a recursive function over expressions and substitutions for free variables, like in the related example from the last chapter.</li>
+  <li> Implement a function <span class="inlinecode"><span class="id" title="tactic">subst</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" title="keyword">forall</span></span> <span class="inlinecode"><span class="id" title="variable">t'</span></span> <span class="inlinecode"><span class="id" title="variable">ts</span></span> <span class="inlinecode"><span class="id" title="variable">t</span>,</span> <span class="inlinecode"><span class="id" title="inductive">exp</span></span> <span class="inlinecode">(<span class="id" title="variable">t'</span></span> <span class="inlinecode">::</span> <span class="inlinecode"><span class="id" title="variable">ts</span>)</span> <span class="inlinecode"><span class="id" title="variable">t</span></span> <span class="inlinecode">-&gt;</span> <span class="inlinecode"><span class="id" title="inductive">exp</span></span> <span class="inlinecode"><span class="id" title="variable">ts</span></span> <span class="inlinecode"><span class="id" title="variable">t'</span></span> <span class="inlinecode">-&gt;</span> <span class="inlinecode"><span class="id" title="inductive">exp</span></span> <span class="inlinecode"><span class="id" title="variable">ts</span></span> <span class="inlinecode"><span class="id" title="variable">t</span></span>.  The type of the first expression indicates that its most recently bound free variable has type <span class="inlinecode"><span class="id" title="variable">t'</span></span>.  The second expression also has type <span class="inlinecode"><span class="id" title="variable">t'</span></span>, and the job of <span class="inlinecode"><span class="id" title="tactic">subst</span></span> is to substitute the second expression for every occurrence of the "first" variable of the first expression.</li>
+  <li> Prove that <span class="inlinecode"><span class="id" title="tactic">subst</span></span> preserves program meanings.  That is, prove
+  <br/>
+<span class="inlinecode"><span class="id" title="keyword">forall</span> <span class="id" title="variable">t'</span> <span class="id" title="variable">ts</span> <span class="id" title="variable">t</span> (<span class="id" title="variable">e</span> : <span class="id" title="inductive">exp</span> (<span class="id" title="variable">t'</span> :: <span class="id" title="variable">ts</span>) <span class="id" title="variable">t</span>) (<span class="id" title="variable">e'</span> : <span class="id" title="inductive">exp</span> <span class="id" title="variable">ts</span> <span class="id" title="variable">t'</span>) (<span class="id" title="variable">s</span> : <span class="id" title="inductive">hlist</span> <span class="id" title="definition">typeDenote</span> <span class="id" title="variable">ts</span>),<br/>
+&nbsp;&nbsp;<span class="id" title="definition">expDenote</span> (<span class="id" title="tactic">subst</span> <span class="id" title="variable">e</span> <span class="id" title="variable">e'</span>) <span class="id" title="variable">s</span> = <span class="id" title="definition">expDenote</span> <span class="id" title="variable">e</span> (<span class="id" title="definition">expDenote</span> <span class="id" title="variable">e'</span> <span class="id" title="variable">s</span> ::: <span class="id" title="variable">s</span>)
+<div class="paragraph"> </div>
+
+</span>  where <span class="inlinecode">:::</span> is an infix operator for heterogeneous "cons" that is defined in the book's <span class="inlinecode"><span class="id" title="library">DepList</span></span> module.</li>
+</ol>
+  The material presented up to this point should be sufficient to enable a good solution of this exercise, with enough ingenuity.  If you get stuck, it may be helpful to use the following structure.  None of these elements need to appear in your solution, but we can at least guarantee that there is a reasonable solution based on them.
+<ol>
+  <li> The <span class="inlinecode"><span class="id" title="library">DepList</span></span> module will be useful.  You can get the standard dependent list definitions there, instead of copying-and-pasting from the last chapter.  It is worth reading the source for that module over, since it defines some new helpful functions and notations that we did not use last chapter.</li>
+  <li> Define a recursive function <span class="inlinecode"><span class="id" title="definition">liftVar</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" title="keyword">forall</span></span> <span class="inlinecode"><span class="id" title="var">ts1</span></span> <span class="inlinecode"><span class="id" title="var">ts2</span></span> <span class="inlinecode"><span class="id" title="variable">t</span></span> <span class="inlinecode"><span class="id" title="variable">t'</span>,</span> <span class="inlinecode"><span class="id" title="inductive">member</span></span> <span class="inlinecode"><span class="id" title="variable">t</span></span> <span class="inlinecode">(<span class="id" title="var">ts1</span></span> <span class="inlinecode">++</span> <span class="inlinecode"><span class="id" title="var">ts2</span>)</span> <span class="inlinecode">-&gt;</span> <span class="inlinecode"><span class="id" title="inductive">member</span></span> <span class="inlinecode"><span class="id" title="variable">t</span></span> <span class="inlinecode">(<span class="id" title="var">ts1</span></span> <span class="inlinecode">++</span> <span class="inlinecode"><span class="id" title="variable">t'</span></span> <span class="inlinecode">::</span> <span class="inlinecode"><span class="id" title="var">ts2</span>)</span>.  This function should "lift" a de Bruijn variable so that its type refers to a new variable inserted somewhere in the index list.</li>
+  <li> Define a recursive function <span class="inlinecode"><span class="id" title="definition">lift'</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" title="keyword">forall</span></span> <span class="inlinecode"><span class="id" title="variable">ts</span></span> <span class="inlinecode"><span class="id" title="variable">t</span></span> <span class="inlinecode">(<span class="id" title="variable">e</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" title="inductive">exp</span></span> <span class="inlinecode"><span class="id" title="variable">ts</span></span> <span class="inlinecode"><span class="id" title="variable">t</span>)</span> <span class="inlinecode"><span class="id" title="var">ts1</span></span> <span class="inlinecode"><span class="id" title="var">ts2</span></span> <span class="inlinecode"><span class="id" title="variable">t'</span>,</span> <span class="inlinecode"><span class="id" title="variable">ts</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="var">ts1</span></span> <span class="inlinecode">++</span> <span class="inlinecode"><span class="id" title="var">ts2</span></span> <span class="inlinecode">-&gt;</span> <span class="inlinecode"><span class="id" title="inductive">exp</span></span> <span class="inlinecode">(<span class="id" title="var">ts1</span></span> <span class="inlinecode">++</span> <span class="inlinecode"><span class="id" title="variable">t'</span></span> <span class="inlinecode">::</span> <span class="inlinecode"><span class="id" title="var">ts2</span>)</span> <span class="inlinecode"><span class="id" title="variable">t</span></span> which performs a similar lifting on an <span class="inlinecode"><span class="id" title="inductive">exp</span></span>.  The convoluted type is to get around restrictions on <span class="inlinecode"><span class="id" title="keyword">match</span></span> annotations.  We delay "realizing" that the first index of <span class="inlinecode"><span class="id" title="variable">e</span></span> is built with list concatenation until after a dependent <span class="inlinecode"><span class="id" title="keyword">match</span></span>, and the new explicit proof argument must be used to cast some terms that come up in the <span class="inlinecode"><span class="id" title="keyword">match</span></span> body.</li>
+  <li> Define a function <span class="inlinecode"><span class="id" title="definition">lift</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" title="keyword">forall</span></span> <span class="inlinecode"><span class="id" title="variable">ts</span></span> <span class="inlinecode"><span class="id" title="variable">t</span></span> <span class="inlinecode"><span class="id" title="variable">t'</span>,</span> <span class="inlinecode"><span class="id" title="inductive">exp</span></span> <span class="inlinecode"><span class="id" title="variable">ts</span></span> <span class="inlinecode"><span class="id" title="variable">t</span></span> <span class="inlinecode">-&gt;</span> <span class="inlinecode"><span class="id" title="inductive">exp</span></span> <span class="inlinecode">(<span class="id" title="variable">t'</span></span> <span class="inlinecode">::</span> <span class="inlinecode"><span class="id" title="variable">ts</span>)</span> <span class="inlinecode"><span class="id" title="variable">t</span></span>, which handles simpler top-level lifts.  This should be an easy one-liner based on <span class="inlinecode"><span class="id" title="definition">lift'</span></span>.</li>
+  <li> Define a recursive function <span class="inlinecode"><span class="id" title="var">substVar</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" title="keyword">forall</span></span> <span class="inlinecode"><span class="id" title="var">ts1</span></span> <span class="inlinecode"><span class="id" title="var">ts2</span></span> <span class="inlinecode"><span class="id" title="variable">t</span></span> <span class="inlinecode"><span class="id" title="variable">t'</span>,</span> <span class="inlinecode"><span class="id" title="inductive">member</span></span> <span class="inlinecode"><span class="id" title="variable">t</span></span> <span class="inlinecode">(<span class="id" title="var">ts1</span></span> <span class="inlinecode">++</span> <span class="inlinecode"><span class="id" title="variable">t'</span></span> <span class="inlinecode">::</span> <span class="inlinecode"><span class="id" title="var">ts2</span>)</span> <span class="inlinecode">-&gt;</span> <span class="inlinecode">(<span class="id" title="variable">t'</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="variable">t</span>)</span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" title="inductive">member</span></span> <span class="inlinecode"><span class="id" title="variable">t</span></span> <span class="inlinecode">(<span class="id" title="var">ts1</span></span> <span class="inlinecode">++</span> <span class="inlinecode"><span class="id" title="var">ts2</span>)</span>.  This function is the workhorse behind substitution applied to a variable.  It returns <span class="inlinecode"><span class="id" title="constructor">inl</span></span> to indicate that the variable we pass to it is the variable that we are substituting for, and it returns <span class="inlinecode"><span class="id" title="constructor">inr</span></span> to indicate that the variable we are examining is <i>not</i> the one we are substituting for.  In the first case, we get a proof that the necessary typing relationship holds, and, in the second case, we get the original variable modified to reflect the removal of the substitutee from the typing context.</li>
+  <li> Define a recursive function <span class="inlinecode"><span class="id" title="var">subst'</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" title="keyword">forall</span></span> <span class="inlinecode"><span class="id" title="variable">ts</span></span> <span class="inlinecode"><span class="id" title="variable">t</span></span> <span class="inlinecode">(<span class="id" title="variable">e</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" title="inductive">exp</span></span> <span class="inlinecode"><span class="id" title="variable">ts</span></span> <span class="inlinecode"><span class="id" title="variable">t</span>)</span> <span class="inlinecode"><span class="id" title="var">ts1</span></span> <span class="inlinecode"><span class="id" title="variable">t'</span></span> <span class="inlinecode"><span class="id" title="var">ts2</span>,</span> <span class="inlinecode"><span class="id" title="variable">ts</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="var">ts1</span></span> <span class="inlinecode">++</span> <span class="inlinecode"><span class="id" title="variable">t'</span></span> <span class="inlinecode">::</span> <span class="inlinecode"><span class="id" title="var">ts2</span></span> <span class="inlinecode">-&gt;</span> <span class="inlinecode"><span class="id" title="inductive">exp</span></span> <span class="inlinecode">(<span class="id" title="var">ts1</span></span> <span class="inlinecode">++</span> <span class="inlinecode"><span class="id" title="var">ts2</span>)</span> <span class="inlinecode"><span class="id" title="variable">t'</span></span> <span class="inlinecode">-&gt;</span> <span class="inlinecode"><span class="id" title="inductive">exp</span></span> <span class="inlinecode">(<span class="id" title="var">ts1</span></span> <span class="inlinecode">++</span> <span class="inlinecode"><span class="id" title="var">ts2</span>)</span> <span class="inlinecode"><span class="id" title="variable">t</span></span>.  This is the workhorse of substitution in expressions, employing the same proof-passing trick as for <span class="inlinecode"><span class="id" title="definition">lift'</span></span>.  You will probably want to use <span class="inlinecode"><span class="id" title="definition">lift</span></span> somewhere in the definition of <span class="inlinecode"><span class="id" title="var">subst'</span></span>.</li>
+  <li> Now <span class="inlinecode"><span class="id" title="tactic">subst</span></span> should be a one-liner, defined in terms of <span class="inlinecode"><span class="id" title="var">subst'</span></span>.</li>
+  <li> Prove a correctness theorem for each auxiliary function, leading up to the proof of <span class="inlinecode"><span class="id" title="tactic">subst</span></span> correctness.</li>
+  <li> All of the reasoning about equality proofs in these theorems follows a regular pattern.  If you have an equality proof that you want to replace with <span class="inlinecode"><span class="id" title="constructor">eq_refl</span></span> somehow, run <span class="inlinecode"><span class="id" title="tactic">generalize</span></span> on that proof variable.  Your goal is to get to the point where you can <span class="inlinecode"><span class="id" title="tactic">rewrite</span></span> with the original proof to change the type of the generalized version.  To avoid type errors (the infamous "second-order unification" failure messages), it will be helpful to run <span class="inlinecode"><span class="id" title="tactic">generalize</span></span> on other pieces of the proof context that mention the equality's lefthand side.  You might also want to use <span class="inlinecode"><span class="id" title="tactic">generalize</span></span> <span class="inlinecode"><span class="id" title="tactic">dependent</span></span>, which generalizes not just one variable but also all variables whose types depend on it.  <span class="inlinecode"><span class="id" title="tactic">generalize</span></span> <span class="inlinecode"><span class="id" title="tactic">dependent</span></span> has the sometimes-helpful property of removing from the context all variables that it generalizes.  Once you do manage the mind-bending trick of using the equality proof to rewrite its own type, you will be able to rewrite with <span class="inlinecode"><span class="id" title="lemma">UIP_refl</span></span>.</li>
+  <li> The <span class="inlinecode"><span class="id" title="var">ext_eq</span></span> axiom from the end of this chapter is available in the Coq standard library as <span class="inlinecode"><span class="id" title="lemma">functional_extensionality</span></span> in module <span class="inlinecode"><span class="id" title="library">FunctionalExtensionality</span></span>, and you will probably want to use it in the <span class="inlinecode"><span class="id" title="definition">lift'</span></span> and <span class="inlinecode"><span class="id" title="var">subst'</span></span> correctness proofs.</li>
+  <li> The <span class="inlinecode"><span class="id" title="tactic">change</span></span> tactic should come in handy in the proofs about <span class="inlinecode"><span class="id" title="definition">lift</span></span> and <span class="inlinecode"><span class="id" title="tactic">subst</span></span>, where you want to introduce "extraneous" list concatenations with <span class="inlinecode"><span class="id" title="constructor">nil</span></span> to match the forms of earlier theorems.</li>
+  <li> Be careful about <span class="inlinecode"><span class="id" title="tactic">destruct</span></span>ing a term "too early."  You can use <span class="inlinecode"><span class="id" title="tactic">generalize</span></span> on proof terms to bring into the proof context any important propositions about the term.  Then, when you <span class="inlinecode"><span class="id" title="tactic">destruct</span></span> the term, it is updated in the extra propositions, too.  The <span class="inlinecode"><span class="id" title="var">case_eq</span></span> tactic is another alternative to this approach, based on saving an equality between the original term and its new form.</li>
+</ol>
+</li>
+
+<div class="paragraph"> </div>
+
+</ol> 
+<div class="paragraph"> </div>
+
+<a name="lab31"></a><h1 class="section">From LogicProg</h1>
+
+<div class="paragraph"> </div>
+
+ printing *  
+<div class="paragraph"> </div>
+
+ <ol>
+
+<div class="paragraph"> </div>
+
+<li> I did a Google search for group theory and found <a href="http://dogschool.tripod.com/housekeeping.html">a page that proves some standard theorems</a>.  This exercise is about proving all of the theorems on that page automatically.
+
+<div class="paragraph"> </div>
+
+  For the purposes of this exercise, a group is a set <span class="inlinecode"><span class="id" title="definition">G</span></span>, a binary function <span class="inlinecode"><span class="id" title="variable">f</span></span> over <span class="inlinecode"><span class="id" title="definition">G</span></span>, an identity element <span class="inlinecode"><span class="id" title="variable">e</span></span> of <span class="inlinecode"><span class="id" title="definition">G</span></span>, and a unary inverse function <span class="inlinecode"><span class="id" title="definition">i</span></span> for <span class="inlinecode"><span class="id" title="definition">G</span></span>.  The following laws define correct choices of these parameters.  We follow standard practice in algebra, where all variables that we mention are quantified universally implicitly at the start of a fact.  We write infix <span class="inlinecode">*</span> for <span class="inlinecode"><span class="id" title="variable">f</span></span>, and you can set up the same sort of notation in your code with a command like <span class="inlinecode"><span class="id" title="keyword">Infix</span></span> <span class="inlinecode">&quot;*&quot;</span> <span class="inlinecode">:=</span> <span class="inlinecode"><span class="id" title="variable">f</span>.</span>.
+
+<div class="paragraph"> </div>
+
+  <ul>
+    <li> <b>Associativity</b>: <span class="inlinecode">(<span class="id" title="variable">a</span></span> <span class="inlinecode">*</span> <span class="inlinecode"><span class="id" title="variable">b</span>)</span> <span class="inlinecode">*</span> <span class="inlinecode"><span class="id" title="variable">c</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="variable">a</span></span> <span class="inlinecode">*</span> <span class="inlinecode">(<span class="id" title="variable">b</span></span> <span class="inlinecode">*</span> <span class="inlinecode"><span class="id" title="variable">c</span>)</span></li>
+    <li> <b>Right Identity</b>: <span class="inlinecode"><span class="id" title="variable">a</span></span> <span class="inlinecode">*</span> <span class="inlinecode"><span class="id" title="variable">e</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="variable">a</span></span></li>
+    <li> <b>Right Inverse</b>: <span class="inlinecode"><span class="id" title="variable">a</span></span> <span class="inlinecode">*</span> <span class="inlinecode"><span class="id" title="definition">i</span></span> <span class="inlinecode"><span class="id" title="variable">a</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="variable">e</span></span></li>
+  </ul> </li>
+
+<div class="paragraph"> </div>
+
+  The task in this exercise is to prove each of the following theorems for all groups, where we define a group exactly as above.  There is a wrinkle: every theorem or lemma must be proved by either a single call to <span class="inlinecode"><span class="id" title="var">crush</span></span> or a single call to <span class="inlinecode"><span class="id" title="tactic">eauto</span></span>!  It is allowed to pass numeric arguments to <span class="inlinecode"><span class="id" title="tactic">eauto</span></span>, where appropriate.  Recall that a numeric argument sets the depth of proof search, where 5 is the default.  Lower values can speed up execution when a proof exists within the bound.  Higher values may be necessary to find more involved proofs.
+
+<div class="paragraph"> </div>
+
+  <ul>
+    <li> <b>Characterizing Identity</b>: <span class="inlinecode"><span class="id" title="variable">a</span></span> <span class="inlinecode">*</span> <span class="inlinecode"><span class="id" title="variable">a</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="variable">a</span></span> <span class="inlinecode">-&gt;</span> <span class="inlinecode"><span class="id" title="variable">a</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="variable">e</span></span></li>
+    <li> <b>Left Inverse</b>: <span class="inlinecode"><span class="id" title="definition">i</span></span> <span class="inlinecode"><span class="id" title="variable">a</span></span> <span class="inlinecode">*</span> <span class="inlinecode"><span class="id" title="variable">a</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="variable">e</span></span></li>
+    <li> <b>Left Identity</b>: <span class="inlinecode"><span class="id" title="variable">e</span></span> <span class="inlinecode">*</span> <span class="inlinecode"><span class="id" title="variable">a</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="variable">a</span></span></li>
+    <li> <b>Uniqueness of Left Identity</b>: <span class="inlinecode"><span class="id" title="variable">p</span></span> <span class="inlinecode">*</span> <span class="inlinecode"><span class="id" title="variable">a</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="variable">a</span></span> <span class="inlinecode">-&gt;</span> <span class="inlinecode"><span class="id" title="variable">p</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="variable">e</span></span></li>
+    <li> <b>Uniqueness of Right Inverse</b>: <span class="inlinecode"><span class="id" title="variable">a</span></span> <span class="inlinecode">*</span> <span class="inlinecode"><span class="id" title="variable">b</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="variable">e</span></span> <span class="inlinecode">-&gt;</span> <span class="inlinecode"><span class="id" title="variable">b</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="definition">i</span></span> <span class="inlinecode"><span class="id" title="variable">a</span></span></li>
+    <li> <b>Uniqueness of Left Inverse</b>: <span class="inlinecode"><span class="id" title="variable">a</span></span> <span class="inlinecode">*</span> <span class="inlinecode"><span class="id" title="variable">b</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="variable">e</span></span> <span class="inlinecode">-&gt;</span> <span class="inlinecode"><span class="id" title="variable">a</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="definition">i</span></span> <span class="inlinecode"><span class="id" title="variable">b</span></span></li>
+    <li> <b>Right Cancellation</b>: <span class="inlinecode"><span class="id" title="variable">a</span></span> <span class="inlinecode">*</span> <span class="inlinecode"><span class="id" title="variable">x</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="variable">b</span></span> <span class="inlinecode">*</span> <span class="inlinecode"><span class="id" title="variable">x</span></span> <span class="inlinecode">-&gt;</span> <span class="inlinecode"><span class="id" title="variable">a</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="variable">b</span></span></li>
+    <li> <b>Left Cancellation</b>: <span class="inlinecode"><span class="id" title="variable">x</span></span> <span class="inlinecode">*</span> <span class="inlinecode"><span class="id" title="variable">a</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="variable">x</span></span> <span class="inlinecode">*</span> <span class="inlinecode"><span class="id" title="variable">b</span></span> <span class="inlinecode">-&gt;</span> <span class="inlinecode"><span class="id" title="variable">a</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="variable">b</span></span></li>
+    <li> <b>Distributivity of Inverse</b>: <span class="inlinecode"><span class="id" title="definition">i</span></span> <span class="inlinecode">(<span class="id" title="variable">a</span></span> <span class="inlinecode">*</span> <span class="inlinecode"><span class="id" title="variable">b</span>)</span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="definition">i</span></span> <span class="inlinecode"><span class="id" title="variable">b</span></span> <span class="inlinecode">*</span> <span class="inlinecode"><span class="id" title="definition">i</span></span> <span class="inlinecode"><span class="id" title="variable">a</span></span></li>
+    <li> <b>Double Inverse</b>: <span class="inlinecode"><span class="id" title="definition">i</span></span> <span class="inlinecode">(</span><span class="inlinecode"><span class="id" title="definition">i</span></span> <span class="inlinecode"><span class="id" title="variable">a</span>)</span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="variable">a</span></span></li>
+    <li> <b>Identity Inverse</b>: <span class="inlinecode"><span class="id" title="definition">i</span></span> <span class="inlinecode"><span class="id" title="variable">e</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="variable">e</span></span></li>
+  </ul> </li>
+
+<div class="paragraph"> </div>
+
+  One more use of tactics is allowed in this problem.  The following lemma captures one common pattern of reasoning in algebra proofs: 
+</div>
+<div class="code">
+
+<br/>
+
+<br/>
+<span class="id" title="keyword">Lemma</span> <span class="id" title="var">mult_both</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">a</span> <span class="id" title="var">b</span> <span class="id" title="var">c</span> <span class="id" title="var">d1</span> <span class="id" title="var">d2</span>,<br/>
+&nbsp;&nbsp;<span class="id" title="var">a</span> * <span class="id" title="var">c</span> = <span class="id" title="var">d1</span><br/>
+&nbsp;&nbsp;-&gt; <span class="id" title="var">b</span> * <span class="id" title="var">c</span> = <span class="id" title="var">d2</span><br/>
+&nbsp;&nbsp;-&gt; <span class="id" title="var">a</span> = <span class="id" title="var">b</span><br/>
+&nbsp;&nbsp;-&gt; <span class="id" title="var">d1</span> = <span class="id" title="var">d2</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="var">crush</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+That is, we know some equality <span class="inlinecode"><span class="id" title="variable">a</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="variable">b</span></span>, which is the third hypothesis above.  We derive a further equality by multiplying both sides by <span class="inlinecode"><span class="id" title="variable">c</span></span>, to yield <span class="inlinecode"><span class="id" title="variable">a</span></span> <span class="inlinecode">*</span> <span class="inlinecode"><span class="id" title="variable">c</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="variable">b</span></span> <span class="inlinecode">*</span> <span class="inlinecode"><span class="id" title="variable">c</span></span>.  Next, we do algebraic simplification on both sides of this new equality, represented by the first two hypotheses above.  The final result is a new theorem of algebra.
+
+<div class="paragraph"> </div>
+
+   The next chapter introduces more details of programming in Ltac, but here is a quick teaser that will be useful in this problem.  Include the following hint command before you start proving the main theorems of this exercise: 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Hint Extern</span> 100 (<span class="id" title="var">_</span> = <span class="id" title="var">_</span>) =&gt;<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="keyword">goal</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| [ <span class="id" title="var">_</span> : <span class="id" title="var">True</span> |- <span class="id" title="var">_</span> ] =&gt; <span class="id" title="tactic">fail</span> 1<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">_</span> =&gt; <span class="id" title="tactic">assert</span> <span class="id" title="var">True</span> <span class="id" title="tactic">by</span> <span class="id" title="tactic">constructor</span>; <span class="id" title="tactic">eapply</span> <span class="id" title="var">mult_both</span><br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+This hint has the effect of applying <span class="inlinecode"><span class="id" title="lemma">mult_both</span></span> <i>at most once</i> during a proof.  After the next chapter, it should be clear why the hint has that effect, but for now treat it as a useful black box.  Simply using <span class="inlinecode"><span class="id" title="keyword">Hint</span></span> <span class="inlinecode"><span class="id" title="keyword">Resolve</span></span> <span class="inlinecode"><span class="id" title="lemma">mult_both</span></span> would increase proof search time unacceptably, because there are just too many ways to use <span class="inlinecode"><span class="id" title="lemma">mult_both</span></span> repeatedly within a proof.
+
+<div class="paragraph"> </div>
+
+   The order of the theorems above is itself a meta-level hint, since I found that order to work well for allowing the use of earlier theorems as hints in the proofs of later theorems.
+
+<div class="paragraph"> </div>
+
+   The key to this problem is coming up with further lemmas like <span class="inlinecode"><span class="id" title="lemma">mult_both</span></span> that formalize common patterns of reasoning in algebraic proofs.  These lemmas need to be more than sound: they must also fit well with the way that <span class="inlinecode"><span class="id" title="tactic">eauto</span></span> does proof search.  For instance, if we had given <span class="inlinecode"><span class="id" title="lemma">mult_both</span></span> a traditional statement, we probably would have avoided "pointless" equalities like <span class="inlinecode"><span class="id" title="variable">a</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="variable">b</span></span>, which could be avoided simply by replacing all occurrences of <span class="inlinecode"><span class="id" title="variable">b</span></span> with <span class="inlinecode"><span class="id" title="variable">a</span></span>.  However, the resulting theorem would not work as well with automated proof search!  Every additional hint you come up with should be registered with <span class="inlinecode"><span class="id" title="keyword">Hint</span></span> <span class="inlinecode"><span class="id" title="keyword">Resolve</span></span>, so that the lemma statement needs to be in a form that <span class="inlinecode"><span class="id" title="tactic">eauto</span></span> understands "natively."
+
+<div class="paragraph"> </div>
+
+   I recommend testing a few simple rules corresponding to common steps in algebraic proofs.  You can apply them manually with any tactics you like (e.g., <span class="inlinecode"><span class="id" title="tactic">apply</span></span> or <span class="inlinecode"><span class="id" title="tactic">eapply</span></span>) to figure out what approaches work, and then switch to <span class="inlinecode"><span class="id" title="tactic">eauto</span></span> once you have the full set of hints.
+
+<div class="paragraph"> </div>
+
+   I also proved a few hint lemmas tailored to particular theorems, but which do not give common algebraic simplification rules.  You will probably want to use some, too, in cases where <span class="inlinecode"><span class="id" title="tactic">eauto</span></span> does not find a proof within a reasonable amount of time.  In total, beside the main theorems to be proved, my sample solution includes 6 lemmas, with a mix of the two kinds of lemmas.  You may use more in your solution, but I suggest trying to minimize the number.
+
+<div class="paragraph"> </div>
+
+</ol> 
+<div class="paragraph"> </div>
+
+<a name="lab32"></a><h1 class="section">From Match</h1>
+
+<div class="paragraph"> </div>
+
+ <ol>
+
+<div class="paragraph"> </div>
+
+   <li> An anonymous Coq fan from the Internet was excited to come up with this tactic definition shortly after getting started learning Ltac: 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Ltac</span> <span class="id" title="var">deSome</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="keyword">goal</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| [ <span class="id" title="var">H</span> : <span class="id" title="var">Some</span> <span class="id" title="var">_</span> = <span class="id" title="var">Some</span> <span class="id" title="var">_</span> |- <span class="id" title="var">_</span> ] =&gt; <span class="id" title="tactic">injection</span> <span class="id" title="var">H</span>; <span class="id" title="tactic">clear</span> <span class="id" title="var">H</span>; <span class="id" title="tactic">intros</span>; <span class="id" title="tactic">subst</span>; <span class="id" title="var">deSome</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">_</span> =&gt; <span class="id" title="tactic">reflexivity</span><br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Without lifting a finger, exciting theorems can be proved: 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">test</span> : <span class="id" title="keyword">forall</span> (<span class="id" title="var">a</span> <span class="id" title="var">b</span> <span class="id" title="var">c</span> <span class="id" title="var">d</span> <span class="id" title="var">e</span> <span class="id" title="var">f</span> <span class="id" title="var">g</span> : <span class="id" title="var">nat</span>),<br/>
+&nbsp;&nbsp;<span class="id" title="var">Some</span> <span class="id" title="var">a</span> = <span class="id" title="var">Some</span> <span class="id" title="var">b</span><br/>
+&nbsp;&nbsp;-&gt; <span class="id" title="var">Some</span> <span class="id" title="var">b</span> = <span class="id" title="var">Some</span> <span class="id" title="var">c</span><br/>
+&nbsp;&nbsp;-&gt; <span class="id" title="var">Some</span> <span class="id" title="var">e</span> = <span class="id" title="var">Some</span> <span class="id" title="var">c</span><br/>
+&nbsp;&nbsp;-&gt; <span class="id" title="var">Some</span> <span class="id" title="var">f</span> = <span class="id" title="var">Some</span> <span class="id" title="var">g</span><br/>
+&nbsp;&nbsp;-&gt; <span class="id" title="var">c</span> = <span class="id" title="var">a</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span>; <span class="id" title="var">deSome</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Unfortunately, this tactic exhibits some degenerate behavior.  Consider the following example: 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">test2</span> : <span class="id" title="keyword">forall</span> (<span class="id" title="var">a</span> <span class="id" title="var">x1</span> <span class="id" title="var">y1</span> <span class="id" title="var">x2</span> <span class="id" title="var">y2</span> <span class="id" title="var">x3</span> <span class="id" title="var">y3</span> <span class="id" title="var">x4</span> <span class="id" title="var">y4</span> <span class="id" title="var">x5</span> <span class="id" title="var">y5</span> <span class="id" title="var">x6</span> <span class="id" title="var">y6</span> : <span class="id" title="var">nat</span>),<br/>
+&nbsp;&nbsp;<span class="id" title="var">Some</span> <span class="id" title="var">x1</span> = <span class="id" title="var">Some</span> <span class="id" title="var">y1</span><br/>
+&nbsp;&nbsp;-&gt; <span class="id" title="var">Some</span> <span class="id" title="var">x2</span> = <span class="id" title="var">Some</span> <span class="id" title="var">y2</span><br/>
+&nbsp;&nbsp;-&gt; <span class="id" title="var">Some</span> <span class="id" title="var">x3</span> = <span class="id" title="var">Some</span> <span class="id" title="var">y3</span><br/>
+&nbsp;&nbsp;-&gt; <span class="id" title="var">Some</span> <span class="id" title="var">x4</span> = <span class="id" title="var">Some</span> <span class="id" title="var">y4</span><br/>
+&nbsp;&nbsp;-&gt; <span class="id" title="var">Some</span> <span class="id" title="var">x5</span> = <span class="id" title="var">Some</span> <span class="id" title="var">y5</span><br/>
+&nbsp;&nbsp;-&gt; <span class="id" title="var">Some</span> <span class="id" title="var">x6</span> = <span class="id" title="var">Some</span> <span class="id" title="var">y6</span><br/>
+&nbsp;&nbsp;-&gt; <span class="id" title="var">Some</span> <span class="id" title="var">a</span> = <span class="id" title="var">Some</span> <span class="id" title="var">a</span><br/>
+&nbsp;&nbsp;-&gt; <span class="id" title="var">x1</span> = <span class="id" title="var">x2</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Time</span> <span class="id" title="tactic">try</span> <span class="id" title="var">deSome</span>.<br/>
+<span class="id" title="keyword">Abort</span>.<br/>
+
+<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+This (failed) proof already takes about one second on my workstation.  I hope a pattern in the theorem statement is clear; this is a representative of a class of theorems, where we may add more matched pairs of <span class="inlinecode"><span class="id" title="variable">x</span></span> and <span class="inlinecode"><span class="id" title="variable">y</span></span> variables, with equality hypotheses between them.  The running time of <span class="inlinecode"><span class="id" title="var">deSome</span></span> is exponential in the number of such hypotheses.
+
+<div class="paragraph"> </div>
+
+   The task in this exercise is twofold.  First, figure out why <span class="inlinecode"><span class="id" title="var">deSome</span></span> exhibits exponential behavior for this class of examples and record your explanation in a comment.  Second, write an improved version of <span class="inlinecode"><span class="id" title="var">deSome</span></span> that runs in polynomial time.</li>
+
+<div class="paragraph"> </div>
+
+   <li> Sometimes it can be convenient to know that a proof attempt is doomed because the theorem is false.  For instance, here are three non-theorems about lists: 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">test1</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">A</span> (<span class="id" title="var">ls1</span> <span class="id" title="var">ls2</span> : <span class="id" title="var">list</span> <span class="id" title="var">A</span>), <span class="id" title="var">ls1</span> ++ <span class="id" title="var">ls2</span> = <span class="id" title="var">ls2</span> ++ <span class="id" title="var">ls1</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">test2</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">A</span> (<span class="id" title="var">ls1</span> <span class="id" title="var">ls2</span> : <span class="id" title="var">list</span> <span class="id" title="var">A</span>), <span class="id" title="var">length</span> (<span class="id" title="var">ls1</span> ++ <span class="id" title="var">ls2</span>) = <span class="id" title="var">length</span> <span class="id" title="var">ls1</span> - <span class="id" title="var">length</span> <span class="id" title="var">ls2</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">test3</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">A</span> (<span class="id" title="var">ls</span> : <span class="id" title="var">list</span> <span class="id" title="var">A</span>), <span class="id" title="var">length</span> (<span class="id" title="var">rev</span> <span class="id" title="var">ls</span>) - 3 = 0.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+The task in this exercise is to write a tactic that disproves these and many other related "theorems" about lists.  Your tactic should follow a simple brute-force enumeration strategy, considering all <span class="inlinecode"><span class="id" title="inductive">list</span></span> <span class="inlinecode"><span class="id" title="inductive">bool</span></span> values with length up to some bound given by the user, as a <span class="inlinecode"><span class="id" title="inductive">nat</span></span> argument to the tactic.  A successful invocation should add a new hypothesis of the negation of the theorem (guaranteeing that the tactic has made a sound decision about falsehood).
+
+<div class="paragraph"> </div>
+
+   A few hints: A good starting point is to pattern-match the conclusion formula and use the <span class="inlinecode"><span class="id" title="tactic">assert</span></span> tactic on its negation.  An <span class="inlinecode"><span class="id" title="tactic">assert</span></span> invocation may include a <span class="inlinecode"><span class="id" title="tactic">by</span></span> clause to specify a tactic to use to prove the assertion.
+
+<div class="paragraph"> </div>
+
+   The idea in this exercise is to disprove a quantified formula by finding instantiations for the quantifiers that make it manifestly false.  Recall the <span class="inlinecode"><span class="id" title="tactic">specialize</span></span> tactic for specializing a hypothesis to particular quantifier instantiations.  When you have instantiated quantifiers fully, <span class="inlinecode"><span class="id" title="tactic">discriminate</span></span> is a good choice to derive a contradiction.  (It at least works for the three examples above and is smart enough for this exercise's purposes.)  The <span class="inlinecode"><span class="id" title="inductive">type</span></span> <span class="inlinecode"><span class="id" title="var">of</span></span> Ltac construct may be useful to analyze the type of a hypothesis to choose how to instantiate its quantifiers.
+
+<div class="paragraph"> </div>
+
+   To enumerate all boolean lists up to a certain length, it will be helpful to write a recursive tactic in continuation-passing style, where the continuation is meant to be called on each candidate list.
+
+<div class="paragraph"> </div>
+
+   Remember that arguments to Ltac functions may not be type-checked in contexts large enough to allow usual implicit argument inference, so instead of <span class="inlinecode"><span class="id" title="constructor">nil</span></span> it will be useful to write <span class="inlinecode">@</span><span class="inlinecode"><span class="id" title="constructor">nil</span></span> <span class="inlinecode"><span class="id" title="inductive">bool</span></span>, which specifies the usually implicit argument explicitly.
+
+<div class="paragraph"> </div>
+
+   <li> Some theorems involving existential quantifiers are easy to prove with <span class="inlinecode"><span class="id" title="tactic">eauto</span></span>. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">test1</span> : <span class="id" title="tactic">exists</span> <span class="id" title="var">x</span>, <span class="id" title="var">x</span> = 0.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">eauto</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Others are harder.  The problem with the next theorem is that the existentially quantified variable does not appear in the rest of the theorem, so <span class="inlinecode"><span class="id" title="tactic">eauto</span></span> has no way to deduce its value.  However, we know that we had might as well instantiate that variable to <span class="inlinecode"><span class="id" title="constructor">tt</span></span>, the only value of type <span class="inlinecode"><span class="id" title="inductive">unit</span></span>. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">test2</span> : <span class="id" title="tactic">exists</span> <span class="id" title="var">x</span> : <span class="id" title="var">unit</span>, 0 = 0.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+We also run into trouble in the next theorem, because <span class="inlinecode"><span class="id" title="tactic">eauto</span></span> does not understand the <span class="inlinecode"><span class="id" title="definition">fst</span></span> and <span class="inlinecode"><span class="id" title="definition">snd</span></span> projection functions for pairs. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">test3</span> : <span class="id" title="tactic">exists</span> <span class="id" title="var">x</span> : <span class="id" title="var">nat</span> * <span class="id" title="var">nat</span>, <span class="id" title="var">fst</span> <span class="id" title="var">x</span> = 7 /\ <span class="id" title="var">snd</span> <span class="id" title="var">x</span> = 2 + <span class="id" title="var">fst</span> <span class="id" title="var">x</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Both problems show up in this monster example. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">test4</span> : <span class="id" title="tactic">exists</span> <span class="id" title="var">x</span> : (<span class="id" title="var">unit</span> * <span class="id" title="var">nat</span>) * (<span class="id" title="var">nat</span> * <span class="id" title="var">bool</span>),<br/>
+&nbsp;&nbsp;<span class="id" title="var">snd</span> (<span class="id" title="var">fst</span> <span class="id" title="var">x</span>) = 7 /\ <span class="id" title="var">fst</span> (<span class="id" title="var">snd</span> <span class="id" title="var">x</span>) = 2 + <span class="id" title="var">snd</span> (<span class="id" title="var">fst</span> <span class="id" title="var">x</span>) /\ <span class="id" title="var">snd</span> (<span class="id" title="var">snd</span> <span class="id" title="var">x</span>) = <span class="id" title="var">true</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+The task in this problem is to write a tactic that preprocesses such goals so that <span class="inlinecode"><span class="id" title="tactic">eauto</span></span> can finish them.  Your tactic should serve as a complete proof of each of the above examples, along with the wide class of similar examples.  The key smarts that your tactic will bring are: first, it introduces separate unification variables for all the "leaf types" of compound types built out of pairs; and second, leaf unification variables of type <span class="inlinecode"><span class="id" title="inductive">unit</span></span> are simply replaced by <span class="inlinecode"><span class="id" title="constructor">tt</span></span>.
+
+<div class="paragraph"> </div>
+
+   A few hints: The following tactic is more convenient than direct use of the built-in tactic <span class="inlinecode"><span class="id" title="tactic">evar</span></span>, for generation of new unification variables: 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Ltac</span> <span class="id" title="var">makeEvar</span> <span class="id" title="var">T</span> <span class="id" title="var">k</span> := <span class="id" title="keyword">let</span> <span class="id" title="var">x</span> := <span class="id" title="tactic">fresh</span> <span class="id" title="keyword">in</span><br/>
+&nbsp;&nbsp;<span class="id" title="tactic">evar</span> (<span class="id" title="var">x</span> : <span class="id" title="var">T</span>); <span class="id" title="keyword">let</span> <span class="id" title="var">y</span> := <span class="id" title="tactic">eval</span> <span class="id" title="tactic">unfold</span> <span class="id" title="var">x</span> <span class="id" title="keyword">in</span> <span class="id" title="var">x</span> <span class="id" title="keyword">in</span> <span class="id" title="tactic">clear</span> <span class="id" title="var">x</span>; <span class="id" title="var">k</span> <span class="id" title="var">y</span>.<br/>
+
+<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+This is a continuation-passing style tactic.  For instance, when the goal begins with existential quantification over a type <span class="inlinecode"><span class="id" title="variable">T</span></span>, the following tactic invocation will create a new unification variable to use as the quantifier instantiation:
+
+<div class="paragraph"> </div>
+
+<span class="inlinecode"><span class="id" title="var">makeEvar</span></span> <span class="inlinecode"><span class="id" title="variable">T</span></span> <span class="inlinecode"><span class="id" title="keyword">ltac</span>:(</span><span class="inlinecode"><span class="id" title="keyword">fun</span></span> <span class="inlinecode"><span class="id" title="variable">x</span></span> <span class="inlinecode">=&gt;</span> <span class="inlinecode"><span class="id" title="tactic">exists</span></span> <span class="inlinecode"><span class="id" title="variable">x</span>)</span> 
+<div class="paragraph"> </div>
+
+ printing exists  
+<div class="paragraph"> </div>
+
+ Recall that <span class="inlinecode"><span class="id" title="tactic">exists</span></span> formulas are desugared to uses of the <span class="inlinecode"><span class="id" title="inductive">ex</span></span> inductive family.  In particular, a pattern like the following can be used to extract the domain of an <span class="inlinecode"><span class="id" title="tactic">exists</span></span> quantifier into variable <span class="inlinecode"><span class="id" title="variable">T</span></span>:
+
+<div class="paragraph"> </div>
+
+<span class="inlinecode">|</span> <span class="inlinecode"></span>[<span class="inlinecode"></span> <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" title="inductive">ex</span></span> <span class="inlinecode">(</span><span class="inlinecode"><span class="id" title="variable">A</span></span> <span class="inlinecode">:=</span> <span class="inlinecode">?</span><span class="inlinecode"><span class="id" title="variable">T</span>)</span> <span class="inlinecode"><span class="id" title="var">_</span></span> <span class="inlinecode"></span>]<span class="inlinecode"></span> <span class="inlinecode">=&gt;</span> <span class="inlinecode">...</span>
+
+<div class="paragraph"> </div>
+
+    The <span class="inlinecode"><span class="id" title="var">equate</span></span> tactic used as an example in this chapter will probably be useful, to unify two terms, for instance if the first is a unification variable whose value you want to set.
+<br/>
+<span class="inlinecode"><span class="id" title="keyword">Ltac</span> <span class="id" title="var">equate</span> <span class="id" title="var">E1</span> <span class="id" title="var">E2</span> := <span class="id" title="keyword">let</span> <span class="id" title="variable">H</span> := <span class="id" title="tactic">fresh</span> <span class="id" title="keyword">in</span><br/>
+&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="variable">H</span> : <span class="id" title="var">E1</span> = <span class="id" title="var">E2</span>) <span class="id" title="tactic">by</span> <span class="id" title="tactic">reflexivity</span>; <span class="id" title="tactic">clear</span> <span class="id" title="variable">H</span>.
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+    Finally, there are some minor complications surrounding overloading of the <span class="inlinecode">*</span> operator for both numeric multiplication and Cartesian product for sets (i.e., pair types).  To ensure that an Ltac pattern is using the type version, write it like this:
+
+<div class="paragraph"> </div>
+
+<span class="inlinecode">|</span> <span class="inlinecode">(?<span class="id" title="variable">T1</span></span> <span class="inlinecode">*</span> <span class="inlinecode">?<span class="id" title="variable">T2</span>)%</span><span class="inlinecode"><span class="id" title="inductive">type</span></span> <span class="inlinecode">=&gt;</span> <span class="inlinecode">...</span></li>
+
+<div class="paragraph"> </div>
+
+<li> An exercise in the last chapter dealt with automating proofs about rings using <span class="inlinecode"><span class="id" title="tactic">eauto</span></span>, where we must prove some odd-looking theorems to push proof search in a direction where unification does all the work.  Algebraic proofs consist mostly of rewriting in equations, so we might hope that the <span class="inlinecode"><span class="id" title="tactic">autorewrite</span></span> tactic would yield more natural automated proofs.  Indeed, consider this example within the same formulation of ring theory that we dealt with last chapter, where each of the three axioms has been added to the rewrite hint database <span class="inlinecode"><span class="id" title="var">cpdt</span></span> using <span class="inlinecode"><span class="id" title="keyword">Hint</span></span> <span class="inlinecode"><span class="id" title="keyword">Rewrite</span></span>:
+<br/>
+<span class="inlinecode"><span class="id" title="keyword">Theorem</span> <span class="id" title="lemma">test1</span> : <span class="id" title="keyword">forall</span> <span class="id" title="variable">a</span> <span class="id" title="variable">b</span>, <span class="id" title="variable">a</span> * <span class="id" title="variable">b</span> * <span class="id" title="definition">i</span> <span class="id" title="variable">b</span> = <span class="id" title="variable">a</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span>; <span class="id" title="tactic">autorewrite</span> <span class="id" title="keyword">with</span> <span class="id" title="var">cpdt</span>; <span class="id" title="tactic">reflexivity</span>.<br/>
+<span class="id" title="keyword">Qed</span>.
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+So far so good.  However, consider this further example:
+<br/>
+<span class="inlinecode"><span class="id" title="keyword">Theorem</span> <span class="id" title="lemma">test2</span> : <span class="id" title="keyword">forall</span> <span class="id" title="variable">a</span>, <span class="id" title="variable">a</span> * <span class="id" title="variable">e</span> * <span class="id" title="definition">i</span> <span class="id" title="variable">a</span> * <span class="id" title="definition">i</span> <span class="id" title="variable">e</span> = <span class="id" title="variable">e</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span>; <span class="id" title="tactic">autorewrite</span> <span class="id" title="keyword">with</span> <span class="id" title="var">cpdt</span>.
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+The goal is merely reduced to <span class="inlinecode"><span class="id" title="variable">a</span></span> <span class="inlinecode">*</span> <span class="inlinecode">(</span><span class="inlinecode"><span class="id" title="definition">i</span></span> <span class="inlinecode"><span class="id" title="variable">a</span></span> <span class="inlinecode">*</span> <span class="inlinecode"><span class="id" title="definition">i</span></span> <span class="inlinecode"><span class="id" title="variable">e</span>)</span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="variable">e</span></span>, which of course <span class="inlinecode"><span class="id" title="tactic">reflexivity</span></span> cannot prove.  The essential problem is that <span class="inlinecode"><span class="id" title="tactic">autorewrite</span></span> does not do backtracking search.  Instead, it follows a "greedy" approach, at each stage choosing a rewrite to perform and then never allowing that rewrite to be undone.  An early mistake can doom the whole process.
+
+<div class="paragraph"> </div>
+
+The task in this problem is to use Ltac to implement a backtracking version of <span class="inlinecode"><span class="id" title="tactic">autorewrite</span></span> that works much like <span class="inlinecode"><span class="id" title="tactic">eauto</span></span>, in that its inputs are a database of hint lemmas and a bound on search depth.  Here our search trees will have uses of <span class="inlinecode"><span class="id" title="tactic">rewrite</span></span> at their nodes, rather than uses of <span class="inlinecode"><span class="id" title="tactic">eapply</span></span> as in the case of <span class="inlinecode"><span class="id" title="tactic">eauto</span></span>, and proofs must be finished by <span class="inlinecode"><span class="id" title="tactic">reflexivity</span></span>.
+
+<div class="paragraph"> </div>
+
+An invocation to the tactic to prove <span class="inlinecode"><span class="id" title="lemma">test2</span></span> might look like this:
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="var">rewriter</span> (<span class="id" title="lemma">right_identity</span>, (<span class="id" title="var">right_inverse</span>, <span class="id" title="constructor">tt</span>)) 3.
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+The first argument gives the set of lemmas to consider, as a kind of list encoded with pair types.  Such a format cannot be analyzed directly by Gallina programs, but Ltac allows us much more freedom to deconstruct syntax.  For example, to case analyze such a list found in a variable <span class="inlinecode"><span class="id" title="variable">x</span></span>, we need only write:
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="variable">x</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| (?<span class="id" title="var">lemma</span>, ?<span class="id" title="var">more</span>) =&gt; ...<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+In the body of the case analysis, <span class="inlinecode"><span class="id" title="var">lemma</span></span> will be bound to the first lemma, and <span class="inlinecode"><span class="id" title="var">more</span></span> will be bound to the remaining lemmas.  There is no need to consider a case for <span class="inlinecode"><span class="id" title="constructor">tt</span></span>, our stand-in for <span class="inlinecode"><span class="id" title="constructor">nil</span></span>.  This is because lack of any matching pattern will trigger failure, which is exactly the outcome we would like upon reaching the end of the lemma list without finding one that applies.  The tactic will fail, triggering backtracking to some previous <span class="inlinecode"><span class="id" title="keyword">match</span></span>.
+
+<div class="paragraph"> </div>
+
+There are different kinds of backtracking, corresponding to different sorts of decisions to be made.  The examples considered above can be handled with backtracking that only reconsiders decisions about the order in which to apply rewriting lemmas.  A full-credit solution need only handle that kind of backtracking, considering all rewriting sequences up to the length bound passed to your tactic.  A good test of this level of applicability is to prove both <span class="inlinecode"><span class="id" title="lemma">test1</span></span> and <span class="inlinecode"><span class="id" title="lemma">test2</span></span> above.  However, some theorems could only be proved using a smarter tactic that considers not only order of rewriting lemma uses, but also choice of arguments to the lemmas.  That is, at some points in a proof, the same lemma may apply at multiple places within the goal formula, and some choices may lead to stuck proof states while others lead to success.  For an extra challenge (without any impact on the grade for the problem), you might try beefing up your tactic to do backtracking on argument choice, too.</li>
+
+<div class="paragraph"> </div>
+
+</ol> 
+<div class="paragraph"> </div>
+
+<a name="lab33"></a><h1 class="section">Exercises</h1>
+
+<div class="paragraph"> </div>
+
+ remove printing * 
+<div class="paragraph"> </div>
+
+ <ol>
+
+<div class="paragraph"> </div>
+
+<li> Implement a reflective procedure for normalizing systems of linear equations over rational numbers.  In particular, the tactic should identify all hypotheses that are linear equations over rationals where the equation righthand sides are constants.  It should normalize each hypothesis to have a lefthand side that is a sum of products of constants and variables, with no variable appearing multiple times.  Then, your tactic should add together all of these equations to form a single new equation, possibly clearing the original equations.  Some coefficients may cancel in the addition, reducing the number of variables that appear.
+
+<div class="paragraph"> </div>
+
+To work with rational numbers, import module <span class="inlinecode"><span class="id" title="var">QArith</span></span> and use <span class="inlinecode"><span class="id" title="keyword">Local</span></span> <span class="inlinecode"><span class="id" title="keyword">Open</span></span> <span class="inlinecode"><span class="id" title="keyword">Scope</span></span> <span class="inlinecode"><span class="id" title="var">Q_scope</span></span>.  All of the usual arithmetic operator notations will then work with rationals, and there are shorthands for constants 0 and 1.  Other rationals must be written as <span class="inlinecode"><span class="id" title="axiom">num</span></span> <span class="inlinecode">#</span> <span class="inlinecode"><span class="id" title="var">den</span></span> for numerator <span class="inlinecode"><span class="id" title="axiom">num</span></span> and denominator <span class="inlinecode"><span class="id" title="var">den</span></span>.  Use the infix operator <span class="inlinecode">==</span> in place of <span class="inlinecode">=</span>, to deal with different ways of expressing the same number as a fraction.  For instance, a theorem and proof like this one should work with your tactic:
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="keyword">Theorem</span> <span class="id" title="lemma">t2</span> : <span class="id" title="keyword">forall</span> <span class="id" title="variable">x</span> <span class="id" title="variable">y</span> <span class="id" title="variable">z</span>, (2 # 1) * (<span class="id" title="variable">x</span> - (3 # 2) * <span class="id" title="variable">y</span>) == 15 # 1<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;-&gt; <span class="id" title="variable">z</span> + (8 # 1) * <span class="id" title="variable">x</span> == 20 # 1<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;-&gt; (-6 # 2) * <span class="id" title="variable">y</span> + (10 # 1) * <span class="id" title="variable">x</span> + <span class="id" title="variable">z</span> == 35 # 1.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">intros</span>; <span class="id" title="var">reifyContext</span>; <span class="id" title="tactic">assumption</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+  Your solution can work in any way that involves reifying syntax and doing most calculation with a Gallina function.  These hints outline a particular possible solution.  Throughout, the <span class="inlinecode"><span class="id" title="tactic">ring</span></span> tactic will be helpful for proving many simple facts about rationals, and tactics like <span class="inlinecode"><span class="id" title="tactic">rewrite</span></span> are correctly overloaded to work with rational equality <span class="inlinecode">==</span>.
+
+<div class="paragraph"> </div>
+
+<ol>
+  <li> Define an inductive type <span class="inlinecode"><span class="id" title="inductive">exp</span></span> of expressions over rationals (which inhabit the Coq type <span class="inlinecode"><span class="id" title="variable">Q</span></span>).  Include variables (represented as natural numbers), constants, addition, subtraction, and multiplication.</li>
+  <li> Define a function <span class="inlinecode"><span class="id" title="var">lookup</span></span> for reading an element out of a list of rationals, by its position in the list.</li>
+  <li> Define a function <span class="inlinecode"><span class="id" title="definition">expDenote</span></span> that translates <span class="inlinecode"><span class="id" title="inductive">exp</span></span>s, along with lists of rationals representing variable values, to <span class="inlinecode"><span class="id" title="variable">Q</span></span>.</li>
+  <li> Define a recursive function <span class="inlinecode"><span class="id" title="var">eqsDenote</span></span> over <span class="inlinecode"><span class="id" title="inductive">list</span></span> <span class="inlinecode">(<span class="id" title="inductive">exp</span></span> <span class="inlinecode">*</span> <span class="inlinecode"><span class="id" title="variable">Q</span>)</span>, characterizing when all of the equations are true.</li>
+  <li> Fix a representation <span class="inlinecode"><span class="id" title="var">lhs</span></span> of flattened expressions.  Where <span class="inlinecode"><span class="id" title="variable">len</span></span> is the number of variables, represent a flattened equation as <span class="inlinecode"><span class="id" title="inductive">ilist</span></span> <span class="inlinecode"><span class="id" title="variable">Q</span></span> <span class="inlinecode"><span class="id" title="variable">len</span></span>.  Each position of the list gives the coefficient of the corresponding variable.</li>
+  <li> Write a recursive function <span class="inlinecode"><span class="id" title="var">linearize</span></span> that takes a constant <span class="inlinecode"><span class="id" title="variable">k</span></span> and an expression <span class="inlinecode"><span class="id" title="variable">e</span></span> and optionally returns an <span class="inlinecode"><span class="id" title="var">lhs</span></span> equivalent to <span class="inlinecode"><span class="id" title="variable">k</span></span> <span class="inlinecode">*</span> <span class="inlinecode"><span class="id" title="variable">e</span></span>.  This function returns <span class="inlinecode"><span class="id" title="constructor">None</span></span> when it discovers that the input expression is not linear.  The parameter <span class="inlinecode"><span class="id" title="variable">len</span></span> of <span class="inlinecode"><span class="id" title="var">lhs</span></span> should be a parameter of <span class="inlinecode"><span class="id" title="var">linearize</span></span>, too.  The functions <span class="inlinecode"><span class="id" title="definition">singleton</span></span>, <span class="inlinecode"><span class="id" title="definition">everywhere</span></span>, and <span class="inlinecode"><span class="id" title="definition">map2</span></span> from <span class="inlinecode"><span class="id" title="library">DepList</span></span> will probably be helpful.  It is also helpful to know that <span class="inlinecode"><span class="id" title="var">Qplus</span></span> is the identifier for rational addition.</li>
+  <li> Write a recursive function <span class="inlinecode"><span class="id" title="var">linearizeEqs</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" title="inductive">list</span></span> <span class="inlinecode">(<span class="id" title="inductive">exp</span></span> <span class="inlinecode">*</span> <span class="inlinecode"><span class="id" title="variable">Q</span>)</span> <span class="inlinecode">-&gt;</span> <span class="inlinecode"><span class="id" title="inductive">option</span></span> <span class="inlinecode">(<span class="id" title="var">lhs</span></span> <span class="inlinecode">*</span> <span class="inlinecode"><span class="id" title="variable">Q</span>)</span>.  This function linearizes all of the equations in the list in turn, building up the sum of the equations.  It returns <span class="inlinecode"><span class="id" title="constructor">None</span></span> if the linearization of any constituent equation fails.</li>
+  <li> Define a denotation function for <span class="inlinecode"><span class="id" title="var">lhs</span></span>.</li>
+  <li> Prove that, when <span class="inlinecode"><span class="id" title="inductive">exp</span></span> linearization succeeds on constant <span class="inlinecode"><span class="id" title="variable">k</span></span> and expression <span class="inlinecode"><span class="id" title="variable">e</span></span>, the linearized version has the same meaning as <span class="inlinecode"><span class="id" title="variable">k</span></span> <span class="inlinecode">*</span> <span class="inlinecode"><span class="id" title="variable">e</span></span>.</li>
+  <li> Prove that, when <span class="inlinecode"><span class="id" title="var">linearizeEqs</span></span> succeeds on an equation list <span class="inlinecode"><span class="id" title="var">eqs</span></span>, then the final summed-up equation is true whenever the original equation list is true.</li>
+  <li> Write a tactic <span class="inlinecode"><span class="id" title="var">findVarsHyps</span></span> to search through all equalities on rationals in the context, recursing through addition, subtraction, and multiplication to find the list of expressions that should be treated as variables.  This list should be suitable as an argument to <span class="inlinecode"><span class="id" title="definition">expDenote</span></span> and <span class="inlinecode"><span class="id" title="var">eqsDenote</span></span>, associating a <span class="inlinecode"><span class="id" title="variable">Q</span></span> value to each natural number that stands for a variable.</li>
+  <li> Write a tactic <span class="inlinecode"><span class="id" title="var">reify</span></span> to reify a <span class="inlinecode"><span class="id" title="variable">Q</span></span> expression into <span class="inlinecode"><span class="id" title="inductive">exp</span></span>, with respect to a given list of variable values.</li>
+  <li> Write a tactic <span class="inlinecode"><span class="id" title="var">reifyEqs</span></span> to reify a formula that begins with a sequence of implications from linear equalities whose lefthand sides are expressed with <span class="inlinecode"><span class="id" title="definition">expDenote</span></span>.  This tactic should build a <span class="inlinecode"><span class="id" title="inductive">list</span></span> <span class="inlinecode">(<span class="id" title="inductive">exp</span></span> <span class="inlinecode">*</span> <span class="inlinecode"><span class="id" title="variable">Q</span>)</span> representing the equations.  Remember to give an explicit type annotation when returning a nil list, as in <span class="inlinecode"><span class="id" title="keyword">constr</span>:(</span><span class="inlinecode">@</span><span class="inlinecode"><span class="id" title="constructor">nil</span></span> <span class="inlinecode">(<span class="id" title="inductive">exp</span></span> <span class="inlinecode">*</span> <span class="inlinecode"><span class="id" title="variable">Q</span>))</span>.</li>
+  <li> Now this final tactic should do the job:
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="keyword">Ltac</span> <span class="id" title="var">reifyContext</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">let</span> <span class="id" title="variable">ls</span> := <span class="id" title="var">findVarsHyps</span> <span class="id" title="keyword">in</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">repeat</span> <span class="id" title="keyword">match</span> <span class="id" title="keyword">goal</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| [ <span class="id" title="variable">H</span> : ?<span class="id" title="variable">e</span> == ?<span class="id" title="axiom">num</span> # ?<span class="id" title="var">den</span> |- <span class="id" title="var">_</span> ] =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">let</span> <span class="id" title="variable">r</span> := <span class="id" title="var">reify</span> <span class="id" title="variable">ls</span> <span class="id" title="variable">e</span> <span class="id" title="keyword">in</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">change</span> (<span class="id" title="definition">expDenote</span> <span class="id" title="variable">ls</span> <span class="id" title="variable">r</span> == <span class="id" title="axiom">num</span> # <span class="id" title="var">den</span>) <span class="id" title="keyword">in</span> <span class="id" title="variable">H</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">generalize</span> <span class="id" title="variable">H</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="keyword">goal</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| [ |- ?<span class="id" title="variable">g</span> ] =&gt; <span class="id" title="keyword">let</span> <span class="id" title="var">re</span> := <span class="id" title="var">reifyEqs</span> <span class="id" title="variable">g</span> <span class="id" title="keyword">in</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">intros</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">let</span> <span class="id" title="variable">H</span> := <span class="id" title="tactic">fresh</span> "H" <span class="id" title="keyword">in</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="variable">H</span> : <span class="id" title="var">eqsDenote</span> <span class="id" title="variable">ls</span> <span class="id" title="var">re</span>); [ <span class="id" title="tactic">simpl</span> <span class="id" title="keyword">in</span> *; <span class="id" title="tactic">tauto</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="tactic">repeat</span> <span class="id" title="keyword">match</span> <span class="id" title="keyword">goal</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| [ <span class="id" title="variable">H</span> : <span class="id" title="definition">expDenote</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> == <span class="id" title="var">_</span> |- <span class="id" title="var">_</span> ] =&gt; <span class="id" title="tactic">clear</span> <span class="id" title="variable">H</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">generalize</span> (<span class="id" title="var">linearizeEqsCorrect</span> <span class="id" title="variable">ls</span> <span class="id" title="var">re</span> <span class="id" title="variable">H</span>); <span class="id" title="tactic">clear</span> <span class="id" title="variable">H</span>; <span class="id" title="tactic">simpl</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="keyword">goal</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| [ |- ?<span class="id" title="var">X</span> == ?<span class="id" title="var">Y</span> -&gt; <span class="id" title="var">_</span> ] =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">ring_simplify</span> <span class="id" title="var">X</span> <span class="id" title="var">Y</span>; <span class="id" title="tactic">intro</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span> ]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>.
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+</ol>
+</li>
+
+<div class="paragraph"> </div>
+
+</ol> 
+</div>
+<div class="code">
+</div>
+</div>
+
+<div id="footer">
+<hr/><a href="index.html">Index</a><hr/>This page has been generated by <a href="http://coq.inria.fr/">coqdoc</a>
+</div>
+
+</div>
+
+</body>
+</html>

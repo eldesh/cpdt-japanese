@@ -1,0 +1,2357 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<link href="coqdoc.css" rel="stylesheet" type="text/css" />
+<title>Universes</title>
+</head>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+</div>
+
+<div id="main">
+
+<h1 class="libtitle">Library Universes</h1>
+
+<div class="code">
+
+<br/>
+
+<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+ 
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+多くの伝統的な定理は CIC (Coq の背後にある論理体系) の特別な知識を用いずに Coq で証明できます。証明の開発が、集合論に基づく標準的な論理式のための特別な ASCII 記法を用いることであるように思えるかもしれません。それでもやはり、4章で見たように、 CIC はより少ない直交するプリミティブで始まるという点で集合論とは異なります。通常の論理結合子は派生的な概念として定義できます。それらすべての基礎は依存型のついた関数型言語であり、依存関数型と帰納型の族に基づいています。これらの言語機能を直接的に用いれば、いくつかのことを主流の数学より簡単に達成できます。
+
+<div class="paragraph"> </div>
+
+   Gallina は Coq に実装された論理体系であり、より理論的な CIC に機能を追加しています。Gallina は1,2ページの形式的な証明規則で厳密に定義された比較的単純な基礎を持っています。それでも、実際的な影響を及ぼすいくつかの重要な細部があります。本章では、形式的なメタ理論は避け、コード例によりこれらの細部に焦点を合わせます。
+
+</div>
+<div class="code">
+
+<br/>
+</div>
+
+<div class="doc">
+<a name="lab117"></a><h1 class="section"><span class="inlinecode"><span class="id" title="keyword">Type</span></span> の階層</h1>
+
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+ Gallina におけるすべてのオブジェクトは型を持ちます。
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Check</span> 0.<br/>
+</div>
+
+<div class="doc">
+  <br/>
+<span class="inlinecode">&nbsp;&nbsp;0<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="inductive">nat</span>
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+  ゼロが自然数であると考えるのはごく自然なことです。 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Check</span> <span class="id" title="var">nat</span>.<br/>
+</div>
+
+<div class="doc">
+  <br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="inductive">nat</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="keyword">Set</span>
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+  集合論の観点では、自然数の集まりが「集合」であるとみなすのは意外ではありません。
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Check</span> <span class="id" title="keyword">Set</span>.<br/>
+</div>
+
+<div class="doc">
+  <br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="keyword">Set</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="keyword">Type</span>
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+  型 <span class="inlinecode"><span class="id" title="keyword">Set</span></span> はすべての集合の集合、つまり集合論では _クラス_ という用語で表される概念と見なせます。 この、より一般的な概念は、 Coq においては <span class="inlinecode"><span class="id" title="keyword">Type</span></span> です。 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Check</span> <span class="id" title="keyword">Type</span>.<br/>
+</div>
+
+<div class="doc">
+   <br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="keyword">Type</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="keyword">Type</span>
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+  おかしなことに、<span class="inlinecode"><span class="id" title="keyword">Type</span></span> はそれ自身の型であるようです。この性質を持つ多相的な言語は、ジラールのパラドックス により矛盾することが知られています。 つまり、そのような言語で証明をエンコードするのは愚かなことです。なぜならどんな命題も「証明」できるからです。実のところ、ここでは何が起こっているのでしょう？
+
+<div class="paragraph"> </div>
+
+  これらのクエリーをCoqの印字動作に関わるフラグをトグルしてから再度入力してみましょう。 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Set Printing Universes</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Check</span> <span class="id" title="var">nat</span>.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="inductive">nat</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="keyword">Set</span>
+<div class="paragraph"> </div>
+
+</span>
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Check</span> <span class="id" title="keyword">Set</span>.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="keyword">Set</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="keyword">Type</span> (<a/>* (0)+1 *<a/>)
+<div class="paragraph"> </div>
+
+</span>     
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Check</span> <span class="id" title="keyword">Type</span>.<br/>
+</div>
+
+<div class="doc">
+  <br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="keyword">Type</span> (<a/>* <span class="id" title="var">Top</span>.3 *<a/>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="keyword">Type</span> (<a/>* (<span class="id" title="var">Top</span>.3)+1 *<a/>)
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+  <span class="inlinecode"><span class="id" title="keyword">Type</span></span> の出現が、コメントの中において追加の情報で注釈されています。これらの注釈は <span class="inlinecode"><span class="id" title="keyword">Type</span></span> の背景にある秘密と関係があります。これは型の無限の階層を表しているのです。<span class="inlinecode"><span class="id" title="keyword">Set</span></span> の型は <span class="inlinecode"><span class="id" title="keyword">Type</span>(0)</span>、<span class="inlinecode"><span class="id" title="keyword">Type</span>(0)</span> の型は <span class="inlinecode"><span class="id" title="keyword">Type</span>(1)</span>、<span class="inlinecode"><span class="id" title="keyword">Type</span>(1)</span> の型は <span class="inlinecode"><span class="id" title="keyword">Type</span>(2)</span> などです。このようにして "<span class="inlinecode"><span class="id" title="keyword">Type</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" title="keyword">Type</span></span>" パラドックスを回避しています。利便性のため、この宇宙(universe)の階層は Coq における一種の部分型付けを利用しています。型がレベル <span class="inlinecode"><span class="id" title="definition">i</span></span> における <span class="inlinecode"><span class="id" title="keyword">Type</span></span> である任意の項は、<span class="inlinecode"><span class="id" title="var">j</span></span> <span class="inlinecode">&gt;</span> <span class="inlinecode"><span class="id" title="definition">i</span></span> であるレベル <span class="inlinecode"><span class="id" title="var">j</span></span> における <span class="inlinecode"><span class="id" title="keyword">Type</span></span> でも自動的に説明(FIXME:describe)されます。
+
+<div class="paragraph"> </div>
+
+  最初の <span class="inlinecode"><span class="id" title="keyword">Check</span></span> クエリの出力において、 <span class="inlinecode"><span class="id" title="keyword">Set</span></span> の型の型レベルは <span class="inlinecode">(0)+1</span> であるとわかります。ここで <span class="inlinecode">0</span> は <span class="inlinecode"><span class="id" title="keyword">Set</span></span> のレベルであり、これをインクリメントすると <span class="inlinecode"><span class="id" title="keyword">Set</span></span> を _分類(classify)する_ レベルに到達します。
+
+<div class="paragraph"> </div>
+
+  三番目のクエリの出力においては、ここで調べた <span class="inlinecode"><span class="id" title="keyword">Type</span></span> の出現にはフレッシュな _宇宙変数(universe variable)_ <span class="inlinecode"><span class="id" title="var">Top</span>.3</span> が割り当てられています。出力された型は <span class="inlinecode"><span class="id" title="var">Top</span>.3</span> をインクリメントすることで宇宙の階層を１レベル上に移動しています。型が宇宙変数に言及する定義を用いたコードを書くときには、単一化によりこれらの変数の値が詳細化されることがあります。幸運にも、利用者はこの詳細を気にする必要はほとんどありません。
+
+<div class="paragraph"> </div>
+
+  CIC におけるもう一つの重要な概念は _可述性_ です。次のクエリについて考えてみましょう。
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Check</span> <span class="id" title="keyword">forall</span> <span class="id" title="var">T</span> : <span class="id" title="var">nat</span>, <span class="id" title="var">fin</span> <span class="id" title="var">T</span>.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="keyword">forall</span> <span class="id" title="variable">T</span> : <span class="id" title="inductive">nat</span>, <span class="id" title="inductive">fin</span> <span class="id" title="variable">T</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="keyword">Set</span>
+<div class="paragraph"> </div>
+
+</span>     
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Check</span> <span class="id" title="keyword">forall</span> <span class="id" title="var">T</span> : <span class="id" title="keyword">Set</span>, <span class="id" title="var">T</span>.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="keyword">forall</span> <span class="id" title="variable">T</span> : <span class="id" title="keyword">Set</span>, <span class="id" title="variable">T</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="keyword">Type</span> (<a/>* <span class="id" title="abbreviation">max</span>(0, (0)+1) *<a/>)
+<div class="paragraph"> </div>
+
+</span>     
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Check</span> <span class="id" title="keyword">forall</span> <span class="id" title="var">T</span> : <span class="id" title="keyword">Type</span>, <span class="id" title="var">T</span>.<br/>
+</div>
+
+<div class="doc">
+  <br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="keyword">forall</span> <span class="id" title="variable">T</span> : <span class="id" title="keyword">Type</span> (<a/>* <span class="id" title="var">Top</span>.9 *<a/>) , <span class="id" title="variable">T</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="keyword">Type</span> (<a/>* <span class="id" title="abbreviation">max</span>(<span class="id" title="var">Top</span>.9, (<span class="id" title="var">Top</span>.9)+1) *<a/>)
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+  これらの出力は <span class="inlinecode"><span class="id" title="keyword">forall</span></span> 型がどの宇宙にあるか決定するための規則を実演しています。特に、型 <span class="inlinecode"><span class="id" title="keyword">forall</span></span> <span class="inlinecode"><span class="id" title="variable">x</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" title="variable">T1</span>,</span> <span class="inlinecode"><span class="id" title="variable">T2</span></span> について、<span class="inlinecode"><span class="id" title="variable">T1</span></span> と <span class="inlinecode"><span class="id" title="variable">T2</span></span> の宇宙の最大値をを取っています。最初のクエリ例では、<span class="inlinecode"><span class="id" title="variable">T1</span></span> (<span class="inlinecode"><span class="id" title="inductive">nat</span></span>) と <span class="inlinecode"><span class="id" title="variable">T2</span></span> (<span class="inlinecode"><span class="id" title="inductive">fin</span></span> <span class="inlinecode"><span class="id" title="variable">T</span></span>) は <span class="inlinecode"><span class="id" title="keyword">Set</span></span> にあるため、<span class="inlinecode"><span class="id" title="keyword">forall</span></span> 型も同様に <span class="inlinecode"><span class="id" title="keyword">Set</span></span> にあります。二つ目のクエリでは、<span class="inlinecode"><span class="id" title="variable">T1</span></span> は <span class="inlinecode"><span class="id" title="keyword">Set</span></span> であり、レベル <span class="inlinecode">(0)+1</span> にあります。<span class="inlinecode"><span class="id" title="variable">T2</span></span> は <span class="inlinecode"><span class="id" title="variable">T</span></span> であり、レベルは <span class="inlinecode">0</span> です。従って、この <span class="inlinecode"><span class="id" title="keyword">forall</span></span> はこれら二つのレベルの最大値のレベルに存在します。三番目の例も同様の結論を示しており、ここでは <span class="inlinecode"><span class="id" title="keyword">Set</span></span> を宇宙変数 <span class="inlinecode"><span class="id" title="var">Top</span>.9</span> に割り当てられた <span class="inlinecode"><span class="id" title="keyword">Type</span></span> の出現で置き換えています。この宇宙変数は以前のクエリに現れた <span class="inlinecode">0</span> の位置に現れています。
+
+<div class="paragraph"> </div>
+
+  宇宙変数の舞台裏における操作が可述性をもたらします。次の多相的な恒等関数の単純な定義を考えてみましょう。ここで最初の引数 <span class="inlinecode"><span class="id" title="variable">T</span></span> は二番目の引数 <span class="inlinecode"><span class="id" title="variable">x</span></span> の型から推論できるため、自動的に暗黙であるとマークされます。 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">id</span> (<span class="id" title="var">T</span> : <span class="id" title="keyword">Set</span>) (<span class="id" title="var">x</span> : <span class="id" title="var">T</span>) : <span class="id" title="var">T</span> := <span class="id" title="var">x</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Check</span> <span class="id" title="var">id</span> 0.<br/>
+</div>
+
+<div class="doc">
+  <br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="definition">id</span> 0<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="inductive">nat</span><br/>
+&nbsp;<br/>
+<span class="id" title="keyword">Check</span> <span class="id" title="definition">id</span> <span class="id" title="keyword">Set</span>.
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+<pre>
+Error: Illegal application (Type Error):
+...
+The 1st term has type "Type ( * (Top.15)+1 * )"
+which should be coercible to "Set".
+</pre>
+(FIXME: 上の (Top.15)+1 を囲むコメントのところでエラーになるので少し変えている)
+
+<div class="paragraph"> </div>
+
+  <span class="inlinecode"><span class="id" title="definition">id</span></span> の 引数 <span class="inlinecode"><span class="id" title="variable">T</span></span> は <span class="inlinecode"><span class="id" title="keyword">Set</span></span> で具体化されなければなりません。型 <span class="inlinecode"><span class="id" title="inductive">nat</span></span> は <span class="inlinecode"><span class="id" title="keyword">Set</span></span> ですが、 <span class="inlinecode"><span class="id" title="keyword">Set</span></span> は違います。この問題は <span class="inlinecode"><span class="id" title="definition">id</span></span> の定義を一般化して、修正を試みることができます。 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Reset</span> <span class="id" title="var">id</span>.<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">id</span> (<span class="id" title="var">T</span> : <span class="id" title="keyword">Type</span>) (<span class="id" title="var">x</span> : <span class="id" title="var">T</span>) : <span class="id" title="var">T</span> := <span class="id" title="var">x</span>.<br/>
+<span class="id" title="keyword">Check</span> <span class="id" title="var">id</span> 0.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="definition">id</span> 0<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="inductive">nat</span>
+<div class="paragraph"> </div>
+
+</span>     
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Check</span> <span class="id" title="var">id</span> <span class="id" title="keyword">Set</span>.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="definition">id</span> <span class="id" title="keyword">Set</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="keyword">Type</span> (<a/>* <span class="id" title="var">Top</span>.17 *<a/>)
+<div class="paragraph"> </div>
+
+</span>  
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Check</span> <span class="id" title="var">id</span> <span class="id" title="keyword">Type</span>.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="definition">id</span> <span class="id" title="keyword">Type</span> (<a/>* <span class="id" title="var">Top</span>.18 *<a/>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="keyword">Type</span> (<a/>* <span class="id" title="var">Top</span>.19 *<a/>)
+<div class="paragraph"> </div>
+
+</span>  
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+ ここまではこれで良いようです。<span class="inlinecode"><span class="id" title="definition">id</span></span> を異なる値 <span class="inlinecode"><span class="id" title="variable">T</span></span> に適用するに従って、<span class="inlinecode"><span class="id" title="variable">T</span></span> の <span class="inlinecode"><span class="id" title="keyword">Type</span></span> の出現で推論されたインデックスは自動的に型階層を高い方へと昇っています。
+   <br/>
+<span class="inlinecode"><span class="id" title="keyword">Check</span> <span class="id" title="definition">id</span> <span class="id" title="definition">id</span>.
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+<pre>
+Error: Universe inconsistency (cannot enforce Top.16 &lt; Top.16).
+</pre>
+
+<div class="paragraph"> </div>
+
+  このエラーメッセージは <span class="inlinecode"><span class="id" title="variable">T</span></span> に関する宇宙変数が、普通は隠されているものの、依然として存在していることを思い出させます。<span class="inlinecode"><span class="id" title="definition">id</span></span> をそれ自身に適用するには、この変数が型階層においてそれ自身よりも小さくある必要があります。宇宙の矛盾(universe inconsistency) エラーはこのような、項が宇宙変数に関して導かれた制約に違反することでしか型検査が通らない場合について知らせてくれます。このようなエラーは <span class="inlinecode"><span class="id" title="keyword">Type</span></span> が _可述的_ であることを示しています。ここで CIC における可述性の意味は、通常の数学での意味にごく近いです。可述性をもつ系は、あるオブジェクトがある種の限量子を用いて定義されたとき、どの限量子もそのオブジェクトそれ自体で具体化されてはならないという制約を強制します。非可述性は集合論においてよく知られたパラドックスと関連しており、「それ自体を含まない全ての集合の集合」のような矛盾する構成を伴います (ラッセルのパラドックス)。  Coq においても、非可述性を制御しないと類似のパラドックスがもたらされます。 
+</div>
+<div class="code">
+
+<br/>
+</div>
+
+<div class="doc">
+<a name="lab118"></a><h2 class="section">帰納的定義</h2>
+
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+ 可述性の制限は帰納的定義にも適用されます。例えば、任意のネイティブな Coq の値を注入できる式木の型を考えましょう。ここでのアイデアは <span class="inlinecode"><span class="id" title="inductive">exp</span></span> <span class="inlinecode"><span class="id" title="variable">T</span></span> 型が 型 <span class="inlinecode"><span class="id" title="variable">T</span></span> に関してエンコードされた式を表すということです。
+   <br/>
+<span class="inlinecode"><span class="id" title="keyword">Inductive</span> <span class="id" title="inductive">exp</span> : <span class="id" title="keyword">Set</span> -&gt; <span class="id" title="keyword">Set</span> :=<br/>
+| <span class="id" title="constructor">Const</span> : <span class="id" title="keyword">forall</span> <span class="id" title="variable">T</span> : <span class="id" title="keyword">Set</span>, <span class="id" title="variable">T</span> -&gt; <span class="id" title="inductive">exp</span> <span class="id" title="variable">T</span><br/>
+| <span class="id" title="constructor">Pair</span> : <span class="id" title="keyword">forall</span> <span class="id" title="variable">T1</span> <span class="id" title="variable">T2</span>, <span class="id" title="inductive">exp</span> <span class="id" title="variable">T1</span> -&gt; <span class="id" title="inductive">exp</span> <span class="id" title="variable">T2</span> -&gt; <span class="id" title="inductive">exp</span> (<span class="id" title="variable">T1</span> * <span class="id" title="variable">T2</span>)<br/>
+| <span class="id" title="constructor">Eq</span> : <span class="id" title="keyword">forall</span> <span class="id" title="variable">T</span>, <span class="id" title="inductive">exp</span> <span class="id" title="variable">T</span> -&gt; <span class="id" title="inductive">exp</span> <span class="id" title="variable">T</span> -&gt; <span class="id" title="inductive">exp</span> <span class="id" title="inductive">bool</span>.
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+<pre>
+Error: Large non-propositional inductive types must be in Type.
+</pre>
+
+<div class="paragraph"> </div>
+
+   この定義は 少なくとも一つの構築子が型 <span class="inlinecode"><span class="id" title="keyword">Type</span></span> を持つ型を持つ引数を取るという意味で _巨大_ です。Coq における最大限の一般性のもとでは、このような定義を認めると矛盾します。代わりに、<span class="inlinecode"><span class="id" title="inductive">exp</span></span> が <span class="inlinecode"><span class="id" title="keyword">Type</span></span> にあるように変更しなければなりません。さらに <span class="inlinecode"><span class="id" title="inductive">exp</span></span> のインデックスも <span class="inlinecode"><span class="id" title="keyword">Type</span></span> になるような例について考えます。 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Inductive</span> <span class="id" title="var">exp</span> : <span class="id" title="keyword">Type</span> -&gt; <span class="id" title="keyword">Type</span> :=<br/>
+| <span class="id" title="var">Const</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">T</span>, <span class="id" title="var">T</span> -&gt; <span class="id" title="var">exp</span> <span class="id" title="var">T</span><br/>
+| <span class="id" title="var">Pair</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">T1</span> <span class="id" title="var">T2</span>, <span class="id" title="var">exp</span> <span class="id" title="var">T1</span> -&gt; <span class="id" title="var">exp</span> <span class="id" title="var">T2</span> -&gt; <span class="id" title="var">exp</span> (<span class="id" title="var">T1</span> * <span class="id" title="var">T2</span>)<br/>
+| <span class="id" title="var">Eq</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">T</span>, <span class="id" title="var">exp</span> <span class="id" title="var">T</span> -&gt; <span class="id" title="var">exp</span> <span class="id" title="var">T</span> -&gt; <span class="id" title="var">exp</span> <span class="id" title="var">bool</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+ 以前は変数 <span class="inlinecode"><span class="id" title="variable">T</span></span> に型注釈 <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" title="keyword">Set</span></span> を含めなければなりませんでしたが、ここでは不要であることに注意してください。変数の型が分からず、その変数が型しか許されていない文脈で使われているとき、Coq はその変数が型 <span class="inlinecode"><span class="id" title="keyword">Type</span></span> を持つと推論します。これはここでは正しい振る舞いですが、<span class="inlinecode"><span class="id" title="keyword">Set</span></span> バージョンの <span class="inlinecode"><span class="id" title="inductive">exp</span></span>　では間違っていました。
+
+<div class="paragraph"> </div>
+
+   新しい定義が受理されました。 いくつかのサンプルの式を構築できます。 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Check</span> <span class="id" title="var">Const</span> 0.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="constructor">Const</span> 0<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="inductive">exp</span> <span class="id" title="inductive">nat</span>
+<div class="paragraph"> </div>
+
+</span>     
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Check</span> <span class="id" title="var">Pair</span> (<span class="id" title="var">Const</span> 0) (<span class="id" title="var">Const</span> <span class="id" title="var">tt</span>).<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="constructor">Pair</span> (<span class="id" title="constructor">Const</span> 0) (<span class="id" title="constructor">Const</span> <span class="id" title="constructor">tt</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="inductive">exp</span> (<span class="id" title="inductive">nat</span> * <span class="id" title="inductive">unit</span>)
+<div class="paragraph"> </div>
+
+</span>     
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Check</span> <span class="id" title="var">Eq</span> (<span class="id" title="var">Const</span> <span class="id" title="keyword">Set</span>) (<span class="id" title="var">Const</span> <span class="id" title="keyword">Type</span>).<br/>
+</div>
+
+<div class="doc">
+  <br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="constructor">Eq</span> (<span class="id" title="constructor">Const</span> <span class="id" title="keyword">Set</span>) (<span class="id" title="constructor">Const</span> <span class="id" title="keyword">Type</span> (<a/>* <span class="id" title="var">Top</span>.59 *<a/>) )<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="inductive">exp</span> <span class="id" title="inductive">bool</span>
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+型を伴うようなファンシーな式なども含め、多くの式をチェックできます。しかしながら、型検査の壁にぶつかるのもそう難しくはありません。
+  <br/>
+<span class="inlinecode"><span class="id" title="keyword">Check</span> <span class="id" title="constructor">Const</span> (<span class="id" title="constructor">Const</span> <span class="id" title="constructor">O</span>).
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+<pre>
+Error: Universe inconsistency (cannot enforce Top.42 &lt; Top.42).
+</pre>
+
+<div class="paragraph"> </div>
+
+  <span class="inlinecode"><span class="id" title="constructor">Const</span></span> のパラメータ <span class="inlinecode"><span class="id" title="variable">T</span></span> は、 <span class="inlinecode"><span class="id" title="inductive">exp</span></span> 型で具体化できません。その理由を知るには、注釈されたバージョンの <span class="inlinecode"><span class="id" title="inductive">exp</span></span> の帰納的定義を印字すると良いです。
+
+</div>
+<div class="code">
+
+<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode"><span class="id" title="keyword">Print</span> <span class="id" title="inductive">exp</span>.
+<div class="paragraph"> </div>
+
+</span><br/>
+<span class="inlinecode"><span class="id" title="keyword">Inductive</span> <span class="id" title="inductive">exp</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="keyword">Type</span> (<a/>* <span class="id" title="var">Top</span>.8 *<a/>) -&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">Type</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<a/>* <span class="id" title="abbreviation">max</span>(0, (<span class="id" title="var">Top</span>.11)+1, (<span class="id" title="var">Top</span>.14)+1, (<span class="id" title="var">Top</span>.15)+1, (<span class="id" title="var">Top</span>.19)+1) *<a/>) :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="constructor">Const</span> : <span class="id" title="keyword">forall</span> <span class="id" title="variable">T</span> : <span class="id" title="keyword">Type</span> (<a/>* <span class="id" title="var">Top</span>.11 *<a/>) , <span class="id" title="variable">T</span> -&gt; <span class="id" title="inductive">exp</span> <span class="id" title="variable">T</span><br/>
+&nbsp;&nbsp;| <span class="id" title="constructor">Pair</span> : <span class="id" title="keyword">forall</span> (<span class="id" title="variable">T1</span> : <span class="id" title="keyword">Type</span> (<a/>* <span class="id" title="var">Top</span>.14 *<a/>) ) (<span class="id" title="variable">T2</span> : <span class="id" title="keyword">Type</span> (<a/>* <span class="id" title="var">Top</span>.15 *<a/>) ),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="inductive">exp</span> <span class="id" title="variable">T1</span> -&gt; <span class="id" title="inductive">exp</span> <span class="id" title="variable">T2</span> -&gt; <span class="id" title="inductive">exp</span> (<span class="id" title="variable">T1</span> * <span class="id" title="variable">T2</span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="constructor">Eq</span> : <span class="id" title="keyword">forall</span> <span class="id" title="variable">T</span> : <span class="id" title="keyword">Type</span> (<a/>* <span class="id" title="var">Top</span>.19 *<a/>) , <span class="id" title="inductive">exp</span> <span class="id" title="variable">T</span> -&gt; <span class="id" title="inductive">exp</span> <span class="id" title="variable">T</span> -&gt; <span class="id" title="inductive">exp</span> <span class="id" title="inductive">bool</span>
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+<span class="inlinecode"><span class="id" title="inductive">exp</span></span> のインデックス型に宇宙レベル <span class="inlinecode"><span class="id" title="var">Top</span>.8</span> が割り当てられたことが分かります。それに加えて、構築子の型における <span class="inlinecode"><span class="id" title="keyword">Type</span></span> の4つの出現がそれぞれ宇宙変数を持っています。これらの変数それぞれは <span class="inlinecode"><span class="id" title="inductive">exp</span></span> の型に陽に現れます。特に、 どの型 <span class="inlinecode"><span class="id" title="inductive">exp</span></span> <span class="inlinecode"><span class="id" title="variable">T</span></span> も、4つの引数の最大値をひとつインクリメントした宇宙レベルにあります。このため、 <span class="inlinecode"><span class="id" title="inductive">exp</span></span> は_必ず_構築子に渡されるどの型よりも高い宇宙レベルにあります。この帰結として、宇宙の矛盾 (universe inconsistency) になります。
+
+<div class="paragraph"> </div>
+
+  不思議なことに、宇宙変数 <span class="inlinecode"><span class="id" title="var">Top</span>.8</span> は一ヶ所にしか現れていません。 <span class="inlinecode"><span class="id" title="inductive">exp</span></span> の引数としてどの型が妥当かという制限はないのでしょうか？実際のところ制限はありますが、これは「脇に置いて」保たれている宇宙制約のグローバルな集合にのみ現れ、型には陽に現れません。現時点でのこのデータベースを印字することができます。 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Print</span> <span class="id" title="keyword">Universes</span>.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode"><span class="id" title="var">Top</span>.19 &lt; <span class="id" title="var">Top</span>.9 &lt;= <span class="id" title="var">Top</span>.8<br/>
+<span class="id" title="var">Top</span>.15 &lt; <span class="id" title="var">Top</span>.9 &lt;= <span class="id" title="var">Top</span>.8 &lt;= <span class="id" title="library">Coq.Init.Datatypes</span>.38<br/>
+<span class="id" title="var">Top</span>.14 &lt; <span class="id" title="var">Top</span>.9 &lt;= <span class="id" title="var">Top</span>.8 &lt;= <span class="id" title="library">Coq.Init.Datatypes</span>.37<br/>
+<span class="id" title="var">Top</span>.11 &lt; <span class="id" title="var">Top</span>.9 &lt;= <span class="id" title="var">Top</span>.8
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+このコマンドはもっと多くの制約を出力しますが、<span class="inlinecode"><span class="id" title="var">Top</span></span> 変数に言及するものだけを集めました。ここで、 <span class="inlinecode"><span class="id" title="inductive">exp</span></span> の定義における構築子の引数に関連づけられたひとつの宇宙変数につきひとつの制約を確認できます。宇宙変数 <span class="inlinecode"><span class="id" title="var">Top</span>.19</span> は <span class="inlinecode"><span class="id" title="constructor">Eq</span></span> の型引数です。<span class="inlinecode"><span class="id" title="var">Top</span>.19</span> の制約は <span class="inlinecode"><span class="id" title="var">Top</span>.19</span> が <span class="inlinecode"><span class="id" title="inductive">exp</span></span> のインデックスの宇宙である <span class="inlinecode"><span class="id" title="var">Top</span>.8</span> より小さくなければならないことを実質的に言っています。また、中間の変数である <span class="inlinecode"><span class="id" title="var">Top</span>.9</span> は制約が生成される途中でできたもののようです。
+
+<div class="paragraph"> </div>
+
+次の制約である <span class="inlinecode"><span class="id" title="var">Top</span>.15</span> はより複雑です。これは <span class="inlinecode"><span class="id" title="constructor">Pair</span></span> 構築子への二つ目の引数の宇宙です。<span class="inlinecode"><span class="id" title="var">Top</span>.15</span> が <span class="inlinecode"><span class="id" title="var">Top</span>.8</span> より小さいだけでなく、<span class="inlinecode"><span class="id" title="var">Top</span>.8</span> も <span class="inlinecode"><span class="id" title="library">Coq.Init.Datatypes</span>.28</span> より小さくなくてはなりません。この新しい宇宙変数は何でしょう？これは <span class="inlinecode"><span class="id" title="inductive">prod</span></span> という帰納的定義に由来し、<span class="inlinecode"><span class="id" title="variable">A</span></span> <span class="inlinecode">*</span> <span class="inlinecode"><span class="id" title="variable">B</span></span> の形が展開 (desugar) されてこの型になります。
+</div>
+<div class="code">
+
+<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode"><span class="id" title="keyword">Print</span> <span class="id" title="inductive">prod</span>.
+<div class="paragraph"> </div>
+
+</span><br/>
+<span class="inlinecode"><span class="id" title="keyword">Inductive</span> <span class="id" title="inductive">prod</span> (<span class="id" title="variable">A</span> : <span class="id" title="keyword">Type</span> (<a/>* <span class="id" title="library">Coq.Init.Datatypes</span>.37 *<a/>) )<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="variable">B</span> : <span class="id" title="keyword">Type</span> (<a/>* <span class="id" title="library">Coq.Init.Datatypes</span>.38 *<a/>) )<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="keyword">Type</span> (<a/>* <span class="id" title="abbreviation">max</span>(<span class="id" title="library">Coq.Init.Datatypes</span>.37, <span class="id" title="library">Coq.Init.Datatypes</span>.38) *<a/>) :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="constructor">pair</span> : <span class="id" title="variable">A</span> -&gt; <span class="id" title="variable">B</span> -&gt; <span class="id" title="variable">A</span> * <span class="id" title="variable">B</span>
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+この制約は <span class="inlinecode"><span class="id" title="inductive">exp</span></span> が <span class="inlinecode"><span class="id" title="inductive">prod</span></span> の <span class="inlinecode"><span class="id" title="variable">B</span></span>の引数より高い宇宙のレベルにあってはならないことを強制していることが分かります。上記にあるその次の制約は対称的な条件を <span class="inlinecode"><span class="id" title="variable">A</span></span>　について確立しています。
+
+<div class="paragraph"> </div>
+
+このように、 Coq は宇宙変数の集合に関する不等式の病的な集合を舞台裏で維持していることは明らかです。いくつかの関数が引数の宇宙レベルにおいて多相的であるように見えるかもしれませんが、実際には制約系の命令的な更新が発生し、関数の全ての使用について宇宙レベルの大域的な集合との一貫性を持たせています。もし制約システムが健全に進行しない場合、宇宙の矛盾エラーが発生します。
+
+<div class="paragraph"> </div>
+
+  
+
+<div class="paragraph"> </div>
+
+  ここで注釈を加えられた <span class="inlinecode"><span class="id" title="inductive">prod</span></span> の定義から興味深いことが分かります。型 <span class="inlinecode"><span class="id" title="inductive">prod</span></span> <span class="inlinecode"><span class="id" title="variable">A</span></span> <span class="inlinecode"><span class="id" title="variable">B</span></span> は <span class="inlinecode"><span class="id" title="variable">A</span></span> と <span class="inlinecode"><span class="id" title="variable">B</span></span> の最大値であるような宇宙にあるのです。 ここまでの実験から、 <span class="inlinecode"><span class="id" title="inductive">prod</span></span> の宇宙は実際のところこの最大値よりも _１つだけ高い_ レベルである必要があるようにも思えます。 この決定的な違いは、<span class="inlinecode"><span class="id" title="inductive">prod</span></span> の定義において <span class="inlinecode"><span class="id" title="variable">A</span></span> と <span class="inlinecode"><span class="id" title="variable">B</span></span> は _仮引数_ として定義されていることです。つまり、これらはメインのコロンよりも左手で名付けられて現れており、名前を持たないまま右手に現れているわけではないということです。
+
+<div class="paragraph"> </div>
+
+  パラメータは帰納型の引数ほどには柔軟ではありません。パラメータ化された型のすべての構築子において型が動く範囲は同じパラメータを共有しなければなりません。そうではあるものの、この方法で多相型を定義できるとき、この型の族を、宇宙の矛盾を引き起こすことなく、より多くの方法で使うことができるようになます。例えば、型のペアのネストは完全に合法です。 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Check</span> (<span class="id" title="var">nat</span>, (<span class="id" title="keyword">Type</span>, <span class="id" title="keyword">Set</span>)).<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;(<span class="id" title="inductive">nat</span>, (<span class="id" title="keyword">Type</span> (<a/>* <span class="id" title="var">Top</span>.44 *<a/>) , <span class="id" title="keyword">Set</span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="keyword">Set</span> * (<span class="id" title="keyword">Type</span> (<a/>* <span class="id" title="var">Top</span>.45 *<a/>) * <span class="id" title="keyword">Type</span> (<a/>* <span class="id" title="var">Top</span>.46 *<a/>) )
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+  同じことはパラメータを用いない <span class="inlinecode"><span class="id" title="inductive">prod</span></span> に対応する型ではできません。 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Inductive</span> <span class="id" title="var">prod'</span> : <span class="id" title="keyword">Type</span> -&gt; <span class="id" title="keyword">Type</span> -&gt; <span class="id" title="keyword">Type</span> :=<br/>
+| <span class="id" title="var">pair'</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">A</span> <span class="id" title="var">B</span> : <span class="id" title="keyword">Type</span>, <span class="id" title="var">A</span> -&gt; <span class="id" title="var">B</span> -&gt; <span class="id" title="var">prod'</span> <span class="id" title="var">A</span> <span class="id" title="var">B</span>.<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode"><span class="id" title="keyword">Check</span> (<span class="id" title="constructor">pair'</span> <span class="id" title="inductive">nat</span> (<span class="id" title="constructor">pair'</span> <span class="id" title="keyword">Type</span> <span class="id" title="keyword">Set</span>)).
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+<pre>
+Error: Universe inconsistency (cannot enforce Top.51 &lt; Top.51).
+</pre>
+
+<div class="paragraph"> </div>
+
+パラメータの利点はコンストラクタの型において量化を避けられることです。そのような量化は「より低い(less-than)」という制約をもたらしますが、パラメータは「以下 (less-than-or-equal)」という制約を導入するだけです。
+
+<div class="paragraph"> </div>
+
+Coq は パラメータに関してもう一つ (使用者が混乱しがちな) 機能があります。Gallina が真の宇宙多相をサポートしない一方で、いくつかの場合には宇宙多相をまねる便宜的な手段があります。 これが何を意味するのかは、単純な例で示すことができます。 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Inductive</span> <span class="id" title="var">foo</span> (<span class="id" title="var">A</span> : <span class="id" title="keyword">Type</span>) : <span class="id" title="keyword">Type</span> :=<br/>
+| <span class="id" title="var">Foo</span> : <span class="id" title="var">A</span> -&gt; <span class="id" title="var">foo</span> <span class="id" title="var">A</span>.<br/>
+
+<br/>
+
+<br/>
+<span class="id" title="keyword">Check</span> <span class="id" title="var">foo</span> <span class="id" title="var">nat</span>.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="inductive">foo</span> <span class="id" title="inductive">nat</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="keyword">Set</span>
+<div class="paragraph"> </div>
+
+</span>     
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Check</span> <span class="id" title="var">foo</span> <span class="id" title="keyword">Set</span>.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="inductive">foo</span> <span class="id" title="keyword">Set</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="keyword">Type</span>
+<div class="paragraph"> </div>
+
+</span>     
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Check</span> <span class="id" title="var">foo</span> <span class="id" title="var">True</span>.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="inductive">foo</span> <span class="id" title="inductive">True</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="keyword">Prop</span>
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+ここでの基本的なパターンは Coq が帰納的定義の「コピー＆ペーストした」バージョンを自動的に構築しようとしていることです。この定義において <span class="inlinecode"><span class="id" title="keyword">Type</span></span> のいくつかの出現は <span class="inlinecode"><span class="id" title="keyword">Set</span></span> か <span class="inlinecode"><span class="id" title="keyword">Prop</span></span> で置き換えられています。どの文脈においても、型検査器は型の階層においてもっとも低く、かつ置き換えが妥当な型を探します。定義のクローンは手動のクローンよりもぐっと便利になり得ます。これまでにも、<span class="inlinecode"><span class="id" title="keyword">Set</span></span> や <span class="inlinecode"><span class="id" title="keyword">Type</span></span> における値を形成するために同じ組やリスト型を採用できるという事実から既に恩恵を得ています。
+
+<div class="paragraph"> </div>
+
+  模造の多相性はいくつかの文脈では混乱させがちです。このせいで、例えば、次のような奇妙な問題があります。 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Inductive</span> <span class="id" title="var">bar</span> : <span class="id" title="keyword">Type</span> := <span class="id" title="var">Bar</span> : <span class="id" title="var">bar</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Check</span> <span class="id" title="var">bar</span>.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="inductive">bar</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="keyword">Prop</span>
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+  Coq の型は期待したよりも真に多くの文脈で使われることがあるのです。 
+</div>
+<div class="code">
+
+<br/>
+</div>
+
+<div class="doc">
+<a name="lab119"></a><h2 class="section">不可解な単一化不能メッセージの謎を解く</h2>
+
+</div>
+<div class="code">
+
+<br/>
+</div>
+
+<div class="doc">
+Coq において最も混乱を招く種類のエラーメッセージのひとつは、宇宙間の相互作用や構文上の記法、そして暗黙の引数(implicit arguments)に由来します。次の無害な補題について考えてみます。これは特殊な型についての等価性の対称性に関するものです。 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <span class="id" title="tactic">symmetry</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">A</span> <span class="id" title="var">B</span> : <span class="id" title="keyword">Type</span>,<br/>
+&nbsp;&nbsp;<span class="id" title="var">A</span> = <span class="id" title="var">B</span><br/>
+&nbsp;&nbsp;-&gt; <span class="id" title="var">B</span> = <span class="id" title="var">A</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span> ? ? <span class="id" title="var">H</span>; <span class="id" title="tactic">rewrite</span> <span class="id" title="var">H</span>; <span class="id" title="tactic">reflexivity</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+次の定理について、ほとんど明白で馬鹿馬鹿しい証明を試みてみましょう。 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">illustrative_but_silly_detour</span> : <span class="id" title="var">unit</span> = <span class="id" title="var">unit</span>.<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="tactic">symmetry</span>.
+<div class="paragraph"> </div>
+
+</span><pre>
+Error: Impossible to unify "?35 = ?34" with "unit = unit".
+</pre>
+
+<div class="paragraph"> </div>
+
+Coq は実際のところ、この補題 <span class="inlinecode"><span class="id" title="tactic">symmetry</span></span> を適用できないと言っているのですが、このエラーメッセージには欠陥があるように見えます。特に、単一化がうまくいくには <span class="inlinecode"><span class="id" title="tactic">apply</span></span> において <span class="inlinecode">?35</span> と <span class="inlinecode">?34</span> を <span class="inlinecode"><span class="id" title="inductive">unit</span></span> と単一化されるべきであるように思えるでしょう。実際のところ、課題はこのエラーメッセージで示されて_いない_部分における単一化問題にあります。
+
+<div class="paragraph"> </div>
+
+このような場合に良いエラーメッセージを得るための秘訣が、次のコマンドです。 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Set Printing All</span>.<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="tactic">symmetry</span>.
+<div class="paragraph"> </div>
+
+</span><pre>
+Error: Impossible to unify "@eq Type ?46 ?45" with "@eq Set unit unit".
+</pre>
+
+<div class="paragraph"> </div>
+
+これで問題が判明しました。隠れた等価関数 <span class="inlinecode"><span class="id" title="inductive">eq</span></span> の、最初の_暗黙の_引数が、二つの項の間で異なっています。宇宙 <span class="inlinecode"><span class="id" title="keyword">Set</span></span> は <span class="inlinecode"><span class="id" title="keyword">Type</span></span> の要素であり部分型でもあるのですが、これら二つは定義において等価ではないのです。 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Abort</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+色々な修正を試せば、<span class="inlinecode"><span class="id" title="inductive">eq</span></span> の暗黙の引数として <span class="inlinecode"><span class="id" title="keyword">Type</span></span> を使えばよいことがわかるでしょう。これがそのような修正です。 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">illustrative_but_silly_detour</span> : (<span class="id" title="var">unit</span> : <span class="id" title="keyword">Type</span>) = <span class="id" title="var">unit</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="tactic">symmetry</span>; <span class="id" title="tactic">reflexivity</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+エラーメッセージには多くの問題が関連していることがあり、そのような場合は記法と暗黙の引数のいずれか片方、もしくは両方が重要な詳細を隠しています。
+<span class="inlinecode"><span class="id" title="keyword">Set</span></span> <span class="inlinecode"><span class="id" title="keyword">Printing</span></span> <span class="inlinecode"><span class="id" title="keyword">All</span></span> コマンドはそのような機能をすべてオフにして、隠された CIC の項を表示してくれます。
+
+<div class="paragraph"> </div>
+
+完全性のため、明らかに単一化可能であるように見える二つの項の単一化不能性に関する厄介なエラーメッセージのクラスについて紹介しておきます。それぞれの単一化変数はスコープを持ちます。単一化変数の具体化においては、証明の探索中、その単一化変数が導入された点におけるスコープで未だ定義されていない変数に言及してはなりません。次の実例について考えてみましょう。 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Unset Printing All</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">ex_symmetry</span> : (<span class="id" title="tactic">exists</span> <span class="id" title="var">x</span>, <span class="id" title="var">x</span> = 0) -&gt; (<span class="id" title="tactic">exists</span> <span class="id" title="var">x</span>, 0 = <span class="id" title="var">x</span>).<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">eexists</span>.<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="variable">H</span> : <span class="id" title="tactic">exists</span> <span class="id" title="variable">x</span> : <span class="id" title="inductive">nat</span>, <span class="id" title="variable">x</span> = 0<br/>
+&nbsp;&nbsp;============================<br/>
+&nbsp;&nbsp;&nbsp;0 = ?98
+<div class="paragraph"> </div>
+
+</span>   
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">H</span>.<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="variable">x</span> : <span class="id" title="inductive">nat</span><br/>
+&nbsp;&nbsp;<span class="id" title="variable">H</span> : <span class="id" title="variable">x</span> = 0<br/>
+&nbsp;&nbsp;============================<br/>
+&nbsp;&nbsp;&nbsp;0 = ?99
+<div class="paragraph"> </div>
+
+</span>   
+</div>
+<div class="code">
+
+<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="tactic">symmetry</span>; <span class="id" title="tactic">exact</span> <span class="id" title="variable">H</span>.
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+<pre>
+Error: In environment
+x : nat
+H : x = 0
+The term "H" has type "x = 0" while it is expected to have type 
+"?99 = 0".
+</pre>
+
+<div class="paragraph"> </div>
+
+  ここでの問題は、 <span class="inlinecode">?99</span> を <span class="inlinecode"><span class="id" title="tactic">eexists</span></span> で導入した_後_で変数 <span class="inlinecode"><span class="id" title="variable">x</span></span> が <span class="inlinecode"><span class="id" title="tactic">destruct</span></span> で導入されており、 <span class="inlinecode">?99</span> の具体化においては <span class="inlinecode"><span class="id" title="variable">x</span></span> に言及できないことです。 証明の順序を入れ替えることでこの問題を解決できます。 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Restart</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> 1 <span class="id" title="keyword">as</span> [<span class="id" title="var">x</span>]; <span class="id" title="tactic">apply</span> <span class="id" title="var">ex_intro</span> <span class="id" title="keyword">with</span> <span class="id" title="var">x</span>; <span class="id" title="tactic">symmetry</span>; <span class="id" title="tactic">assumption</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+単一化変数に関するこの制限は直感に反するように見えるかもしれませんが、これは CIC に単一化変数の概念がないことに由来しています。単一化変数を導入する地点において最終的な証明項を構築して、最終的に見つかった具体化によって置き換えて証明を終えるようにします。スコープに存在しない変数をそこから参照するのは単に間違っています。 そのような制約がないと、 <span class="inlinecode"><span class="id" title="tactic">exists</span></span> <span class="inlinecode"><span class="id" title="variable">n</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" title="inductive">nat</span>,</span> <span class="inlinecode"><span class="id" title="keyword">forall</span></span> <span class="inlinecode"><span class="id" title="variable">m</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" title="inductive">nat</span>,</span> <span class="inlinecode"><span class="id" title="variable">n</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="variable">m</span></span> のような非定理を <span class="inlinecode"><span class="id" title="tactic">econstructor</span>;</span> <span class="inlinecode"><span class="id" title="tactic">intro</span>;</span> <span class="inlinecode"><span class="id" title="tactic">reflexivity</span></span> によって「証明」できてしまうことでしょう。
+</div>
+<div class="code">
+
+<br/>
+</div>
+
+<div class="doc">
+<a name="lab120"></a><h1 class="section"><span class="inlinecode"><span class="id" title="keyword">Prop</span></span> 宇宙</h1>
+
+</div>
+<div class="code">
+
+<br/>
+</div>
+
+<div class="doc">
+4章で, 「プログラム」と「証明」という並列な二つのバージョンの便利なデータ型を説明しました。プログラムは <span class="inlinecode"><span class="id" title="keyword">Set</span></span> にあり、証明は <span class="inlinecode"><span class="id" title="keyword">Prop</span></span> にあるというのが慣例でした。この区別をすることがなぜ便利なのかについては説明しませんでした。証明からのプログラムの分離について説明するのは確かに価値があります。実際、この二種類のオブジェクトを構築するには異なる関心事が適用されます。しかしながら、これらの関心事は Coq の二つの宇宙の形式的な違いの動機となるもののです。
+
+<div class="paragraph"> </div>
+
+   型 <span class="inlinecode"><span class="id" title="inductive">sig</span></span> と <span class="inlinecode"><span class="id" title="inductive">ex</span></span> の違いについて思い出してみましょう。これらは存在量化のプログラムバージョンと証明バージョンです。定義の違いは <span class="inlinecode"><span class="id" title="inductive">sig</span></span> が <span class="inlinecode"><span class="id" title="keyword">Type</span></span> を用い、 <span class="inlinecode"><span class="id" title="inductive">ex</span></span> が <span class="inlinecode"><span class="id" title="keyword">Prop</span></span> を用いているという点のみです。 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Print</span> <span class="id" title="var">sig</span>.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="keyword">Inductive</span> <span class="id" title="inductive">sig</span> (<span class="id" title="variable">A</span> : <span class="id" title="keyword">Type</span>) (<span class="id" title="variable">P</span> : <span class="id" title="variable">A</span> -&gt; <span class="id" title="keyword">Prop</span>) : <span class="id" title="keyword">Type</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="constructor">exist</span> : <span class="id" title="keyword">forall</span> <span class="id" title="variable">x</span> : <span class="id" title="variable">A</span>, <span class="id" title="variable">P</span> <span class="id" title="variable">x</span> -&gt; <span class="id" title="inductive">sig</span> <span class="id" title="variable">P</span>
+<div class="paragraph"> </div>
+
+</span>    
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Print</span> <span class="id" title="var">ex</span>.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="keyword">Inductive</span> <span class="id" title="inductive">ex</span> (<span class="id" title="variable">A</span> : <span class="id" title="keyword">Type</span>) (<span class="id" title="variable">P</span> : <span class="id" title="variable">A</span> -&gt; <span class="id" title="keyword">Prop</span>) : <span class="id" title="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="constructor">ex_intro</span> : <span class="id" title="keyword">forall</span> <span class="id" title="variable">x</span> : <span class="id" title="variable">A</span>, <span class="id" title="variable">P</span> <span class="id" title="variable">x</span> -&gt; <span class="id" title="inductive">ex</span> <span class="id" title="variable">P</span>
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+  このようなデータ構造の最初の成分を抽出する機能が欲しいと思うのは自然なことです。それは <span class="inlinecode"><span class="id" title="inductive">sig</span></span> については非常に簡単です。 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">projS</span> <span class="id" title="var">A</span> (<span class="id" title="var">P</span> : <span class="id" title="var">A</span> -&gt; <span class="id" title="keyword">Prop</span>) (<span class="id" title="var">x</span> : <span class="id" title="var">sig</span> <span class="id" title="var">P</span>) : <span class="id" title="var">A</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">x</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">exist</span> <span class="id" title="var">v</span> <span class="id" title="var">_</span> =&gt; <span class="id" title="var">v</span><br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+<span class="inlinecode"><span class="id" title="inductive">ex</span></span> についてこれを行うように変更したバージョンでは困ったことになります。
+   <br/>
+<span class="inlinecode"><span class="id" title="keyword">Definition</span> <span class="id" title="definition">projE</span> <span class="id" title="variable">A</span> (<span class="id" title="variable">P</span> : <span class="id" title="variable">A</span> -&gt; <span class="id" title="keyword">Prop</span>) (<span class="id" title="variable">x</span> : <span class="id" title="inductive">ex</span> <span class="id" title="variable">P</span>) : <span class="id" title="variable">A</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="variable">x</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="constructor">ex_intro</span> <span class="id" title="variable">v</span> <span class="id" title="var">_</span> =&gt; <span class="id" title="variable">v</span><br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>.
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+<pre>
+Error:
+Incorrect elimination of "x" in the inductive type "ex":
+the return type has sort "Type" while it should be "Prop".
+Elimination of an inductive object of sort Prop
+is not allowed on a predicate in sort Type
+because proofs can be eliminated only to build proofs.
+</pre>
+
+<div class="paragraph"> </div>
+
+  Coq の形式的な専門用語において、 「除去 (elimination)」は「パターンマッチング」を意味します。Gallinaの型付け規則は、 <span class="inlinecode"><span class="id" title="keyword">match</span></span> の結果の型が <span class="inlinecode"><span class="id" title="keyword">Prop</span></span> 以外を持つとき、 <span class="inlinecode"><span class="id" title="keyword">Prop</span></span> に属する型をもつ場合分けのパターンマッチングを禁じています。これはある種の「情報流」ポリシーであり、証明であるとマークされていない部分の開発に証明の詳細が影響を及ぼさないように型システムが保証しています。
+
+<div class="paragraph"> </div>
+
+  この制限は非形式的な実践に対応しています。プログラムと証明は明確に分離されており、構成的論理の外側では、証明による計算はill-formedです。この区別は Coq において実際的な重要性を持ちます。抽出に関する振る舞いに影響するのです。
+
+<div class="paragraph"> </div>
+
+  抽出は Coq で開発したものを OCaml のような一般目的のプログラミング言語に変換する Coq の機能であることを思い出してください。抽出は証明を_消去_しますがプログラムはそのままです。<span class="inlinecode"><span class="id" title="inductive">sig</span></span> と <span class="inlinecode"><span class="id" title="inductive">ex</span></span> を用いた例がこの違いをよく実演しています。 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">sym_sig</span> (<span class="id" title="var">x</span> : <span class="id" title="var">sig</span> (<span class="id" title="keyword">fun</span> <span class="id" title="var">n</span> =&gt; <span class="id" title="var">n</span> = 0)) : <span class="id" title="var">sig</span> (<span class="id" title="keyword">fun</span> <span class="id" title="var">n</span> =&gt; 0 = <span class="id" title="var">n</span>) :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">x</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">exist</span> <span class="id" title="var">n</span> <span class="id" title="var">pf</span> =&gt; <span class="id" title="var">exist</span> <span class="id" title="var">_</span> <span class="id" title="var">n</span> (<span class="id" title="var">sym_eq</span> <span class="id" title="var">pf</span>)<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Extraction</span> <span class="id" title="var">sym_sig</span>.<br/>
+</div>
+
+<div class="doc">
+<pre>
+(** val sym_sig : nat -&gt; nat *</pre>
+
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">let</span> <span class="id" title="var">sym_sig</span> <span class="id" title="var">x</span> = <span class="id" title="var">x</span><br/>
+&gt;&gt;<br/>
+<br/>
+抽出は証明を消去するので、 [<span class="id" title="var">sig</span>] の二番目の成分は省略され、 [<span class="id" title="var">sig</span>] は単純な恒等的な型の族になります。このため [<span class="id" title="var">sym_sig</span>] 操作は恒等関数です。 *)<br/>
+<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">sym_ex</span> (<span class="id" title="var">x</span> : <span class="id" title="var">ex</span> (<span class="id" title="keyword">fun</span> <span class="id" title="var">n</span> =&gt; <span class="id" title="var">n</span> = 0)) : <span class="id" title="var">ex</span> (<span class="id" title="keyword">fun</span> <span class="id" title="var">n</span> =&gt; 0 = <span class="id" title="var">n</span>) :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">x</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">ex_intro</span> <span class="id" title="var">n</span> <span class="id" title="var">pf</span> =&gt; <span class="id" title="var">ex_intro</span> <span class="id" title="var">_</span> <span class="id" title="var">n</span> (<span class="id" title="var">sym_eq</span> <span class="id" title="var">pf</span>)<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Extraction</span> <span class="id" title="var">sym_ex</span>.<br/>
+</div>
+
+<div class="doc">
+<pre>
+(** val sym_ex : __ *</pre>
+
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">let</span> <span class="id" title="var">sym_ex</span> = <span class="id" title="var">__</span><br/>
+&gt;&gt;<br/>
+<br/>
+この例では、[<span class="id" title="var">ex</span>] 型は [<span class="id" title="keyword">Prop</span>] にあるため、[<span class="id" title="var">ex</span>] パッケージ全体が消去されます。<span class="id" title="var">Coq</span> は全ての命題を (<span class="id" title="var">Coq</span>特有の) 型 &lt;&lt;<span class="id" title="var">__</span>&gt;&gt; として抽出します。その構築子は &lt;&lt;<span class="id" title="var">__</span>&gt;&gt; です。証明が [<span class="id" title="var">__</span>] に置き換えられるだけでなく、関数の証明引数も、ここで見たように、完全に削除されます。<br/>
+<br/>
+抽出は証明を含むプログラムの最適化として非常に便利です。<span class="id" title="var">Haskell</span> のような言語では、特殊な定義を型検査器に受理させる方法として、先進的な機能で証明付きのプログラムを書くことができます。残念ながら、証明が <span class="id" title="var">GADT</span>%~\<span class="id" title="var">cite</span>{<span class="id" title="var">GADT</span>}% の値としてエンコードすると、これらの証明は実行時にも存在しリソースを消費します。対照的に、<span class="id" title="var">Coq</span>を使えば、すべての証明が [<span class="id" title="keyword">Prop</span>] に保持されている限り、抽出がそれらを消去することが保証されています。<br/>
+<br/>
+%\<span class="id" title="var">index</span>{カリー・ハワード同型対応}%カリー・ハワード同型対応の多くのファンは<span class="id" title="var">_</span>証明からプログラムを抽出する<span class="id" title="var">_</span>というアイデアを支持しています。現実には、ほとんどの<span class="id" title="var">Coq</span>ユーザーと関連ツールはそのようなことをしていません。そうではなく、抽出は表現力の高い型付けの実行時コストを削減する最適化のひとつ見なすほうが良いです。<br/>
+<br/>
+%\<span class="id" title="var">medskip</span>%<br/>
+<br/>
+ここまで証明とプログラムの違いを二つ見てきました。つまり、証明は除去の制限が課されており、抽出によって省略されます。残りの違いは、[<span class="id" title="keyword">Prop</span>] が%\<span class="id" title="var">index</span>{非可述性}% <span class="id" title="var">_</span>非可述的<span class="id" title="var">_</span>であることで、この例が示しています。 *)<br/>
+<br/>
+<span class="id" title="keyword">Check</span> <span class="id" title="keyword">forall</span> <span class="id" title="var">P</span> <span class="id" title="var">Q</span> : <span class="id" title="keyword">Prop</span>, <span class="id" title="var">P</span> \/ <span class="id" title="var">Q</span> -&gt; <span class="id" title="var">Q</span> \/ <span class="id" title="var">P</span>.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="keyword">forall</span> <span class="id" title="variable">P</span> <span class="id" title="variable">Q</span> : <span class="id" title="keyword">Prop</span>, <span class="id" title="variable">P</span> \/ <span class="id" title="variable">Q</span> -&gt; <span class="id" title="variable">Q</span> \/ <span class="id" title="variable">P</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="keyword">Prop</span>
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+  他の <span class="inlinecode"><span class="id" title="keyword">Prop</span></span> の上で量化された <span class="inlinecode"><span class="id" title="keyword">Prop</span></span> を定義できることが分かります。これは有難いことです、なぜなら命題的トートロジーを述べるような基本的な用途でさえそのような能力が必要になってくるからです。この章の次の節で、無制限な非可述性が好ましくない理由を見ていくことになるでしょう。そのような落とし穴を避けるため、<span class="inlinecode"><span class="id" title="keyword">Prop</span></span> の非可述性は除去の制限との間に重要な相互作用があります。
+
+<div class="paragraph"> </div>
+
+  また非可述性により、以前の <span class="inlinecode"><span class="id" title="inductive">exp</span></span> 型について、先に見た弱点の影響を受けない別バージョンを実装できます。 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Inductive</span> <span class="id" title="var">expP</span> : <span class="id" title="keyword">Type</span> -&gt; <span class="id" title="keyword">Prop</span> :=<br/>
+| <span class="id" title="var">ConstP</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">T</span>, <span class="id" title="var">T</span> -&gt; <span class="id" title="var">expP</span> <span class="id" title="var">T</span><br/>
+| <span class="id" title="var">PairP</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">T1</span> <span class="id" title="var">T2</span>, <span class="id" title="var">expP</span> <span class="id" title="var">T1</span> -&gt; <span class="id" title="var">expP</span> <span class="id" title="var">T2</span> -&gt; <span class="id" title="var">expP</span> (<span class="id" title="var">T1</span> * <span class="id" title="var">T2</span>)<br/>
+| <span class="id" title="var">EqP</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">T</span>, <span class="id" title="var">expP</span> <span class="id" title="var">T</span> -&gt; <span class="id" title="var">expP</span> <span class="id" title="var">T</span> -&gt; <span class="id" title="var">expP</span> <span class="id" title="var">bool</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Check</span> <span class="id" title="var">ConstP</span> 0.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="constructor">ConstP</span> 0<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="inductive">expP</span> <span class="id" title="inductive">nat</span>
+<div class="paragraph"> </div>
+
+</span>     
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Check</span> <span class="id" title="var">PairP</span> (<span class="id" title="var">ConstP</span> 0) (<span class="id" title="var">ConstP</span> <span class="id" title="var">tt</span>).<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="constructor">PairP</span> (<span class="id" title="constructor">ConstP</span> 0) (<span class="id" title="constructor">ConstP</span> <span class="id" title="constructor">tt</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="inductive">expP</span> (<span class="id" title="inductive">nat</span> * <span class="id" title="inductive">unit</span>)
+<div class="paragraph"> </div>
+
+</span>     
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Check</span> <span class="id" title="var">EqP</span> (<span class="id" title="var">ConstP</span> <span class="id" title="keyword">Set</span>) (<span class="id" title="var">ConstP</span> <span class="id" title="keyword">Type</span>).<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="constructor">EqP</span> (<span class="id" title="constructor">ConstP</span> <span class="id" title="keyword">Set</span>) (<span class="id" title="constructor">ConstP</span> <span class="id" title="keyword">Type</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="inductive">expP</span> <span class="id" title="inductive">bool</span>
+<div class="paragraph"> </div>
+
+</span>     
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Check</span> <span class="id" title="var">ConstP</span> (<span class="id" title="var">ConstP</span> <span class="id" title="var">O</span>).<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="constructor">ConstP</span> (<span class="id" title="constructor">ConstP</span> 0)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="inductive">expP</span> (<span class="id" title="inductive">expP</span> <span class="id" title="inductive">nat</span>)
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+  この場合、我々の勝利は非常に薄っぺらいものです。我々は <span class="inlinecode"><span class="id" title="inductive">expP</span></span> を証明の一族であるとマークしたため、その式は普通のプログラミング的な方法ではdeconstructできず、通常の用途にはほとんど使い物にならないのです。非可述的な量化はまさしく判定(judgments)のような帰納的な命題の族を定義するときに非常に便利です。例えば、このコードは基本の等価性 <span class="inlinecode">=</span> よりも真に許容的であるような等価性の概念を定義します。 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Inductive</span> <span class="id" title="var">eqPlus</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">T</span>, <span class="id" title="var">T</span> -&gt; <span class="id" title="var">T</span> -&gt; <span class="id" title="keyword">Prop</span> :=<br/>
+| <span class="id" title="var">Base</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">T</span> (<span class="id" title="var">x</span> : <span class="id" title="var">T</span>), <span class="id" title="var">eqPlus</span> <span class="id" title="var">x</span> <span class="id" title="var">x</span><br/>
+| <span class="id" title="var">Func</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">dom</span> <span class="id" title="var">ran</span> (<span class="id" title="var">f1</span> <span class="id" title="var">f2</span> : <span class="id" title="var">dom</span> -&gt; <span class="id" title="var">ran</span>),<br/>
+&nbsp;&nbsp;(<span class="id" title="keyword">forall</span> <span class="id" title="var">x</span> : <span class="id" title="var">dom</span>, <span class="id" title="var">eqPlus</span> (<span class="id" title="var">f1</span> <span class="id" title="var">x</span>) (<span class="id" title="var">f2</span> <span class="id" title="var">x</span>))<br/>
+&nbsp;&nbsp;-&gt; <span class="id" title="var">eqPlus</span> <span class="id" title="var">f1</span> <span class="id" title="var">f2</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Check</span> (<span class="id" title="var">Base</span> 0).<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="constructor">Base</span> 0<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="inductive">eqPlus</span> 0 0
+<div class="paragraph"> </div>
+
+</span>     
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Check</span> (<span class="id" title="var">Func</span> (<span class="id" title="keyword">fun</span> <span class="id" title="var">n</span> =&gt; <span class="id" title="var">n</span>) (<span class="id" title="keyword">fun</span> <span class="id" title="var">n</span> =&gt; 0 + <span class="id" title="var">n</span>) (<span class="id" title="keyword">fun</span> <span class="id" title="var">n</span> =&gt; <span class="id" title="var">Base</span> <span class="id" title="var">n</span>)).<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="constructor">Func</span> (<span class="id" title="keyword">fun</span> <span class="id" title="variable">n</span> : <span class="id" title="inductive">nat</span> =&gt; <span class="id" title="variable">n</span>) (<span class="id" title="keyword">fun</span> <span class="id" title="variable">n</span> : <span class="id" title="inductive">nat</span> =&gt; 0 + <span class="id" title="variable">n</span>) (<span class="id" title="keyword">fun</span> <span class="id" title="variable">n</span> : <span class="id" title="inductive">nat</span> =&gt; <span class="id" title="constructor">Base</span> <span class="id" title="variable">n</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="inductive">eqPlus</span> (<span class="id" title="keyword">fun</span> <span class="id" title="variable">n</span> : <span class="id" title="inductive">nat</span> =&gt; <span class="id" title="variable">n</span>) (<span class="id" title="keyword">fun</span> <span class="id" title="variable">n</span> : <span class="id" title="inductive">nat</span> =&gt; 0 + <span class="id" title="variable">n</span>)
+<div class="paragraph"> </div>
+
+</span>     
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Check</span> (<span class="id" title="var">Base</span> (<span class="id" title="var">Base</span> 1)).<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="constructor">Base</span> (<span class="id" title="constructor">Base</span> 1)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="inductive">eqPlus</span> (<span class="id" title="constructor">Base</span> 1) (<span class="id" title="constructor">Base</span> 1)
+<div class="paragraph"> </div>
+
+</span>     
+</div>
+<div class="code">
+
+<br/>
+</div>
+
+<div class="doc">
+証明に関する等価性の事実を述べるのは装飾的に見えるかもしれませんが、その利便性は既に等価性の証明に関する論証の章で見てきました。
+</div>
+<div class="code">
+
+<br/>
+</div>
+
+<div class="doc">
+<a name="lab121"></a><h1 class="section">公理</h1>
+
+</div>
+<div class="code">
+
+<br/>
+</div>
+
+<div class="doc">
+特定の論理体系である Gallina が Coq の実装にハードコードされている一方で、制御された方法である種の論理規則を追加することも可能です。言い換えると、Coq は真により多くの定理を証明可能な、数多くの異なる Gallina の詳細化について論証するのに使えます。 これは証明を持たない 公理_ を用いて達成します。
+
+<div class="paragraph"> </div>
+
+   Coq のオンライン FAQ に並べられている、いくつかの標準的な公理をひととおり見物してこのアイデアの動機付けをします。しかるべきところには追加の解説を加えておきます。 
+</div>
+<div class="code">
+
+<br/>
+</div>
+
+<div class="doc">
+<a name="lab122"></a><h2 class="section">基本</h2>
+
+</div>
+<div class="code">
+
+<br/>
+</div>
+
+<div class="doc">
+有用な公理の単純な例の一つは排中律です。 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <span class="id" title="var">Classical_Prop</span>.<br/>
+<span class="id" title="keyword">Print</span> <span class="id" title="var">classic</span>.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;*** [ <span class="id" title="axiom">classic</span> : <span class="id" title="keyword">forall</span> <span class="id" title="variable">P</span> : <span class="id" title="keyword">Prop</span>, <span class="id" title="variable">P</span> \/ ~ <span class="id" title="variable">P</span> ]
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+  <span class="inlinecode"><span class="id" title="library">Classical_Prop</span></span> モジュールの実装において、この公理はコマンドで定義されています。
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Axiom</span> <span class="id" title="var">classic</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">P</span> : <span class="id" title="keyword">Prop</span>, <span class="id" title="var">P</span> \/ ~ <span class="id" title="var">P</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+<span class="inlinecode"><span class="id" title="keyword">Axiom</span></span> はどのような型でも、どのような宇宙にも宣言できます。<span class="inlinecode"><span class="id" title="keyword">Axiom</span></span> と同義の <span class="inlinecode"><span class="id" title="keyword">Parameter</span></span> があり、これを使えば型 <span class="inlinecode"><span class="id" title="keyword">Prop</span></span> でない表明をする時にしばしばより明確にできます。例えば、ある性質を持つオブジェクトの存在を表明できます。
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Parameter</span> <span class="id" title="var">num</span> : <span class="id" title="var">nat</span>.<br/>
+<span class="id" title="keyword">Axiom</span> <span class="id" title="var">positive</span> : <span class="id" title="var">num</span> &gt; 0.<br/>
+<span class="id" title="keyword">Reset</span> <span class="id" title="var">num</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+この種の「公理的な説明」は高階論理の世界の外では非常によくあることです。しかしながら、Coq では、ほとんど常にオブジェクト、関数、述語を帰納的定義や関数プログラミングで定義することに固執したほうが良いです。
+
+<div class="paragraph"> </div>
+
+   一般に、公理はどのような使い方においても非常な苦痛を伴います。互いに _矛盾する_公理の集合を表明するのは簡単です。つまり、公理の集合が <span class="inlinecode"><span class="id" title="inductive">False</span></span> を含意し、どのような定理も証明でき、定理証明支援器の目的を否定してしまいます。例えば、それ自体では無矛盾ですが <span class="inlinecode"><span class="id" title="axiom">classic</span></span> と組み合わせると矛盾する、次のような公理を表明できます。
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Axiom</span> <span class="id" title="var">not_classic</span> : ~ <span class="id" title="keyword">forall</span> <span class="id" title="var">P</span> : <span class="id" title="keyword">Prop</span>, <span class="id" title="var">P</span> \/ ~ <span class="id" title="var">P</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">uhoh</span> : <span class="id" title="var">False</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">generalize</span> <span class="id" title="var">classic</span> <span class="id" title="var">not_classic</span>; <span class="id" title="tactic">tauto</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">uhoh_again</span> : 1 + 1 = 3.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">uhoh</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Reset</span> <span class="id" title="var">not_classic</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+排中律それ自体については、大抵の場合はその公理に全く害はなく、Coq を用いた実践的な開発の多くはこれを仮定しています。これは CIC と矛盾しないことがメタ理論的に証明されています。ここで、「メタ理論的に証明された」とは、集合論における CIC の_モデル_において排中律が成り立つことを誰かが紙の上で証明したことを意味します。この節で調べる他の全ての公理は同じモデルで成り立つため、すべては同時に無矛盾です。
+
+<div class="paragraph"> </div>
+
+   Coq は、排中律が証明できない構成的論理_をデフォルトで実装していることを思い出してください。 構成的論理の証明はプログラムであると見なせます。<span class="inlinecode"><span class="id" title="keyword">forall</span></span> 量化子は依存関数型を示し、選言はヴァリアント型を示します。そのような状況において、排中律は任意の命題のための決定手続きと解釈し得るのですが、計算可能性理論によればそのような手続きは存在しません。このため、構成的論理と排中律はいつものプログラミングの概念と関連付けることは出来なくなります。
+
+<div class="paragraph"> </div>
+
+   それでは、なぜ排中律を公理として表明してよいのでしょうか？直観的な説明は、<span class="inlinecode"><span class="id" title="keyword">Prop</span></span> の除去に関する制限のため、証明をプログラムとして扱えなくしていることです。<span class="inlinecode"><span class="id" title="keyword">Prop</span></span> でなく <span class="inlinecode"><span class="id" title="keyword">Set</span></span> の上で量化された排中律の公理は問題がある_でしょう_。ある開発においてその公理が用いられたら、真に普遍的な決定手続きを実装せずOCamlにコードを (健全に) 抽出することはできないかもしれません。対照的に、<span class="inlinecode"><span class="id" title="keyword">Prop</span></span> に属する型の値は抽出により消去されるため、この公理のアルゴリズム論的な結論は回避されるのです。
+
+<div class="paragraph"> </div>
+
+   公理の適切な使用はとても危ういため、ある定理がどの公理に依存しているか知るための有用なコマンドがあります。 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">t1</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">P</span> : <span class="id" title="keyword">Prop</span>, <span class="id" title="var">P</span> -&gt; ~ ~ <span class="id" title="var">P</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">tauto</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Print</span> <span class="id" title="keyword">Assumptions</span> <span class="id" title="var">t1</span>.<br/>
+</div>
+
+<div class="doc">
+<pre>
+  Closed under the global context
+</pre>
+
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">t2</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">P</span> : <span class="id" title="keyword">Prop</span>, ~ ~ <span class="id" title="var">P</span> -&gt; <span class="id" title="var">P</span>.<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="tactic">tauto</span>.
+<div class="paragraph"> </div>
+
+</span><pre>
+Error: tauto failed.
+</pre>
+
+</div>
+<div class="code">
+&nbsp;&nbsp;<span class="id" title="tactic">intro</span> <span class="id" title="var">P</span>; <span class="id" title="tactic">destruct</span> (<span class="id" title="var">classic</span> <span class="id" title="var">P</span>); <span class="id" title="tactic">tauto</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Print</span> <span class="id" title="keyword">Assumptions</span> <span class="id" title="var">t2</span>.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="keyword">Axioms</span>:<br/>
+&nbsp;&nbsp;<span class="id" title="axiom">classic</span> : <span class="id" title="keyword">forall</span> <span class="id" title="variable">P</span> : <span class="id" title="keyword">Prop</span>, <span class="id" title="variable">P</span> \/ ~ <span class="id" title="variable">P</span>
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+  決定可能な種類の命題については、排中律_が_証明可能であり、そのようなケースにおいてはこの依存関係を避けることができます。 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">nat_eq_dec</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">n</span> <span class="id" title="var">m</span> : <span class="id" title="var">nat</span>, <span class="id" title="var">n</span> = <span class="id" title="var">m</span> \/ <span class="id" title="var">n</span> &lt;&gt; <span class="id" title="var">m</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">induction</span> <span class="id" title="var">n</span>; <span class="id" title="tactic">destruct</span> <span class="id" title="var">m</span>; <span class="id" title="tactic">intuition</span>; <span class="id" title="tactic">generalize</span> (<span class="id" title="var">IHn</span> <span class="id" title="var">m</span>); <span class="id" title="tactic">intuition</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">t2'</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">n</span> <span class="id" title="var">m</span> : <span class="id" title="var">nat</span>, ~ ~ (<span class="id" title="var">n</span> = <span class="id" title="var">m</span>) -&gt; <span class="id" title="var">n</span> = <span class="id" title="var">m</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">n</span> <span class="id" title="var">m</span>; <span class="id" title="tactic">destruct</span> (<span class="id" title="var">nat_eq_dec</span> <span class="id" title="var">n</span> <span class="id" title="var">m</span>); <span class="id" title="tactic">tauto</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Print</span> <span class="id" title="keyword">Assumptions</span> <span class="id" title="var">t2'</span>.<br/>
+</div>
+
+<div class="doc">
+<pre>
+Closed under the global context
+</pre>
+
+<div class="paragraph"> </div>
+
+  
+
+<div class="paragraph"> </div>
+
+  主流の数学的な実践では排中律を前提としているため、Coq における開発でそれを支えるようにしておくのは便利ですが、ある定理が古典論理よりも単純な形式システムで証明できると知っておくのも良いことです。同様の話は、主流の数学では関わってくることさえない証明上の問題を単純化します。 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <span class="id" title="var">ProofIrrelevance</span>.<br/>
+<span class="id" title="keyword">Print</span> <span class="id" title="var">proof_irrelevance</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;*** [ <span class="id" title="axiom">proof_irrelevance</span> : <span class="id" title="keyword">forall</span> (<span class="id" title="variable">P</span> : <span class="id" title="keyword">Prop</span>) (<span class="id" title="variable">p1</span> <span class="id" title="variable">p2</span> : <span class="id" title="variable">P</span>), <span class="id" title="variable">p1</span> = <span class="id" title="variable">p2</span> ]
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+  この公理は同じ命題に関するどんな2つの証明も等価であると表明します。6章で見た以下の例の関数を思い出して下さい。
+</div>
+<div class="code">
+
+<br/>
+
+<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">pred_strong1</span> (<span class="id" title="var">n</span> : <span class="id" title="var">nat</span>) : <span class="id" title="var">n</span> &gt; 0 -&gt; <span class="id" title="var">nat</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">n</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">O</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="var">pf</span> : 0 &gt; 0 =&gt; <span class="id" title="keyword">match</span> <span class="id" title="var">zgtz</span> <span class="id" title="var">pf</span> <span class="id" title="keyword">with</span> <span class="id" title="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">S</span> <span class="id" title="var">n'</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="var">_</span> =&gt; <span class="id" title="var">n'</span><br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+<span class="inlinecode"><span class="id" title="variable">n</span></span> <span class="inlinecode">&gt;</span> <span class="inlinecode">0</span> の異なる証明が、このリッチに型付けされた前者関数において異なる結果にならないことを証明したいかもしれません。 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">pred_strong1_irrel</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">n</span> (<span class="id" title="var">pf1</span> <span class="id" title="var">pf2</span> : <span class="id" title="var">n</span> &gt; 0), <span class="id" title="var">pred_strong1</span> <span class="id" title="var">pf1</span> = <span class="id" title="var">pred_strong1</span> <span class="id" title="var">pf2</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">n</span>; <span class="id" title="var">crush</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+証明スクリプトはシンプルですが、<span class="inlinecode"><span class="id" title="definition">pred_strong1</span></span> の定義を覗き込むことになります。より複雑な関数定義に対しては、証明引数の詳細について場合分けしないことを証明するのはかなりの大仕事になり得ます。これは残念なことです。なぜなら <span class="inlinecode"><span class="id" title="keyword">Prop</span></span> 除去の制限により、そのようなことをする関数を書くことはもはや不可能になっているからです。残念ながら、<span class="inlinecode"><span class="id" title="axiom">proof_irrelevance</span></span> のような公理を表明しないかぎり、この事実はメタ理論上でのみ真です。この公理により、<span class="inlinecode"><span class="id" title="definition">pred_strong1</span></span> の定義を参照することなく上の定理を証明できます。 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">pred_strong1_irrel'</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">n</span> (<span class="id" title="var">pf1</span> <span class="id" title="var">pf2</span> : <span class="id" title="var">n</span> &gt; 0), <span class="id" title="var">pred_strong1</span> <span class="id" title="var">pf1</span> = <span class="id" title="var">pred_strong1</span> <span class="id" title="var">pf2</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span>; <span class="id" title="tactic">f_equal</span>; <span class="id" title="tactic">apply</span> <span class="id" title="var">proof_irrelevance</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+
+
+<div class="paragraph"> </div>
+
+   等価性の章で、既に proof irrelevance に関連するいくつかの公理について議論しました。特に、Coq の標準ライブラリはこの公理を含んでいます。 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <span class="id" title="var">Eqdep</span>.<br/>
+<span class="id" title="keyword">Import</span> <span class="id" title="var">Eq_rect_eq</span>.<br/>
+<span class="id" title="keyword">Print</span> <span class="id" title="var">eq_rect_eq</span>.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;*** [ <span class="id" title="axiom">eq_rect_eq</span> : <br/>
+&nbsp;&nbsp;<span class="id" title="keyword">forall</span> (<span class="id" title="variable">U</span> : <span class="id" title="keyword">Type</span>) (<span class="id" title="variable">p</span> : <span class="id" title="variable">U</span>) (<span class="id" title="variable">Q</span> : <span class="id" title="variable">U</span> -&gt; <span class="id" title="keyword">Type</span>) (<span class="id" title="variable">x</span> : <span class="id" title="variable">Q</span> <span class="id" title="variable">p</span>) (<span class="id" title="variable">h</span> : <span class="id" title="variable">p</span> = <span class="id" title="variable">p</span>),<br/>
+&nbsp;&nbsp;<span class="id" title="variable">x</span> = <span class="id" title="definition">eq_rect</span> <span class="id" title="variable">p</span> <span class="id" title="variable">Q</span> <span class="id" title="variable">x</span> <span class="id" title="variable">p</span> <span class="id" title="variable">h</span> ]
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+  この公理は、<span class="inlinecode"><span class="id" title="variable">e</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="variable">e</span></span> のような等価性の証明の上でのパターンマッチを単純化することは許容できると述べています。この公理はより単純な系と論理的に等価です。定理の名前において、「UIP」は「恒等性の証明の単一性 (unicity of identity proofs)」を表しており、ここで「恒等性」は「等価性」と同義です。 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Corollary</span> <span class="id" title="var">UIP_refl</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">A</span> (<span class="id" title="var">x</span> : <span class="id" title="var">A</span>) (<span class="id" title="var">pf</span> : <span class="id" title="var">x</span> = <span class="id" title="var">x</span>), <span class="id" title="var">pf</span> = <span class="id" title="var">eq_refl</span> <span class="id" title="var">x</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span>; <span class="id" title="tactic">replace</span> <span class="id" title="var">pf</span> <span class="id" title="keyword">with</span> (<span class="id" title="var">eq_rect</span> <span class="id" title="var">x</span> (<span class="id" title="var">eq</span> <span class="id" title="var">x</span>) (<span class="id" title="var">eq_refl</span> <span class="id" title="var">x</span>) <span class="id" title="var">x</span> <span class="id" title="var">pf</span>); [<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">symmetry</span>; <span class="id" title="tactic">apply</span> <span class="id" title="var">eq_rect_eq</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="tactic">exact</span> (<span class="id" title="keyword">match</span> <span class="id" title="var">pf</span> <span class="id" title="keyword">as</span> <span class="id" title="var">pf'</span> <span class="id" title="keyword">return</span> <span class="id" title="keyword">match</span> <span class="id" title="var">pf'</span> <span class="id" title="keyword">in</span> <span class="id" title="var">_</span> = <span class="id" title="var">y</span> <span class="id" title="keyword">return</span> <span class="id" title="var">x</span> = <span class="id" title="var">y</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">eq_refl</span> =&gt; <span class="id" title="var">eq_refl</span> <span class="id" title="var">x</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span> = <span class="id" title="var">pf'</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">eq_refl</span> =&gt; <span class="id" title="var">eq_refl</span> <span class="id" title="var">_</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>) ].<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Corollary</span> <span class="id" title="var">UIP</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">A</span> (<span class="id" title="var">x</span> <span class="id" title="var">y</span> : <span class="id" title="var">A</span>) (<span class="id" title="var">pf1</span> <span class="id" title="var">pf2</span> : <span class="id" title="var">x</span> = <span class="id" title="var">y</span>), <span class="id" title="var">pf1</span> = <span class="id" title="var">pf2</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span>; <span class="id" title="tactic">generalize</span> <span class="id" title="var">pf1</span> <span class="id" title="var">pf2</span>; <span class="id" title="tactic">subst</span>; <span class="id" title="tactic">intros</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="keyword">goal</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| [ |- ?<span class="id" title="var">pf1</span> = ?<span class="id" title="var">pf2</span> ] =&gt; <span class="id" title="tactic">rewrite</span> (<span class="id" title="var">UIP_refl</span> <span class="id" title="var">pf1</span>); <span class="id" title="tactic">rewrite</span> (<span class="id" title="var">UIP_refl</span> <span class="id" title="var">pf2</span>); <span class="id" title="tactic">reflexivity</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+これらの系は proof irrelevance の特殊な場合です。等価性のためだけに proof irrelevance が必要な開発では、フルの irrelevance を表明する必要はないのです。
+
+<div class="paragraph"> </div>
+
+   Proof irrelevance の別の側面は、排中律のように、特定の命題において証明可能であることです。例えば、<span class="inlinecode"><span class="id" title="lemma">UIP</span></span> は型 <span class="inlinecode"><span class="id" title="variable">A</span></span> が決定可能な等価性演算を備えている場合にはいつでも証明可能です。似たような現象は他の、「〜以下」の証明などの重要な事例にも当てはまります。このため、proof irrelevance はしばしば公理を表明せずに証明できます。
+
+<div class="paragraph"> </div>
+
+   
+
+<div class="paragraph"> </div>
+
+   集合論に無いような複雑さを避けるためによく仮定される基本的な公理が他に2つあります。 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <span class="id" title="var">FunctionalExtensionality</span>.<br/>
+<span class="id" title="keyword">Print</span> <span class="id" title="var">functional_extensionality_dep</span>.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;*** [ <span class="id" title="axiom">functional_extensionality_dep</span> : <br/>
+&nbsp;&nbsp;<span class="id" title="keyword">forall</span> (<span class="id" title="variable">A</span> : <span class="id" title="keyword">Type</span>) (<span class="id" title="variable">B</span> : <span class="id" title="variable">A</span> -&gt; <span class="id" title="keyword">Type</span>) (<span class="id" title="variable">f</span> <span class="id" title="variable">g</span> : <span class="id" title="keyword">forall</span> <span class="id" title="variable">x</span> : <span class="id" title="variable">A</span>, <span class="id" title="variable">B</span> <span class="id" title="variable">x</span>),<br/>
+&nbsp;&nbsp;(<span class="id" title="keyword">forall</span> <span class="id" title="variable">x</span> : <span class="id" title="variable">A</span>, <span class="id" title="variable">f</span> <span class="id" title="variable">x</span> = <span class="id" title="variable">g</span> <span class="id" title="variable">x</span>) -&gt; <span class="id" title="variable">f</span> = <span class="id" title="variable">g</span> ]<br/>
+&nbsp;
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+  この公理は、等価な入力を等価な出力に写像する2つの関数は等価であると述べています。そのような事実は一般に CIC では証明できませんが、それがあると仮定しても無矛盾です。
+
+<div class="paragraph"> </div>
+
+  単純な系により、述語において同様の性質を適用できます。
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Corollary</span> <span class="id" title="var">predicate_extensionality</span> : <span class="id" title="keyword">forall</span> (<span class="id" title="var">A</span> : <span class="id" title="keyword">Type</span>) (<span class="id" title="var">B</span> : <span class="id" title="var">A</span> -&gt; <span class="id" title="keyword">Prop</span>) (<span class="id" title="var">f</span> <span class="id" title="var">g</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">x</span> : <span class="id" title="var">A</span>, <span class="id" title="var">B</span> <span class="id" title="var">x</span>),<br/>
+&nbsp;&nbsp;(<span class="id" title="keyword">forall</span> <span class="id" title="var">x</span> : <span class="id" title="var">A</span>, <span class="id" title="var">f</span> <span class="id" title="var">x</span> = <span class="id" title="var">g</span> <span class="id" title="var">x</span>) -&gt; <span class="id" title="var">f</span> = <span class="id" title="var">g</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span>; <span class="id" title="tactic">apply</span> <span class="id" title="var">functional_extensionality_dep</span>; <span class="id" title="tactic">assumption</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+いくつかの場合には、その結論を証明にのみ制限しプログラムには適用しないようにするため、この系を公理として表明したいこともあるでしょう。
+</div>
+<div class="code">
+
+<br/>
+</div>
+
+<div class="doc">
+<a name="lab123"></a><h2 class="section">選択公理</h2>
+
+</div>
+<div class="code">
+
+<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+いくつかの Coq の公理は主流の数学における論点でもあります。最も顕著な例は選択公理です。実際、考慮すべき複数のバージョンがあり、独立して考慮すべきであり、どのバージョンも古典的な集合論における意味と同じことを必ずしも意味しません。
+
+<div class="paragraph"> </div>
+
+   まず、公理を_用いず_に選択演算子を実装できるいくつかの驚くべきかもしれないケースがあります。 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <span class="id" title="var">ConstructiveEpsilon</span>.<br/>
+<span class="id" title="keyword">Check</span> <span class="id" title="var">constructive_definite_description</span>.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="abbreviation">constructive_definite_description</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="keyword">forall</span> (<span class="id" title="variable">A</span> : <span class="id" title="keyword">Set</span>) (<span class="id" title="variable">f</span> : <span class="id" title="variable">A</span> -&gt; <span class="id" title="inductive">nat</span>) (<span class="id" title="variable">g</span> : <span class="id" title="inductive">nat</span> -&gt; <span class="id" title="variable">A</span>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">forall</span> <span class="id" title="variable">x</span> : <span class="id" title="variable">A</span>, <span class="id" title="variable">g</span> (<span class="id" title="variable">f</span> <span class="id" title="variable">x</span>) = <span class="id" title="variable">x</span>) -&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">forall</span> <span class="id" title="variable">P</span> : <span class="id" title="variable">A</span> -&gt; <span class="id" title="keyword">Prop</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">forall</span> <span class="id" title="variable">x</span> : <span class="id" title="variable">A</span>, {<span class="id" title="variable">P</span> <span class="id" title="variable">x</span>} + { ~ <span class="id" title="variable">P</span> <span class="id" title="variable">x</span>}) -&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="tactic">exists</span>! <span class="id" title="variable">x</span> : <span class="id" title="variable">A</span>, <span class="id" title="variable">P</span> <span class="id" title="variable">x</span>) -&gt; {<span class="id" title="variable">x</span> : <span class="id" title="variable">A</span> | <span class="id" title="variable">P</span> <span class="id" title="variable">x</span>}
+<div class="paragraph"> </div>
+
+</span>       
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Print</span> <span class="id" title="keyword">Assumptions</span> <span class="id" title="var">constructive_definite_description</span>.<br/>
+</div>
+
+<div class="doc">
+<pre>
+Closed under the global context
+</pre>
+
+<div class="paragraph"> </div>
+
+  この関数は決定可能な述語 <span class="inlinecode"><span class="id" title="variable">P</span></span> を、 <span class="inlinecode"><span class="id" title="variable">P</span></span> を満たす要素が存在するという証明から、その要素を出力する関数へと変換する関数です。関数 <span class="inlinecode"><span class="id" title="variable">f</span></span> と <span class="inlinecode"><span class="id" title="variable">g</span></span> は、それと結びついた単射性の性質と共に用いられ、集合 <span class="inlinecode"><span class="id" title="variable">A</span></span> が可算であるというアイデアを表現しています。このような条件下では、単純なブルートフォースのアルゴリズムが用を為します。つまり、全ての <span class="inlinecode"><span class="id" title="variable">A</span></span> の要素を列挙し、<span class="inlinecode"><span class="id" title="variable">P</span></span> を満たす要素が見つかったら止まればよいのです。_唯一_存在する <span class="inlinecode"><span class="id" title="tactic">exists</span>!</span> という方法で述べられた存在証明が、停止性を保証してくれます。<span class="inlinecode"><span class="id" title="library">ConstructiveEpsilon</span></span> モジュールの実装に見られるように、Coq におけるこの演算子の定義はいくつかの興味深いテクニックを使っています。
+
+<div class="paragraph"> </div>
+
+  集合論において、可算個の選択は一般の選択公理に訴えることなく証明可能です。Coq でより一般的な原理を裏付けるには、やはり公理を加えねばなりません。これが汎関数バージョンの、唯一性をもつ選択の公理 (axiom of unique choice) です。 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <span class="id" title="var">ClassicalUniqueChoice</span>.<br/>
+<span class="id" title="keyword">Check</span> <span class="id" title="var">dependent_unique_choice</span>.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="axiom">dependent_unique_choice</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="keyword">forall</span> (<span class="id" title="variable">A</span> : <span class="id" title="keyword">Type</span>) (<span class="id" title="variable">B</span> : <span class="id" title="variable">A</span> -&gt; <span class="id" title="keyword">Type</span>) (<span class="id" title="variable">R</span> : <span class="id" title="keyword">forall</span> <span class="id" title="variable">x</span> : <span class="id" title="variable">A</span>, <span class="id" title="variable">B</span> <span class="id" title="variable">x</span> -&gt; <span class="id" title="keyword">Prop</span>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">forall</span> <span class="id" title="variable">x</span> : <span class="id" title="variable">A</span>, <span class="id" title="tactic">exists</span>! <span class="id" title="variable">y</span> : <span class="id" title="variable">B</span> <span class="id" title="variable">x</span>, <span class="id" title="variable">R</span> <span class="id" title="variable">x</span> <span class="id" title="variable">y</span>) -&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">exists</span> <span class="id" title="variable">f</span> : <span class="id" title="keyword">forall</span> <span class="id" title="variable">x</span> : <span class="id" title="variable">A</span>, <span class="id" title="variable">B</span> <span class="id" title="variable">x</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">forall</span> <span class="id" title="variable">x</span> : <span class="id" title="variable">A</span>, <span class="id" title="variable">R</span> <span class="id" title="variable">x</span> (<span class="id" title="variable">f</span> <span class="id" title="variable">x</span>)
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+  この公理は関係による仕様 <span class="inlinecode"><span class="id" title="variable">R</span></span> を、その仕様を実装する関数に変換してくれます。我々は、<span class="inlinecode"><span class="id" title="variable">R</span></span> が真に関数であると証明すれば良いのです。別の、より強い定式化により、<span class="inlinecode"><span class="id" title="variable">R</span></span> がそれぞれの入力を一つ以上の出力に写像する場合に適用されます。非依存的な関数型(non-dependent function types)についてのみ考慮して、この定理をより単純化します。
+</div>
+<div class="code">
+
+<br/>
+
+<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <span class="id" title="var">ClassicalChoice</span>.<br/>
+<span class="id" title="keyword">Check</span> <span class="id" title="var">choice</span>.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode"><span class="id" title="lemma">choice</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="keyword">forall</span> (<span class="id" title="variable">A</span> <span class="id" title="variable">B</span> : <span class="id" title="keyword">Type</span>) (<span class="id" title="variable">R</span> : <span class="id" title="variable">A</span> -&gt; <span class="id" title="variable">B</span> -&gt; <span class="id" title="keyword">Prop</span>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">forall</span> <span class="id" title="variable">x</span> : <span class="id" title="variable">A</span>, <span class="id" title="tactic">exists</span> <span class="id" title="variable">y</span> : <span class="id" title="variable">B</span>, <span class="id" title="variable">R</span> <span class="id" title="variable">x</span> <span class="id" title="variable">y</span>) -&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">exists</span> <span class="id" title="variable">f</span> : <span class="id" title="variable">A</span> -&gt; <span class="id" title="variable">B</span>, <span class="id" title="keyword">forall</span> <span class="id" title="variable">x</span> : <span class="id" title="variable">A</span>, <span class="id" title="variable">R</span> <span class="id" title="variable">x</span> (<span class="id" title="variable">f</span> <span class="id" title="variable">x</span>)
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+  この原理は、唯一性を持つ選択の公理と、 <span class="inlinecode"><span class="id" title="library">RelationalChoice</span></span> モジュールの、関係についての選択に関する追加の公理に基づき、定理として証明されます。
+
+<div class="paragraph"> </div>
+
+  集合論では、選択公理は基礎的かつ哲学的な、集合の宇宙に関する約束事です。Coq における選択公理は、何かしら弱いことを述べています。例えば、存在量化を部分集合型に関するカリー・ハワードのアナロジーで置き換えた、<span class="inlinecode"><span class="id" title="lemma">choice</span></span> 公理の単純な言い換えについて考えてみましょう。 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">choice_Set</span> (<span class="id" title="var">A</span> <span class="id" title="var">B</span> : <span class="id" title="keyword">Type</span>) (<span class="id" title="var">R</span> : <span class="id" title="var">A</span> -&gt; <span class="id" title="var">B</span> -&gt; <span class="id" title="keyword">Prop</span>) (<span class="id" title="var">H</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">x</span> : <span class="id" title="var">A</span>, {<span class="id" title="var">y</span> : <span class="id" title="var">B</span> | <span class="id" title="var">R</span> <span class="id" title="var">x</span> <span class="id" title="var">y</span>})<br/>
+&nbsp;&nbsp;: {<span class="id" title="var">f</span> : <span class="id" title="var">A</span> -&gt; <span class="id" title="var">B</span> | <span class="id" title="keyword">forall</span> <span class="id" title="var">x</span> : <span class="id" title="var">A</span>, <span class="id" title="var">R</span> <span class="id" title="var">x</span> (<span class="id" title="var">f</span> <span class="id" title="var">x</span>)} :=<br/>
+&nbsp;&nbsp;<span class="id" title="var">exist</span> (<span class="id" title="keyword">fun</span> <span class="id" title="var">f</span> =&gt; <span class="id" title="keyword">forall</span> <span class="id" title="var">x</span> : <span class="id" title="var">A</span>, <span class="id" title="var">R</span> <span class="id" title="var">x</span> (<span class="id" title="var">f</span> <span class="id" title="var">x</span>))<br/>
+&nbsp;&nbsp;(<span class="id" title="keyword">fun</span> <span class="id" title="var">x</span> =&gt; <span class="id" title="var">proj1_sig</span> (<span class="id" title="var">H</span> <span class="id" title="var">x</span>)) (<span class="id" title="keyword">fun</span> <span class="id" title="var">x</span> =&gt; <span class="id" title="var">proj2_sig</span> (<span class="id" title="var">H</span> <span class="id" title="var">x</span>)).<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+カリー・ハワード同型対応を介して、この「公理」はオリジナルと同じ意味を持つと見なすことができます。これは、非カリー化よりもそれほど深くない変換によって、ごく簡単に実装できます。このため、以前に言及したこの公理の実用性は、証明からプログラムを構築するための使用法として現れることが分かります。普通の集合論は陽に証明を扱わないため、通常の選択公理とは微妙に意味が違います。Gallina では、この公理は、証明からプログラムへの情報流の制限について、管理されたやり方により緩和する方法を実装します。
+
+<div class="paragraph"> </div>
+
+   しかしながら、選択公理と排中律を組み合わせると、「選択」のアイデアはより興味深いものとなります。排中律は非常に非計算論的な方法で証明を構築する方法を提供しますが、プログラムの計算論的な性質を変えることはありません。このため、選択公理は二種類の「プログラム」の間を変換する方法を依然として提供していますが、入力となるプログラム (証明) は通常の計算可能性を超えたリッチな言語で書かれているかもしれません。この組み合わせは関数を別の型で再パッケージ化する以上のものです。
+
+<div class="paragraph"> </div>
+
+   
+
+<div class="paragraph"> </div>
+
+   Coq のツールはコマンドラインフラグ<tt>-impredicative-set</tt> をサポートしており、これは <span class="inlinecode"><span class="id" title="keyword">Set</span></span> を非可述的にすることにより Gallina を根本的に変えてしまいます。<span class="inlinecode"><span class="id" title="keyword">forall</span></span> <span class="inlinecode"><span class="id" title="variable">T</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" title="keyword">Set</span>,</span> <span class="inlinecode"><span class="id" title="variable">T</span></span> のような項は型 <span class="inlinecode"><span class="id" title="keyword">Set</span></span> を持ち、<span class="inlinecode"><span class="id" title="keyword">Set</span></span> における帰納的定義は任意の型の上で量化した構築子を持つことができます。無矛盾性を保つため、<span class="inlinecode"><span class="id" title="keyword">Prop</span></span> における制限と同様に、除去の制限が課されます。この制限は、型 <span class="inlinecode"><span class="id" title="keyword">Type</span></span> をもつ型の上で量化するいくつかの構築子をもつ、大きな帰納型にのみ適用されます。そのような場合、この帰納型の値は <span class="inlinecode"><span class="id" title="keyword">Set</span></span> か <span class="inlinecode"><span class="id" title="keyword">Prop</span></span> の型を持つ結果の型を返すためにだけパターンマッチできます。この規則は、この制限が大きくない帰納型にも適用され、結果の型が型 <span class="inlinecode"><span class="id" title="keyword">Prop</span></span> しか持てない <span class="inlinecode"><span class="id" title="keyword">Prop</span></span> のそれとは対照的です。
+
+<div class="paragraph"> </div>
+
+   Coq の古いバージョンでは、<span class="inlinecode"><span class="id" title="keyword">Set</span></span> はデフォルトで非可述的でした。後のバージョンでは、古典論理の公理との矛盾を避けるため <span class="inlinecode"><span class="id" title="keyword">Set</span></span> は可述的になっています。特に、非可述的な <span class="inlinecode"><span class="id" title="keyword">Set</span></span> と選択公理を共に用いる時に注意が必要です。排中律や述語の外延性 (predicate extensionality) と組み合わせることで、矛盾が起こり得ます。非可述的な <span class="inlinecode"><span class="id" title="keyword">Set</span></span> は本質的に非可述的な概念をモデル化するのに便利ですが、Coq における開発のほとんどはそれ無しでも大丈夫です。 
+</div>
+<div class="code">
+
+<br/>
+</div>
+
+<div class="doc">
+<a name="lab124"></a><h2 class="section">公理と計算</h2>
+
+</div>
+<div class="code">
+
+<br/>
+</div>
+
+<div class="doc">
+Gallinaに由来し、集合論とは非常に異なる側面に由来した、公理に関するもう一つの引っかかり(winkle)があります。それは、<i>computational equivalence</i> という、この形式体系の定義における中心的な概念です。公理は計算とあまりうまくやってくれない傾向があります。この例を考えてみてください。まず安全な型キャストを行うために型の等価性証明を使う関数を実装します。 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">cast</span> (<span class="id" title="var">x</span> <span class="id" title="var">y</span> : <span class="id" title="keyword">Set</span>) (<span class="id" title="var">pf</span> : <span class="id" title="var">x</span> = <span class="id" title="var">y</span>) (<span class="id" title="var">v</span> : <span class="id" title="var">x</span>) : <span class="id" title="var">y</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">pf</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">eq_refl</span> =&gt; <span class="id" title="var">v</span><br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+<span class="inlinecode"><span class="id" title="definition">cast</span></span> を用いるプログラムの計算はスムースに進行できます。
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Eval</span> <span class="id" title="tactic">compute</span> <span class="id" title="keyword">in</span> (<span class="id" title="var">cast</span> (<span class="id" title="var">eq_refl</span> (<span class="id" title="var">nat</span> -&gt; <span class="id" title="var">nat</span>)) (<span class="id" title="keyword">fun</span> <span class="id" title="var">n</span> =&gt; <span class="id" title="var">S</span> <span class="id" title="var">n</span>)) 12.<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= 13<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="inductive">nat</span>
+<div class="paragraph"> </div>
+
+</span>     
+</div>
+<div class="code">
+
+<br/>
+</div>
+
+<div class="doc">
+<span class="inlinecode"><span class="id" title="definition">cast</span></span> を公理に依存する証明とともに用いたとき、スムースにはいかなくなります。 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">t3</span> : (<span class="id" title="keyword">forall</span> <span class="id" title="var">n</span> : <span class="id" title="var">nat</span>, <span class="id" title="var">fin</span> (<span class="id" title="var">S</span> <span class="id" title="var">n</span>)) = (<span class="id" title="keyword">forall</span> <span class="id" title="var">n</span> : <span class="id" title="var">nat</span>, <span class="id" title="var">fin</span> (<span class="id" title="var">n</span> + 1)).<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">change</span> ((<span class="id" title="keyword">forall</span> <span class="id" title="var">n</span> : <span class="id" title="var">nat</span>, (<span class="id" title="keyword">fun</span> <span class="id" title="var">n</span> =&gt; <span class="id" title="var">fin</span> (<span class="id" title="var">S</span> <span class="id" title="var">n</span>)) <span class="id" title="var">n</span>) = (<span class="id" title="keyword">forall</span> <span class="id" title="var">n</span> : <span class="id" title="var">nat</span>, (<span class="id" title="keyword">fun</span> <span class="id" title="var">n</span> =&gt; <span class="id" title="var">fin</span> (<span class="id" title="var">n</span> + 1)) <span class="id" title="var">n</span>));<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> (<span class="id" title="var">functional_extensionality</span> (<span class="id" title="keyword">fun</span> <span class="id" title="var">n</span> =&gt; <span class="id" title="var">fin</span> (<span class="id" title="var">n</span> + 1)) (<span class="id" title="keyword">fun</span> <span class="id" title="var">n</span> =&gt; <span class="id" title="var">fin</span> (<span class="id" title="var">S</span> <span class="id" title="var">n</span>))); <span class="id" title="var">crush</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Eval</span> <span class="id" title="tactic">compute</span> <span class="id" title="keyword">in</span> (<span class="id" title="var">cast</span> <span class="id" title="var">t3</span> (<span class="id" title="keyword">fun</span> <span class="id" title="var">_</span> =&gt; <span class="id" title="var">First</span>)) 12.<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= <span class="id" title="keyword">match</span> <span class="id" title="lemma">t3</span> <span class="id" title="keyword">in</span> (<span class="id" title="var">_</span> = <span class="id" title="variable">P</span>) <span class="id" title="keyword">return</span> <span class="id" title="variable">P</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="constructor">eq_refl</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="variable">n</span> : <span class="id" title="inductive">nat</span> =&gt; <span class="id" title="projection">First</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span> 12<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="inductive">fin</span> (12 + 1)
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+  証明 <span class="inlinecode"><span class="id" title="lemma">t3</span></span> のパターンマッチで計算が詰まって (stuck) います。<span class="inlinecode"><span class="id" title="lemma">t3</span></span> の構造が分かっておらず、照合が進められないのです。より基本的な問題から、この特別な状況に至っているのです。この <span class="inlinecode"><span class="id" title="lemma">t3</span></span> の証明を <span class="inlinecode"><span class="id" title="keyword">Qed</span></span> で終えたため、<span class="inlinecode"><span class="id" title="lemma">t3</span></span> の証明は計算において利用できないのです。この失敗は簡潔に修正できます。
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Reset</span> <span class="id" title="var">t3</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">t3</span> : (<span class="id" title="keyword">forall</span> <span class="id" title="var">n</span> : <span class="id" title="var">nat</span>, <span class="id" title="var">fin</span> (<span class="id" title="var">S</span> <span class="id" title="var">n</span>)) = (<span class="id" title="keyword">forall</span> <span class="id" title="var">n</span> : <span class="id" title="var">nat</span>, <span class="id" title="var">fin</span> (<span class="id" title="var">n</span> + 1)).<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">change</span> ((<span class="id" title="keyword">forall</span> <span class="id" title="var">n</span> : <span class="id" title="var">nat</span>, (<span class="id" title="keyword">fun</span> <span class="id" title="var">n</span> =&gt; <span class="id" title="var">fin</span> (<span class="id" title="var">S</span> <span class="id" title="var">n</span>)) <span class="id" title="var">n</span>) = (<span class="id" title="keyword">forall</span> <span class="id" title="var">n</span> : <span class="id" title="var">nat</span>, (<span class="id" title="keyword">fun</span> <span class="id" title="var">n</span> =&gt; <span class="id" title="var">fin</span> (<span class="id" title="var">n</span> + 1)) <span class="id" title="var">n</span>));<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> (<span class="id" title="var">functional_extensionality</span> (<span class="id" title="keyword">fun</span> <span class="id" title="var">n</span> =&gt; <span class="id" title="var">fin</span> (<span class="id" title="var">n</span> + 1)) (<span class="id" title="keyword">fun</span> <span class="id" title="var">n</span> =&gt; <span class="id" title="var">fin</span> (<span class="id" title="var">S</span> <span class="id" title="var">n</span>))); <span class="id" title="var">crush</span>.<br/>
+<span class="id" title="keyword">Defined</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Eval</span> <span class="id" title="tactic">compute</span> <span class="id" title="keyword">in</span> (<span class="id" title="var">cast</span> <span class="id" title="var">t3</span> (<span class="id" title="keyword">fun</span> <span class="id" title="var">_</span> =&gt; <span class="id" title="var">First</span>)) 12.<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= <span class="id" title="keyword">match</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="lemma">functional_extensionality</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;....
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+  殆どの詳細は省略します。等価性証明を照合するネストした手に負えない大きさの木が現れます。今度こそ、公理を用いることで評価が本当に_詰まった_のです。
+
+<div class="paragraph"> </div>
+
+  もし我々が等価性を証明するために注意深くタクティクを使うならば、依然として証明の上でキャストを用いることができます。
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Lemma</span> <span class="id" title="var">plus1</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">n</span>, <span class="id" title="var">S</span> <span class="id" title="var">n</span> = <span class="id" title="var">n</span> + 1.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">induction</span> <span class="id" title="var">n</span>; <span class="id" title="tactic">simpl</span>; <span class="id" title="tactic">intuition</span>.<br/>
+<span class="id" title="keyword">Defined</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">t4</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">n</span>, <span class="id" title="var">fin</span> (<span class="id" title="var">S</span> <span class="id" title="var">n</span>) = <span class="id" title="var">fin</span> (<span class="id" title="var">n</span> + 1).<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intro</span>; <span class="id" title="tactic">f_equal</span>; <span class="id" title="tactic">apply</span> <span class="id" title="var">plus1</span>.<br/>
+<span class="id" title="keyword">Defined</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Eval</span> <span class="id" title="tactic">compute</span> <span class="id" title="keyword">in</span> <span class="id" title="var">cast</span> (<span class="id" title="var">t4</span> 13) <span class="id" title="var">First</span>.<br/>
+</div>
+
+<div class="doc">
+ <br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= <span class="id" title="projection">First</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="inductive">fin</span> (13 + 1)
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+   この単純で計算的な簡約により、適切な <span class="inlinecode"><span class="id" title="constructor">eq_refl</span></span> の証明項を生成する再帰関数の使用を隠しています。この再帰は <span class="inlinecode"><span class="id" title="lemma">t4</span></span> の証明に対する我々の <span class="inlinecode"><span class="id" title="tactic">induction</span></span> の使用に由来しています。 
+</div>
+<div class="code">
+
+<br/>
+</div>
+
+<div class="doc">
+<a name="lab125"></a><h2 class="section">公理を避けるための手法</h2>
+
+<div class="paragraph"> </div>
+
+ The last section demonstrated one reason to avoid axioms: they interfere with computational behavior of terms.  A further reason is to reduce the philosophical commitment of a theorem.  The more axioms one assumes, the harder it becomes to convince oneself that the formal system corresponds appropriately to one's intuitions.  A refinement of this last point, in applications like proof-carrying code in computer security, has to do with minimizing the size of a <i>trusted code base</i>.  To convince ourselves that a theorem is true, we must convince ourselves of the correctness of the program that checks the theorem.  Axioms effectively become new source code for the checking program, increasing the effort required to perform a correctness audit.
+
+<div class="paragraph"> </div>
+
+   An earlier section gave one example of avoiding an axiom.  We proved that <span class="inlinecode"><span class="id" title="definition">pred_strong1</span></span> is agnostic to details of the proofs passed to it as arguments, by unfolding the definition of the function.  A "simpler" proof keeps the function definition opaque and instead applies a proof irrelevance axiom.  By accepting a more complex proof, we reduce our philosophical commitment and trusted base.  (By the way, the less-than relation that the proofs in question here prove turns out to admit proof irrelevance as a theorem provable within normal Gallina!)
+
+<div class="paragraph"> </div>
+
+   One dark secret of the <span class="inlinecode"><span class="id" title="var">dep_destruct</span></span> tactic that we have used several times is reliance on an axiom.  Consider this simple case analysis principle for <span class="inlinecode"><span class="id" title="inductive">fin</span></span> values: 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">fin_cases</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">n</span> (<span class="id" title="var">f</span> : <span class="id" title="var">fin</span> (<span class="id" title="var">S</span> <span class="id" title="var">n</span>)), <span class="id" title="var">f</span> = <span class="id" title="var">First</span> \/ <span class="id" title="tactic">exists</span> <span class="id" title="var">f'</span>, <span class="id" title="var">f</span> = <span class="id" title="keyword">Next</span> <span class="id" title="var">f'</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span>; <span class="id" title="var">dep_destruct</span> <span class="id" title="var">f</span>; <span class="id" title="tactic">eauto</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+
+<br/>
+<span class="id" title="keyword">Print</span> <span class="id" title="keyword">Assumptions</span> <span class="id" title="var">fin_cases</span>.<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode"><span class="id" title="keyword">Axioms</span>:<br/>
+<span class="id" title="axiom">JMeq_eq</span> : <span class="id" title="keyword">forall</span> (<span class="id" title="variable">A</span> : <span class="id" title="keyword">Type</span>) (<span class="id" title="variable">x</span> <span class="id" title="variable">y</span> : <span class="id" title="variable">A</span>), <span class="id" title="library">JMeq</span> <span class="id" title="variable">x</span> <span class="id" title="variable">y</span> -&gt; <span class="id" title="variable">x</span> = <span class="id" title="variable">y</span>
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+  The proof depends on the <span class="inlinecode"><span class="id" title="axiom">JMeq_eq</span></span> axiom that we met in the chapter on equality proofs.  However, a smarter tactic could have avoided an axiom dependence.  Here is an alternate proof via a slightly strange looking lemma. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Lemma</span> <span class="id" title="var">fin_cases_again'</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">n</span> (<span class="id" title="var">f</span> : <span class="id" title="var">fin</span> <span class="id" title="var">n</span>),<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">n</span> <span class="id" title="keyword">return</span> <span class="id" title="var">fin</span> <span class="id" title="var">n</span> -&gt; <span class="id" title="keyword">Prop</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">O</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="var">_</span> =&gt; <span class="id" title="var">False</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">S</span> <span class="id" title="var">n'</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="var">f</span> =&gt; <span class="id" title="var">f</span> = <span class="id" title="var">First</span> \/ <span class="id" title="tactic">exists</span> <span class="id" title="var">f'</span>, <span class="id" title="var">f</span> = <span class="id" title="keyword">Next</span> <span class="id" title="var">f'</span><br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span> <span class="id" title="var">f</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">f</span>; <span class="id" title="tactic">eauto</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+We apply a variant of the convoy pattern, which we are used to seeing in function implementations.  Here, the pattern helps us state a lemma in a form where the argument to <span class="inlinecode"><span class="id" title="inductive">fin</span></span> is a variable.  Recall that, thanks to basic typing rules for pattern-matching, <span class="inlinecode"><span class="id" title="tactic">destruct</span></span> will only work effectively on types whose non-parameter arguments are variables.  The <span class="inlinecode"><span class="id" title="tactic">exact</span></span> tactic, which takes as argument a literal proof term, now gives us an easy way of proving the original theorem. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">fin_cases_again</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">n</span> (<span class="id" title="var">f</span> : <span class="id" title="var">fin</span> (<span class="id" title="var">S</span> <span class="id" title="var">n</span>)), <span class="id" title="var">f</span> = <span class="id" title="var">First</span> \/ <span class="id" title="tactic">exists</span> <span class="id" title="var">f'</span>, <span class="id" title="var">f</span> = <span class="id" title="keyword">Next</span> <span class="id" title="var">f'</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span>; <span class="id" title="tactic">exact</span> (<span class="id" title="var">fin_cases_again'</span> <span class="id" title="var">f</span>).<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Print</span> <span class="id" title="keyword">Assumptions</span> <span class="id" title="var">fin_cases_again</span>.<br/>
+</div>
+
+<div class="doc">
+
+<pre>
+Closed under the global context
+</pre>
+
+<div class="paragraph"> </div>
+
+
+</div>
+<div class="code">
+
+<br/>
+</div>
+
+<div class="doc">
+As the Curry-Howard correspondence might lead us to expect, the same pattern may be applied in programming as in proving.  Axioms are relevant in programming, too, because, while Coq includes useful extensions like <span class="inlinecode"><span class="id" title="library">Program</span></span> that make dependently typed programming more straightforward, in general these extensions generate code that relies on axioms about equality.  We can use clever pattern matching to write our code axiom-free.
+
+<div class="paragraph"> </div>
+
+As an example, consider a <span class="inlinecode"><span class="id" title="keyword">Set</span></span> version of <span class="inlinecode"><span class="id" title="lemma">fin_cases</span></span>.  We use <span class="inlinecode"><span class="id" title="keyword">Set</span></span> types instead of <span class="inlinecode"><span class="id" title="keyword">Prop</span></span> types, so that return values have computational content and may be used to guide the behavior of algorithms.  Beside that, we are essentially writing the same "proof" in a more explicit way. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">finOut</span> <span class="id" title="var">n</span> (<span class="id" title="var">f</span> : <span class="id" title="var">fin</span> <span class="id" title="var">n</span>) : <span class="id" title="keyword">match</span> <span class="id" title="var">n</span> <span class="id" title="keyword">return</span> <span class="id" title="var">fin</span> <span class="id" title="var">n</span> -&gt; <span class="id" title="keyword">Type</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">O</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="var">_</span> =&gt; <span class="id" title="var">Empty_set</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">_</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="var">f</span> =&gt; {<span class="id" title="var">f'</span> : <span class="id" title="var">_</span> | <span class="id" title="var">f</span> = <span class="id" title="keyword">Next</span> <span class="id" title="var">f'</span>} + {<span class="id" title="var">f</span> = <span class="id" title="var">First</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span> <span class="id" title="var">f</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">f</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">First</span> <span class="id" title="var">_</span> =&gt; <span class="id" title="var">inright</span> <span class="id" title="var">_</span> (<span class="id" title="var">eq_refl</span> <span class="id" title="var">_</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="keyword">Next</span> <span class="id" title="var">_</span> <span class="id" title="var">f'</span> =&gt; <span class="id" title="var">inleft</span> <span class="id" title="var">_</span> (<span class="id" title="var">exist</span> <span class="id" title="var">_</span> <span class="id" title="var">f'</span> (<span class="id" title="var">eq_refl</span> <span class="id" title="var">_</span>))<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+As another example, consider the following type of formulas in first-order logic.  The intent of the type definition will not be important in what follows, but we give a quick intuition for the curious reader.  Our formulas may include <span class="inlinecode"><span class="id" title="keyword">forall</span></span> quantification over arbitrary <span class="inlinecode"><span class="id" title="keyword">Type</span></span>s, and we index formulas by environments telling which variables are in scope and what their types are; such an environment is a <span class="inlinecode"><span class="id" title="inductive">list</span></span> <span class="inlinecode"><span class="id" title="keyword">Type</span></span>.  A constructor <span class="inlinecode"><span class="id" title="constructor">Inject</span></span> lets us include any Coq <span class="inlinecode"><span class="id" title="keyword">Prop</span></span> as a formula, and <span class="inlinecode"><span class="id" title="constructor">VarEq</span></span> and <span class="inlinecode"><span class="id" title="constructor">Lift</span></span> can be used for variable references, in what is essentially the de Bruijn index convention.  (Again, the detail in this paragraph is not important to understand the discussion that follows!) 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Inductive</span> <span class="id" title="var">formula</span> : <span class="id" title="var">list</span> <span class="id" title="keyword">Type</span> -&gt; <span class="id" title="keyword">Type</span> :=<br/>
+| <span class="id" title="var">Inject</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">Ts</span>, <span class="id" title="keyword">Prop</span> -&gt; <span class="id" title="var">formula</span> <span class="id" title="var">Ts</span><br/>
+| <span class="id" title="var">VarEq</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">T</span> <span class="id" title="var">Ts</span>, <span class="id" title="var">T</span> -&gt; <span class="id" title="var">formula</span> (<span class="id" title="var">T</span> :: <span class="id" title="var">Ts</span>)<br/>
+| <span class="id" title="var">Lift</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">T</span> <span class="id" title="var">Ts</span>, <span class="id" title="var">formula</span> <span class="id" title="var">Ts</span> -&gt; <span class="id" title="var">formula</span> (<span class="id" title="var">T</span> :: <span class="id" title="var">Ts</span>)<br/>
+| <span class="id" title="var">Forall</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">T</span> <span class="id" title="var">Ts</span>, <span class="id" title="var">formula</span> (<span class="id" title="var">T</span> :: <span class="id" title="var">Ts</span>) -&gt; <span class="id" title="var">formula</span> <span class="id" title="var">Ts</span><br/>
+| <span class="id" title="var">And</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">Ts</span>, <span class="id" title="var">formula</span> <span class="id" title="var">Ts</span> -&gt; <span class="id" title="var">formula</span> <span class="id" title="var">Ts</span> -&gt; <span class="id" title="var">formula</span> <span class="id" title="var">Ts</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+This example is based on my own experiences implementing variants of a program logic called XCAP, which also includes an inductive predicate for characterizing which formulas are provable.  Here I include a pared-down version of such a predicate, with only two constructors, which is sufficient to illustrate certain tricky issues. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Inductive</span> <span class="id" title="var">proof</span> : <span class="id" title="var">formula</span> <span class="id" title="var">nil</span> -&gt; <span class="id" title="keyword">Prop</span> :=<br/>
+| <span class="id" title="var">PInject</span> : <span class="id" title="keyword">forall</span> (<span class="id" title="var">P</span> : <span class="id" title="keyword">Prop</span>), <span class="id" title="var">P</span> -&gt; <span class="id" title="var">proof</span> (<span class="id" title="var">Inject</span> <span class="id" title="var">nil</span> <span class="id" title="var">P</span>)<br/>
+| <span class="id" title="var">PAnd</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">p</span> <span class="id" title="var">q</span>, <span class="id" title="var">proof</span> <span class="id" title="var">p</span> -&gt; <span class="id" title="var">proof</span> <span class="id" title="var">q</span> -&gt; <span class="id" title="var">proof</span> (<span class="id" title="var">And</span> <span class="id" title="var">p</span> <span class="id" title="var">q</span>).<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Let us prove a lemma showing that a "<span class="inlinecode"><span class="id" title="variable">P</span></span> <span class="inlinecode">/\</span> <span class="inlinecode"><span class="id" title="variable">Q</span></span> <span class="inlinecode">-&gt;</span> <span class="inlinecode"><span class="id" title="variable">P</span></span>" rule is derivable within the rules of <span class="inlinecode"><span class="id" title="inductive">proof</span></span>. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">proj1</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">p</span> <span class="id" title="var">q</span>, <span class="id" title="var">proof</span> (<span class="id" title="var">And</span> <span class="id" title="var">p</span> <span class="id" title="var">q</span>) -&gt; <span class="id" title="var">proof</span> <span class="id" title="var">p</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> 1.<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="variable">p</span> : <span class="id" title="inductive">formula</span> <span class="id" title="constructor">nil</span><br/>
+&nbsp;&nbsp;<span class="id" title="variable">q</span> : <span class="id" title="inductive">formula</span> <span class="id" title="constructor">nil</span><br/>
+&nbsp;&nbsp;<span class="id" title="variable">P</span> : <span class="id" title="keyword">Prop</span><br/>
+&nbsp;&nbsp;<span class="id" title="variable">H</span> : <span class="id" title="variable">P</span><br/>
+&nbsp;&nbsp;============================<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="inductive">proof</span> <span class="id" title="variable">p</span>
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+ We are reminded that <span class="inlinecode"><span class="id" title="tactic">induction</span></span> and <span class="inlinecode"><span class="id" title="tactic">destruct</span></span> do not work effectively on types with non-variable arguments.  The first subgoal, shown above, is clearly unprovable.  (Consider the case where <span class="inlinecode"><span class="id" title="variable">p</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="constructor">Inject</span></span> <span class="inlinecode"><span class="id" title="constructor">nil</span></span> <span class="inlinecode"><span class="id" title="inductive">False</span></span>.)
+
+<div class="paragraph"> </div>
+
+   An application of the <span class="inlinecode"><span class="id" title="tactic">dependent</span></span> <span class="inlinecode"><span class="id" title="tactic">destruction</span></span> tactic (the basis for <span class="inlinecode"><span class="id" title="var">dep_destruct</span></span>) solves the problem handily.  We use a shorthand with the <span class="inlinecode"><span class="id" title="tactic">intros</span></span> tactic that lets us use question marks for variable names that do not matter. 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Restart</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <span class="id" title="var">Program</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span> ? ? <span class="id" title="var">H</span>; <span class="id" title="tactic">dependent</span> <span class="id" title="tactic">destruction</span> <span class="id" title="var">H</span>; <span class="id" title="tactic">auto</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Print</span> <span class="id" title="keyword">Assumptions</span> <span class="id" title="var">proj1</span>.<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode"><span class="id" title="keyword">Axioms</span>:<br/>
+<span class="id" title="axiom">eq_rect_eq</span> : <span class="id" title="keyword">forall</span> (<span class="id" title="variable">U</span> : <span class="id" title="keyword">Type</span>) (<span class="id" title="variable">p</span> : <span class="id" title="variable">U</span>) (<span class="id" title="variable">Q</span> : <span class="id" title="variable">U</span> -&gt; <span class="id" title="keyword">Type</span>) (<span class="id" title="variable">x</span> : <span class="id" title="variable">Q</span> <span class="id" title="variable">p</span>) (<span class="id" title="variable">h</span> : <span class="id" title="variable">p</span> = <span class="id" title="variable">p</span>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="variable">x</span> = <span class="id" title="definition">eq_rect</span> <span class="id" title="variable">p</span> <span class="id" title="variable">Q</span> <span class="id" title="variable">x</span> <span class="id" title="variable">p</span> <span class="id" title="variable">h</span>
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+Unfortunately, that built-in tactic appeals to an axiom.  It is still possible to avoid axioms by giving the proof via another odd-looking lemma.  Here is a first attempt that fails at remaining axiom-free, using a common equality-based trick for supporting induction on non-variable arguments to type families.  The trick works fine without axioms for datatypes more traditional than <span class="inlinecode"><span class="id" title="inductive">formula</span></span>, but we run into trouble with our current type. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Lemma</span> <span class="id" title="var">proj1_again'</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">r</span>, <span class="id" title="var">proof</span> <span class="id" title="var">r</span><br/>
+&nbsp;&nbsp;-&gt; <span class="id" title="keyword">forall</span> <span class="id" title="var">p</span> <span class="id" title="var">q</span>, <span class="id" title="var">r</span> = <span class="id" title="var">And</span> <span class="id" title="var">p</span> <span class="id" title="var">q</span> -&gt; <span class="id" title="var">proof</span> <span class="id" title="var">p</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> 1; <span class="id" title="var">crush</span>.<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="var">H0</span> : <span class="id" title="constructor">Inject</span> [] <span class="id" title="variable">P</span> = <span class="id" title="constructor">And</span> <span class="id" title="variable">p</span> <span class="id" title="variable">q</span><br/>
+&nbsp;&nbsp;============================<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="inductive">proof</span> <span class="id" title="variable">p</span>
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+  The first goal looks reasonable.  Hypothesis <span class="inlinecode"><span class="id" title="var">H0</span></span> is clearly contradictory, as <span class="inlinecode"><span class="id" title="tactic">discriminate</span></span> can show. 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">try</span> <span class="id" title="tactic">discriminate</span>. </div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="variable">H</span> : <span class="id" title="inductive">proof</span> <span class="id" title="variable">p</span><br/>
+&nbsp;&nbsp;<span class="id" title="variable">H1</span> : <span class="id" title="constructor">And</span> <span class="id" title="variable">p</span> <span class="id" title="variable">q</span> = <span class="id" title="constructor">And</span> <span class="id" title="var">p0</span> <span class="id" title="var">q0</span><br/>
+&nbsp;&nbsp;============================<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="inductive">proof</span> <span class="id" title="var">p0</span>
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+  It looks like we are almost done.  Hypothesis <span class="inlinecode"><span class="id" title="variable">H1</span></span> gives <span class="inlinecode"><span class="id" title="variable">p</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="var">p0</span></span> by injectivity of constructors, and then <span class="inlinecode"><span class="id" title="variable">H</span></span> finishes the case. 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">injection</span> <span class="id" title="var">H1</span>; <span class="id" title="tactic">intros</span>.<br/>
+
+<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Unfortunately, the "equality" that we expected between <span class="inlinecode"><span class="id" title="variable">p</span></span> and <span class="inlinecode"><span class="id" title="var">p0</span></span> comes in a strange form:
+
+<div class="paragraph"> </div>
+
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="variable">H3</span> : <span class="id" title="constructor">existT</span> (<span class="id" title="keyword">fun</span> <span class="id" title="variable">Ts</span> : <span class="id" title="inductive">list</span> <span class="id" title="keyword">Type</span> =&gt; <span class="id" title="inductive">formula</span> <span class="id" title="variable">Ts</span>) []%<span class="id" title="inductive">list</span> <span class="id" title="variable">p</span> =<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="constructor">existT</span> (<span class="id" title="keyword">fun</span> <span class="id" title="variable">Ts</span> : <span class="id" title="inductive">list</span> <span class="id" title="keyword">Type</span> =&gt; <span class="id" title="inductive">formula</span> <span class="id" title="variable">Ts</span>) []%<span class="id" title="inductive">list</span> <span class="id" title="var">p0</span><br/>
+&nbsp;&nbsp;============================<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="inductive">proof</span> <span class="id" title="var">p0</span>
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+It may take a bit of tinkering, but, reviewing Chapter 3's discussion of writing injection principles manually, it makes sense that an <span class="inlinecode"><span class="id" title="constructor">existT</span></span> type is the most direct way to express the output of <span class="inlinecode"><span class="id" title="tactic">injection</span></span> on a dependently typed constructor.  The constructor <span class="inlinecode"><span class="id" title="constructor">And</span></span> is dependently typed, since it takes a parameter <span class="inlinecode"><span class="id" title="variable">Ts</span></span> upon which the types of <span class="inlinecode"><span class="id" title="variable">p</span></span> and <span class="inlinecode"><span class="id" title="variable">q</span></span> depend.  Let us not dwell further here on why this goal appears; the reader may like to attempt the (impossible) exercise of building a better injection lemma for <span class="inlinecode"><span class="id" title="constructor">And</span></span>, without using axioms.
+
+<div class="paragraph"> </div>
+
+How exactly does an axiom come into the picture here?  Let us ask <span class="inlinecode"><span class="id" title="var">crush</span></span> to finish the proof. 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="var">crush</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Print</span> <span class="id" title="keyword">Assumptions</span> <span class="id" title="var">proj1_again'</span>.<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode"><span class="id" title="keyword">Axioms</span>:<br/>
+<span class="id" title="axiom">eq_rect_eq</span> : <span class="id" title="keyword">forall</span> (<span class="id" title="variable">U</span> : <span class="id" title="keyword">Type</span>) (<span class="id" title="variable">p</span> : <span class="id" title="variable">U</span>) (<span class="id" title="variable">Q</span> : <span class="id" title="variable">U</span> -&gt; <span class="id" title="keyword">Type</span>) (<span class="id" title="variable">x</span> : <span class="id" title="variable">Q</span> <span class="id" title="variable">p</span>) (<span class="id" title="variable">h</span> : <span class="id" title="variable">p</span> = <span class="id" title="variable">p</span>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="variable">x</span> = <span class="id" title="definition">eq_rect</span> <span class="id" title="variable">p</span> <span class="id" title="variable">Q</span> <span class="id" title="variable">x</span> <span class="id" title="variable">p</span> <span class="id" title="variable">h</span>
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+It turns out that this familiar axiom about equality (or some other axiom) is required to deduce <span class="inlinecode"><span class="id" title="variable">p</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="var">p0</span></span> from the hypothesis <span class="inlinecode"><span class="id" title="variable">H3</span></span> above.  The soundness of that proof step is neither provable nor disprovable in Gallina.
+
+<div class="paragraph"> </div>
+
+Hope is not lost, however.  We can produce an even stranger looking lemma, which gives us the theorem without axioms.  As always when we want to do case analysis on a term with a tricky dependent type, the key is to refactor the theorem statement so that every term we <span class="inlinecode"><span class="id" title="keyword">match</span></span> on has <i>variables</i> as its type indices; so instead of talking about proofs of <span class="inlinecode"><span class="id" title="constructor">And</span></span> <span class="inlinecode"><span class="id" title="variable">p</span></span> <span class="inlinecode"><span class="id" title="variable">q</span></span>, we talk about proofs of an arbitrary <span class="inlinecode"><span class="id" title="variable">r</span></span>, but we only conclude anything interesting when <span class="inlinecode"><span class="id" title="variable">r</span></span> is an <span class="inlinecode"><span class="id" title="constructor">And</span></span>. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Lemma</span> <span class="id" title="var">proj1_again''</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">r</span>, <span class="id" title="var">proof</span> <span class="id" title="var">r</span><br/>
+&nbsp;&nbsp;-&gt; <span class="id" title="keyword">match</span> <span class="id" title="var">r</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">And</span> <span class="id" title="var">Ps</span> <span class="id" title="var">p</span> <span class="id" title="var">_</span> =&gt; <span class="id" title="keyword">match</span> <span class="id" title="var">Ps</span> <span class="id" title="keyword">return</span> <span class="id" title="var">formula</span> <span class="id" title="var">Ps</span> -&gt; <span class="id" title="keyword">Prop</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">nil</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="var">p</span> =&gt; <span class="id" title="var">proof</span> <span class="id" title="var">p</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">_</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="var">_</span> =&gt; <span class="id" title="var">True</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span> <span class="id" title="var">p</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">_</span> =&gt; <span class="id" title="var">True</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> 1; <span class="id" title="tactic">auto</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">proj1_again</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">p</span> <span class="id" title="var">q</span>, <span class="id" title="var">proof</span> (<span class="id" title="var">And</span> <span class="id" title="var">p</span> <span class="id" title="var">q</span>) -&gt; <span class="id" title="var">proof</span> <span class="id" title="var">p</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span> ? ? <span class="id" title="var">H</span>; <span class="id" title="tactic">exact</span> (<span class="id" title="var">proj1_again''</span> <span class="id" title="var">H</span>).<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Print</span> <span class="id" title="keyword">Assumptions</span> <span class="id" title="var">proj1_again</span>.<br/>
+</div>
+
+<div class="doc">
+<pre>
+Closed under the global context
+</pre>
+
+<div class="paragraph"> </div>
+
+This example illustrates again how some of the same design patterns we learned for dependently typed programming can be used fruitfully in theorem statements.
+
+<div class="paragraph"> </div>
+
+
+
+<div class="paragraph"> </div>
+
+To close the chapter, we consider one final way to avoid dependence on axioms.  Often this task is equivalent to writing definitions such that they <i>compute</i>.  That is, we want Coq's normal reduction to be able to run certain programs to completion.  Here is a simple example where such computation can get stuck.  In proving properties of such functions, we would need to apply axioms like K manually to make progress.
+
+<div class="paragraph"> </div>
+
+Imagine we are working with deeply embedded syntax of some programming language, where each term is considered to be in the scope of a number of free variables that hold normal Coq values.  To enforce proper typing, we will need to model a Coq typing environment somehow.  One natural choice is as a list of types, where variable number <span class="inlinecode"><span class="id" title="definition">i</span></span> will be treated as a reference to the <span class="inlinecode"><span class="id" title="definition">i</span></span>th element of the list. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Section</span> <span class="id" title="var">withTypes</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Variable</span> <span class="id" title="var">types</span> : <span class="id" title="var">list</span> <span class="id" title="keyword">Set</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+To give the semantics of terms, we will need to represent value environments, which assign each variable a term of the proper type. 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Variable</span> <span class="id" title="var">values</span> : <span class="id" title="var">hlist</span> (<span class="id" title="keyword">fun</span> <span class="id" title="var">x</span> : <span class="id" title="keyword">Set</span> =&gt; <span class="id" title="var">x</span>) <span class="id" title="var">types</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Now imagine that we are writing some procedure that operates on a distinguished variable of type <span class="inlinecode"><span class="id" title="inductive">nat</span></span>.  A hypothesis formalizes this assumption, using the standard library function <span class="inlinecode"><span class="id" title="definition">nth_error</span></span> for looking up list elements by position. 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Variable</span> <span class="id" title="var">natIndex</span> : <span class="id" title="var">nat</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Variable</span> <span class="id" title="var">natIndex_ok</span> : <span class="id" title="var">nth_error</span> <span class="id" title="var">types</span> <span class="id" title="var">natIndex</span> = <span class="id" title="var">Some</span> <span class="id" title="var">nat</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+It is not hard to use this hypothesis to write a function for extracting the <span class="inlinecode"><span class="id" title="inductive">nat</span></span> value in position <span class="inlinecode"><span class="id" title="variable">natIndex</span></span> of <span class="inlinecode"><span class="id" title="variable">values</span></span>, starting with two helpful lemmas, each of which we finish with <span class="inlinecode"><span class="id" title="keyword">Defined</span></span> to mark the lemma as transparent, so that its definition may be expanded during evaluation. 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <span class="id" title="var">nth_error_nil</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">A</span> <span class="id" title="var">n</span> <span class="id" title="var">x</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">nth_error</span> (@<span class="id" title="var">nil</span> <span class="id" title="var">A</span>) <span class="id" title="var">n</span> = <span class="id" title="var">Some</span> <span class="id" title="var">x</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;-&gt; <span class="id" title="var">False</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">n</span>; <span class="id" title="tactic">simpl</span>; <span class="id" title="tactic">unfold</span> <span class="id" title="var">error</span>; <span class="id" title="tactic">congruence</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Defined</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Implicit Arguments</span> <span class="id" title="var">nth_error_nil</span> [<span class="id" title="var">A</span> <span class="id" title="var">n</span> <span class="id" title="var">x</span>].<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <span class="id" title="var">Some_inj</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">A</span> (<span class="id" title="var">x</span> <span class="id" title="var">y</span> : <span class="id" title="var">A</span>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">Some</span> <span class="id" title="var">x</span> = <span class="id" title="var">Some</span> <span class="id" title="var">y</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;-&gt; <span class="id" title="var">x</span> = <span class="id" title="var">y</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">congruence</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Defined</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Fixpoint</span> <span class="id" title="var">getNat</span> (<span class="id" title="var">types'</span> : <span class="id" title="var">list</span> <span class="id" title="keyword">Set</span>) (<span class="id" title="var">values'</span> : <span class="id" title="var">hlist</span> (<span class="id" title="keyword">fun</span> <span class="id" title="var">x</span> : <span class="id" title="keyword">Set</span> =&gt; <span class="id" title="var">x</span>) <span class="id" title="var">types'</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">natIndex</span> : <span class="id" title="var">nat</span>) : (<span class="id" title="var">nth_error</span> <span class="id" title="var">types'</span> <span class="id" title="var">natIndex</span> = <span class="id" title="var">Some</span> <span class="id" title="var">nat</span>) -&gt; <span class="id" title="var">nat</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">values'</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">HNil</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="var">pf</span> =&gt; <span class="id" title="keyword">match</span> <span class="id" title="var">nth_error_nil</span> <span class="id" title="var">pf</span> <span class="id" title="keyword">with</span> <span class="id" title="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">HCons</span> <span class="id" title="var">t</span> <span class="id" title="var">ts</span> <span class="id" title="var">x</span> <span class="id" title="var">values''</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">natIndex</span> <span class="id" title="keyword">return</span> <span class="id" title="var">nth_error</span> (<span class="id" title="var">t</span> :: <span class="id" title="var">ts</span>) <span class="id" title="var">natIndex</span> = <span class="id" title="var">Some</span> <span class="id" title="var">nat</span> -&gt; <span class="id" title="var">nat</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">O</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="var">pf</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">Some_inj</span> <span class="id" title="var">pf</span> <span class="id" title="keyword">in</span> <span class="id" title="var">_</span> = <span class="id" title="var">T</span> <span class="id" title="keyword">return</span> <span class="id" title="var">T</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">eq_refl</span> =&gt; <span class="id" title="var">x</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">S</span> <span class="id" title="var">natIndex'</span> =&gt; <span class="id" title="var">getNat</span> <span class="id" title="var">values''</span> <span class="id" title="var">natIndex'</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+<span class="id" title="keyword">End</span> <span class="id" title="var">withTypes</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+The problem becomes apparent when we experiment with running <span class="inlinecode"><span class="id" title="definition">getNat</span></span> on a concrete <span class="inlinecode"><span class="id" title="variable">types</span></span> list. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">myTypes</span> := <span class="id" title="var">unit</span> :: <span class="id" title="var">nat</span> :: <span class="id" title="var">bool</span> :: <span class="id" title="var">nil</span>.<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">myValues</span> : <span class="id" title="var">hlist</span> (<span class="id" title="keyword">fun</span> <span class="id" title="var">x</span> : <span class="id" title="keyword">Set</span> =&gt; <span class="id" title="var">x</span>) <span class="id" title="var">myTypes</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="var">tt</span> ::: 3 ::: <span class="id" title="var">false</span> ::: <span class="id" title="var">HNil</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">myNatIndex</span> := 1.<br/>
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">myNatIndex_ok</span> : <span class="id" title="var">nth_error</span> <span class="id" title="var">myTypes</span> <span class="id" title="var">myNatIndex</span> = <span class="id" title="var">Some</span> <span class="id" title="var">nat</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">reflexivity</span>.<br/>
+<span class="id" title="keyword">Defined</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Eval</span> <span class="id" title="tactic">compute</span> <span class="id" title="keyword">in</span> <span class="id" title="var">getNat</span> <span class="id" title="var">myValues</span> <span class="id" title="var">myNatIndex</span> <span class="id" title="var">myNatIndex_ok</span>.<br/>
+</div>
+
+<div class="doc">
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= 3
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+We have not hit the problem yet, since we proceeded with a concrete equality proof for <span class="inlinecode"><span class="id" title="lemma">myNatIndex_ok</span></span>.  However, consider a case where we want to reason about the behavior of <span class="inlinecode"><span class="id" title="definition">getNat</span></span> <i>independently</i> of a specific proof. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">getNat_is_reasonable</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">pf</span>, <span class="id" title="var">getNat</span> <span class="id" title="var">myValues</span> <span class="id" title="var">myNatIndex</span> <span class="id" title="var">pf</span> = 3.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intro</span>; <span class="id" title="tactic">compute</span>.<br/>
+</div>
+
+<div class="doc">
+<pre>
+1 subgoal
+</pre>
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="variable">pf</span> : <span class="id" title="definition">nth_error</span> <span class="id" title="definition">myTypes</span> <span class="id" title="definition">myNatIndex</span> = <span class="id" title="constructor">Some</span> <span class="id" title="inductive">nat</span><br/>
+&nbsp;&nbsp;============================<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="variable">pf</span> <span class="id" title="keyword">in</span> (<span class="id" title="var">_</span> = <span class="id" title="variable">y</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">return</span> (<span class="id" title="inductive">nat</span> = <span class="id" title="keyword">match</span> <span class="id" title="variable">y</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="constructor">Some</span> <span class="id" title="variable">H</span> =&gt; <span class="id" title="variable">H</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="constructor">None</span> =&gt; <span class="id" title="inductive">nat</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="constructor">eq_refl</span> =&gt; <span class="id" title="constructor">eq_refl</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span> <span class="id" title="keyword">in</span> (<span class="id" title="var">_</span> = <span class="id" title="variable">T</span>) <span class="id" title="keyword">return</span> <span class="id" title="variable">T</span><br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;| <span class="id" title="constructor">eq_refl</span> =&gt; 3<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span> = 3
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+Since the details of the equality proof <span class="inlinecode"><span class="id" title="variable">pf</span></span> are not known, computation can proceed no further.  A rewrite with axiom K would allow us to make progress, but we can rethink the definitions a bit to avoid depending on axioms. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Abort</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Here is a definition of a function that turns out to be useful, though no doubt its purpose will be mysterious for now.  A call <span class="inlinecode"><span class="id" title="definition">update</span></span> <span class="inlinecode"><span class="id" title="variable">ls</span></span> <span class="inlinecode"><span class="id" title="variable">n</span></span> <span class="inlinecode"><span class="id" title="variable">x</span></span> overwrites the <span class="inlinecode"><span class="id" title="variable">n</span></span>th position of the list <span class="inlinecode"><span class="id" title="variable">ls</span></span> with the value <span class="inlinecode"><span class="id" title="variable">x</span></span>, padding the end of the list with extra <span class="inlinecode"><span class="id" title="variable">x</span></span> values as needed to ensure sufficient length. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Fixpoint</span> <span class="id" title="var">copies</span> <span class="id" title="var">A</span> (<span class="id" title="var">x</span> : <span class="id" title="var">A</span>) (<span class="id" title="var">n</span> : <span class="id" title="var">nat</span>) : <span class="id" title="var">list</span> <span class="id" title="var">A</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">n</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">O</span> =&gt; <span class="id" title="var">nil</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">S</span> <span class="id" title="var">n'</span> =&gt; <span class="id" title="var">x</span> :: <span class="id" title="var">copies</span> <span class="id" title="var">x</span> <span class="id" title="var">n'</span><br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Fixpoint</span> <span class="id" title="var">update</span> <span class="id" title="var">A</span> (<span class="id" title="var">ls</span> : <span class="id" title="var">list</span> <span class="id" title="var">A</span>) (<span class="id" title="var">n</span> : <span class="id" title="var">nat</span>) (<span class="id" title="var">x</span> : <span class="id" title="var">A</span>) : <span class="id" title="var">list</span> <span class="id" title="var">A</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">ls</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">nil</span> =&gt; <span class="id" title="var">copies</span> <span class="id" title="var">x</span> <span class="id" title="var">n</span> ++ <span class="id" title="var">x</span> :: <span class="id" title="var">nil</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">y</span> :: <span class="id" title="var">ls'</span> =&gt; <span class="id" title="keyword">match</span> <span class="id" title="var">n</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">O</span> =&gt; <span class="id" title="var">x</span> :: <span class="id" title="var">ls'</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">S</span> <span class="id" title="var">n'</span> =&gt; <span class="id" title="var">y</span> :: <span class="id" title="var">update</span> <span class="id" title="var">ls'</span> <span class="id" title="var">n'</span> <span class="id" title="var">x</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span><br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Now let us revisit the definition of <span class="inlinecode"><span class="id" title="definition">getNat</span></span>. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Section</span> <span class="id" title="var">withTypes'</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Variable</span> <span class="id" title="var">types</span> : <span class="id" title="var">list</span> <span class="id" title="keyword">Set</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Variable</span> <span class="id" title="var">natIndex</span> : <span class="id" title="var">nat</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Here is the trick: instead of asserting properties about the list <span class="inlinecode"><span class="id" title="variable">types</span></span>, we build a "new" list that is <i>guaranteed by construction</i> to have those properties. 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <span class="id" title="var">types'</span> := <span class="id" title="var">update</span> <span class="id" title="var">types</span> <span class="id" title="var">natIndex</span> <span class="id" title="var">nat</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Variable</span> <span class="id" title="var">values</span> : <span class="id" title="var">hlist</span> (<span class="id" title="keyword">fun</span> <span class="id" title="var">x</span> : <span class="id" title="keyword">Set</span> =&gt; <span class="id" title="var">x</span>) <span class="id" title="var">types'</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Now a bit of dependent pattern matching helps us rewrite <span class="inlinecode"><span class="id" title="definition">getNat</span></span> in a way that avoids any use of equality proofs. 
+</div>
+<div class="code">
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Fixpoint</span> <span class="id" title="var">skipCopies</span> (<span class="id" title="var">n</span> : <span class="id" title="var">nat</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="var">hlist</span> (<span class="id" title="keyword">fun</span> <span class="id" title="var">x</span> : <span class="id" title="keyword">Set</span> =&gt; <span class="id" title="var">x</span>) (<span class="id" title="var">copies</span> <span class="id" title="var">nat</span> <span class="id" title="var">n</span> ++ <span class="id" title="var">nat</span> :: <span class="id" title="var">nil</span>) -&gt; <span class="id" title="var">nat</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">n</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">O</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="var">vs</span> =&gt; <span class="id" title="var">hhd</span> <span class="id" title="var">vs</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">S</span> <span class="id" title="var">n'</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="var">vs</span> =&gt; <span class="id" title="var">skipCopies</span> <span class="id" title="var">n'</span> (<span class="id" title="var">htl</span> <span class="id" title="var">vs</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Fixpoint</span> <span class="id" title="var">getNat'</span> (<span class="id" title="var">types''</span> : <span class="id" title="var">list</span> <span class="id" title="keyword">Set</span>) (<span class="id" title="var">natIndex</span> : <span class="id" title="var">nat</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="var">hlist</span> (<span class="id" title="keyword">fun</span> <span class="id" title="var">x</span> : <span class="id" title="keyword">Set</span> =&gt; <span class="id" title="var">x</span>) (<span class="id" title="var">update</span> <span class="id" title="var">types''</span> <span class="id" title="var">natIndex</span> <span class="id" title="var">nat</span>) -&gt; <span class="id" title="var">nat</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">types''</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">nil</span> =&gt; <span class="id" title="var">skipCopies</span> <span class="id" title="var">natIndex</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">t</span> :: <span class="id" title="var">types0</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">natIndex</span> <span class="id" title="keyword">return</span> <span class="id" title="var">hlist</span> (<span class="id" title="keyword">fun</span> <span class="id" title="var">x</span> : <span class="id" title="keyword">Set</span> =&gt; <span class="id" title="var">x</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">update</span> (<span class="id" title="var">t</span> :: <span class="id" title="var">types0</span>) <span class="id" title="var">natIndex</span> <span class="id" title="var">nat</span>) -&gt; <span class="id" title="var">nat</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">O</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="var">vs</span> =&gt; <span class="id" title="var">hhd</span> <span class="id" title="var">vs</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">S</span> <span class="id" title="var">natIndex'</span> =&gt; <span class="id" title="keyword">fun</span> <span class="id" title="var">vs</span> =&gt; <span class="id" title="var">getNat'</span> <span class="id" title="var">types0</span> <span class="id" title="var">natIndex'</span> (<span class="id" title="var">htl</span> <span class="id" title="var">vs</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+<span class="id" title="keyword">End</span> <span class="id" title="var">withTypes'</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Now the surprise comes in how easy it is to <i>use</i> <span class="inlinecode"><span class="id" title="definition">getNat'</span></span>.  While typing works by modification of a types list, we can choose parameters so that the modification has no effect. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">getNat_is_reasonable</span> : <span class="id" title="var">getNat'</span> <span class="id" title="var">myTypes</span> <span class="id" title="var">myNatIndex</span> <span class="id" title="var">myValues</span> = 3.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">reflexivity</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+The same parameters as before work without alteration, and we avoid use of axioms. 
+</div>
+<div class="code">
+</div>
+</div>
+
+<div id="footer">
+<hr/><a href="index.html">Index</a><hr/>This page has been generated by <a href="http://coq.inria.fr/">coqdoc</a>
+</div>
+
+</div>
+
+</body>
+</html>
