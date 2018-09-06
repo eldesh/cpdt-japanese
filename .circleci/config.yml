@@ -46,6 +46,33 @@ jobs:
       - store_artifacts:
           path: ./latex/cpdt.pdf
 
+      - persist_to_workspace:
+          root: /tmp/cpdt
+          paths:
+              - html
+              - latex
+
+  # deploy generated html files as github pages
+  deploy_ghpages:
+    working_directory: /tmp/cpdt
+    docker:
+      - image: eldesh/coq:8.5pl3
+    shell: /bin/bash --login -eo pipefail
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /tmp/cpdt
+      - run:
+          name: make gh-pages branch
+          command: |
+            git config --user.name ${GN_NAME}
+            git config --user.email ${GN_EMAIL}
+            if git rev-parse --verify 
+
+      - deploy:
+          name: install texlive
+          command: |
+
 workflows:
   version: 2
   build_doc:
@@ -54,4 +81,8 @@ workflows:
       - make_doc:
           requires:
             - type_check
+      - deploy_ghpages:
+          filters:
+            branches:
+              only: master
 
